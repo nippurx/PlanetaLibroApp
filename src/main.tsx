@@ -6,7 +6,8 @@ import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    {/* Keep routing under /app because the production build is served from that subpath. */}
+    <BrowserRouter basename="/app">
       <App />
     </BrowserRouter>
   </React.StrictMode>,

@@ -1,3 +1,4 @@
 API integration placeholder.
 
-Add typed clients, request helpers and feature-specific adapters here when the backend is available.
+Use host-relative endpoints only so the frontend stays domain-agnostic and works the same across production domains and localhost.
+The shared helper lives in `client.ts` and starts from `/api/v1/public`.
