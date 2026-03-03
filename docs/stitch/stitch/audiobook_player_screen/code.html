@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Audiobook Player Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display flex flex-col min-h-screen text-slate-900 dark:text-slate-100 overflow-x-hidden">
+<!-- Header / Navbar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 px-10 py-3 bg-background-light dark:bg-background-dark">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-slate-900 dark:text-white">
+<div class="size-6 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">EcoReads</h2>
+</div>
+<nav class="flex items-center gap-9 hidden md:flex">
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Discover</a>
+<a class="text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal" href="#">My Library</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Challenges</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Community</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-8 items-center">
+<label class="flex flex-col min-w-40 !h-10 max-w-64 hidden sm:flex">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full ring-1 ring-slate-200 dark:ring-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+<div class="text-slate-400 flex border-none items-center justify-center pl-4 bg-transparent">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-slate-400 px-4 rounded-l-none pl-2 text-base font-normal leading-normal" placeholder="Search" value=""/>
+</div>
+</label>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-slate-100 dark:ring-slate-800" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDY4DUj-h2HoJ6C8pXcVdBvM6JhIhilvu8znr2hVVOJqtfp_TSOtw4xQxCWTnEANHcqkMR3UO3irEQ3PGIOU-IVG7biR8QPh6piLgUGX93Wd0WX6RAtyDmvXWaSecaeORrbYGAP2fCEfzpHxWJN91bcqdc_FupPEWTRFlO2LZ2nhpcdqN_Qtu41TULKC9pEwurfMFHRfajG7fECn1jnwKdN2LrwxX9FNkeBzOTNFRaRpxwA7Nw9YnewJMRsf-5cCtGilF7DCyXxFA0B");'></div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-8">
+<!-- Breadcrumbs -->
+<div class="w-full max-w-[1200px] flex flex-wrap gap-2 mb-8 px-4">
+<a class="text-slate-500 hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Home</a>
+<span class="text-slate-500 text-sm font-medium leading-normal">/</span>
+<a class="text-slate-500 hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">My Library</a>
+<span class="text-slate-500 text-sm font-medium leading-normal">/</span>
+<span class="text-slate-900 dark:text-white text-sm font-medium leading-normal">The Hidden Life of Trees</span>
+</div>
+<div class="w-full max-w-[1200px] grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left Column: Book Details & Visuals -->
+<div class="lg:col-span-5 flex flex-col items-center lg:items-start gap-6">
+<!-- Book Cover Large -->
+<div class="relative group w-[280px] sm:w-[360px] aspect-[2/3] rounded-xl shadow-2xl overflow-hidden transition-transform hover:scale-[1.02]">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Book cover of The Hidden Life of Trees showing a foggy forest" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCl_jEd4FnlDV8rd1UkCaLrNEQNV5k6E63Qn55LU3qX8_JU_U_kTC-xfvIaqNBV4htcfhIShZq4lI5Uiqdz-P5e6Lg_L_NzoKsmC5lfrL1FqBv2Rfrfjm2J7eqVsS-ZRkWXX2c9xWjYR-9BJoQqCEqd6Lksb-JsqO1ZCQxXlWevkhgyzM_fSgtZOw6x4gfUc56KBy5lf1dSyCSKPW2irnP__3iybUV_5vUCXW1mJw_0ImC8tDAsaOYO0KJu-aWxrhKAff69MiZeGKa8");'></div>
+<!-- Overlay Gradient -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+</div>
+<div class="text-center lg:text-left space-y-2 mt-2">
+<h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">The Hidden Life of Trees</h1>
+<div class="space-y-1">
+<p class="text-lg text-slate-500 dark:text-slate-400 font-medium">By <span class="text-primary cursor-pointer hover:underline">Peter Wohlleben</span></p>
+<p class="text-sm text-slate-400 dark:text-slate-500">Narrated by <span class="text-slate-600 dark:text-slate-300">Mike Grady</span></p>
+</div>
+</div>
+<div class="flex flex-wrap gap-3 justify-center lg:justify-start w-full">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Non-fiction</span>
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Nature</span>
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Best Seller</span>
+</div>
+<!-- Switch to Reading Button -->
+<button class="mt-4 flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-semibold transition-all group">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">menu_book</span>
+                    Cambiar a lectura
+                </button>
+</div>
+<!-- Right Column: Player Interface -->
+<div class="lg:col-span-7 flex flex-col justify-center">
+<!-- Main Player Card -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-10 shadow-xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+<!-- Decorative Background Element -->
+<div class="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Embed Placeholder (Simulating YouTube/Audio Source) -->
+<div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 mb-8 group">
+<!-- Simulated video content -->
+<div class="absolute inset-0 bg-cover bg-center opacity-60 group-hover:opacity-40 transition-opacity duration-500" data-alt="Forest canopy sunlight streaming through leaves" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDWXH4vJee3_yHdNacwy1XIkGSx_EPn30VEuDnIY8J52Gxgzk5HmwYbVcCUELs_OCVQGUthWFhKTVlmUpsHLTeTzVQKmWWR51L-VIr0lG9Jj9-cv21fBRZBUPzVmVkc8tizel9WaMYZQGrbMj8oiNgPMFLH_upDqN1Z0avxJ5Gwrt3IEEB39EI0ftOgDehWqmsPlxRGhpeBUKUHD_aEK3d002eTlD-oT0_wLu1gWfO-pmhn5UnSQxkdd590EaSHXaEKuo2Q-3O962fw");'></div>
+<!-- Play Overlay Centered -->
+<div class="absolute inset-0 flex items-center justify-center">
+<button class="size-20 bg-primary hover:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-[48px] ml-1">play_arrow</span>
+</button>
+</div>
+<!-- Video Controls UI (Visual Only) -->
+<div class="absolute bottom-4 right-4 flex gap-2">
+<div class="px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-xs text-white font-mono">1080p</div>
+</div>
+</div>
+<!-- Playback Controls Area -->
+<div class="flex flex-col gap-6 relative z-10">
+<!-- Progress Bar -->
+<div class="w-full space-y-2 group">
+<!-- Time Labels -->
+<div class="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+<span>2:15:30</span>
+<span>-4:10:00</span>
+</div>
+<!-- Bar -->
+<div class="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full cursor-pointer overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-primary w-[35%] rounded-full"></div>
+<!-- Hover Interaction Hint -->
+<div class="absolute top-0 left-0 h-full w-full opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 pointer-events-none"></div>
+</div>
+</div>
+<!-- Main Controls -->
+<div class="flex items-center justify-between sm:justify-center sm:gap-12">
+<!-- Speed Control -->
+<button class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-xs font-bold sm:absolute sm:left-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">speed</span>
+                                1.0x
+                            </button>
+<!-- Player Buttons -->
+<div class="flex items-center gap-6">
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" title="Rewind 15s">
+<span class="material-symbols-outlined text-[32px]">replay_10</span>
+</button>
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[36px]">skip_previous</span>
+</button>
+<button class="size-16 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg">
+<span class="material-symbols-outlined text-[40px] filled">pause</span>
+</button>
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[36px]">skip_next</span>
+</button>
+<button class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" title="Forward 30s">
+<span class="material-symbols-outlined text-[32px]">forward_30</span>
+</button>
+</div>
+<!-- Extra Options -->
+<div class="flex items-center gap-4 sm:absolute sm:right-0">
+<button class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]">volume_up</span>
+</button>
+<button class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors hidden sm:block">
+<span class="material-symbols-outlined text-[24px]">bookmark_add</span>
+</button>
+</div>
+</div>
+<!-- Chapter Info -->
+<div class="flex items-center justify-center mt-2">
+<div class="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">list</span>
+<span class="text-sm font-medium text-slate-600 dark:text-slate-300">Chapter 4: The Wood Wide Web</span>
+<span class="material-symbols-outlined text-slate-400 text-[18px] cursor-pointer hover:text-primary">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Up Next / Recommendation Mini-bar -->
+<div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+<h3 class="text-sm uppercase tracking-wider text-slate-500 font-bold mb-4">Up Next in Queue</h3>
+<div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+<div class="size-12 rounded bg-cover bg-center flex-shrink-0" data-alt="Cover of the book Braiding Sweetgrass" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDoFcuPtIIUh4D2UvY22lndHe_h41we_Wa9tiKqmlGKd2t7dxTvoHZsGErpYIzfnukQ0zn271_6LunrEsTX2HfC1uSI4ikbIrN4jSGfJ12phnWqcJu33WtAZdI8m052RaDro0nnwA3iF2iQt7-8CeoOVBBJuqQb6CHTfTHTdn78Js3Z1tLIlC_EqyKL3n99h1O27xmElVJ44kojcdG9HVlSSY3d1DPh-XQb6ifRQrvew6y1wH4gqZvmzjtWovfosDXohV30aDOHUMCc");'></div>
+<div class="flex-1 min-w-0">
+<h4 class="text-base font-semibold text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">Braiding Sweetgrass</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400">Robin Wall Kimmerer</p>
+</div>
+<button class="size-8 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-500 hover:bg-primary hover:text-white hover:border-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

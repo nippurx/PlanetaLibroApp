@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile &amp; App Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "sans": ["Lexend", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 flex flex-col justify-between border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111418] p-4 flex-shrink-0 h-screen overflow-y-auto">
+<div class="flex flex-col gap-6">
+<!-- User Profile Summary -->
+<div class="flex gap-3 items-center px-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-sm" data-alt="User avatar profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwdqivc9pgukx2YNk-d3WsnH-nd9ZofiM2sx417epphnvzr777dYJ-_cdbPT-TH8atG3aQDj-bPdkBlzoNRUbVmMbH5V8C7WscQ99o2J0AnKzLzdeKVCN3AE6uJ14MnuHBQptg5TRZedaIs-oZm9FKHe7NkII_B8S0r24Q-o2gFT3twMwM_D98OD72b-OfXNT7CBeEgPdyUHxeMSTLWO6ACDKRI3XTfF_q0IUMgY7Q75VTQ1vB971QW6_7ktFgR3rCOl6y0RrOzfB4");'></div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-base font-semibold leading-tight">Alex Reader</h1>
+<p class="text-slate-500 dark:text-[#9da8b9] text-xs font-normal">Sustainable Reader</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 group-hover:text-primary">grid_view</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 group-hover:text-primary">library_books</span>
+<p class="text-sm font-medium leading-normal">Library</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 group-hover:text-primary">track_changes</span>
+<p class="text-sm font-medium leading-normal">Goals</p>
+</a>
+<!-- Active State for Settings -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary dark:text-white dark:bg-[#282f39]" href="#">
+<span class="material-symbols-outlined text-primary dark:text-white font-variation-settings-FILL-1">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 group-hover:text-primary">support_agent</span>
+<p class="text-sm font-medium leading-normal">Support</p>
+</a>
+</nav>
+</div>
+<button class="flex w-full cursor-pointer items-center justify-center rounded-xl h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-md shadow-primary/20">
+<span class="material-symbols-outlined mr-2 text-[20px]">add</span>
+<span class="truncate">New Goal</span>
+</button>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark">
+<div class="max-w-[960px] mx-auto p-6 md:p-10 pb-20">
+<!-- Page Header -->
+<header class="mb-8">
+<h1 class="text-slate-900 dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">Settings</h1>
+<p class="text-slate-500 dark:text-[#9da8b9] text-base font-normal">Manage your account, reading preferences, and app experience.</p>
+</header>
+<!-- Account Details Section -->
+<section class="mb-10 bg-white dark:bg-[#111418] rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Account Details</h2>
+<button class="text-primary text-sm font-medium hover:underline">Edit Profile</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-medium">First Name</span>
+<div class="relative">
+<input class="w-full rounded-lg bg-slate-50 dark:bg-[#1c2027] border border-slate-200 dark:border-[#3b4554] px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-slate-400" type="text" value="Alex"/>
+</div>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-medium">Last Name</span>
+<div class="relative">
+<input class="w-full rounded-lg bg-slate-50 dark:bg-[#1c2027] border border-slate-200 dark:border-[#3b4554] px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-slate-400" type="text" value="Reader"/>
+</div>
+</label>
+<label class="flex flex-col gap-2 md:col-span-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-medium">Email Address</span>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary">mail</span>
+<input class="w-full rounded-lg bg-slate-50 dark:bg-[#1c2027] border border-slate-200 dark:border-[#3b4554] pl-11 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-slate-400" type="email" value="alex.reader@example.com"/>
+</div>
+</label>
+</div>
+</section>
+<!-- Preferences & Goals Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+<!-- Reading Goals -->
+<section class="bg-white dark:bg-[#111418] rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col h-full">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight mb-4">Daily Goal</h2>
+<p class="text-slate-500 dark:text-[#9da8b9] text-sm mb-6">Set your daily reading or listening target.</p>
+<div class="flex items-center justify-center gap-4 py-4">
+<button class="size-10 rounded-full bg-slate-100 dark:bg-[#282f39] text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<div class="text-center">
+<span class="block text-4xl font-black text-primary">45</span>
+<span class="text-sm text-slate-500 dark:text-slate-400">minutes / day</span>
+</div>
+<button class="size-10 rounded-full bg-slate-100 dark:bg-[#282f39] text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<div class="mt-auto pt-6">
+<div class="w-full bg-slate-100 dark:bg-[#282f39] rounded-full h-3 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 75%"></div>
+</div>
+<p class="text-center text-xs text-slate-500 dark:text-slate-400 mt-2">75% of users achieve this goal</p>
+</div>
+</section>
+<!-- Format Preferences -->
+<section class="bg-white dark:bg-[#111418] rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col h-full">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight mb-4">Format Priority</h2>
+<p class="text-slate-500 dark:text-[#9da8b9] text-sm mb-6">Choose which format you prefer to see first.</p>
+<div class="space-y-3">
+<label class="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-[#3b4554] bg-slate-50 dark:bg-[#1c2027] cursor-pointer hover:border-primary dark:hover:border-primary transition-colors">
+<div class="flex items-center gap-3">
+<div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">headphones</span>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white font-medium">Audiobooks First</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Prioritize listening experience</p>
+</div>
+</div>
+<input checked="" class="h-5 w-5 text-primary border-slate-300 focus:ring-primary" name="format_pref" type="radio"/>
+</label>
+<label class="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-[#3b4554] bg-slate-50 dark:bg-[#1c2027] cursor-pointer hover:border-primary dark:hover:border-primary transition-colors">
+<div class="flex items-center gap-3">
+<div class="bg-slate-200 dark:bg-slate-700 p-2 rounded-lg text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white font-medium">E-books First</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Prioritize reading text</p>
+</div>
+</div>
+<input class="h-5 w-5 text-primary border-slate-300 focus:ring-primary" name="format_pref" type="radio"/>
+</label>
+</div>
+</section>
+</div>
+<!-- App Settings -->
+<section class="bg-white dark:bg-[#111418] rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm mb-10">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight mb-6">App Settings</h2>
+<!-- Toggles List -->
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<div class="flex items-center justify-between py-4">
+<div class="flex gap-4">
+<div class="text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white font-medium">Push Notifications</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Receive reminders for your daily goals.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between py-4">
+<div class="flex gap-4">
+<div class="text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">download</span>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white font-medium">Auto-Download</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Download next chapter automatically via Wi-Fi.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between py-4">
+<div class="flex gap-4">
+<div class="text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white font-medium">Theme</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Customize the application appearance.</p>
+</div>
+</div>
+<div class="flex bg-slate-100 dark:bg-[#1c2027] p-1 rounded-lg">
+<button class="px-3 py-1 text-xs font-medium rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Light</button>
+<button class="px-3 py-1 text-xs font-medium rounded-md bg-white dark:bg-[#282f39] text-primary shadow-sm">Dark</button>
+<button class="px-3 py-1 text-xs font-medium rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Auto</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="rounded-xl border border-red-200 dark:border-red-900/30 p-6 bg-red-50/50 dark:bg-red-900/10">
+<h2 class="text-red-600 dark:text-red-400 text-lg font-bold leading-tight mb-2">Danger Zone</h2>
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+<p class="text-sm text-slate-600 dark:text-slate-400">Permanently delete your account and all reading data.</p>
+<button class="px-4 py-2 bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 text-sm font-semibold rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors">
+                        Delete Account
+                    </button>
+</div>
+</section>
+</div>
+</main>
+</body></html>

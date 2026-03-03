@@ -1,0 +1,417 @@
+Google ahora crea APPs reales por IA GRATIS en minutos 🚀
+
+https://www.youtube.com/watch?v=HsGoqAokX5o
+
+A continuación tenés un **tutorial paso a paso, ultra detallado**, para replicar el método del video y pasar de **idea → prototipo → app funcional con backend → publicación → difusión**, usando el stack que menciona:
+
+* **NotebookLM** (investigación y requerimientos)
+* **Stitch** (UI + prototipo interactivo + export)
+* **Google AI Studio** (convertir prototipo en app funcional, iterar features, sumar IA)
+* **Google Antigravity** (trabajo “pro” en local + agentes/MCP para backend)
+* **Supabase (vía MCP)** (auth + base de datos)
+* **Deploy** en hosting Node/Vite (ej. Hostinger) y/o alternativas
+* **Gemini** (lanzamiento, marketing, assets)
+* **Pomelli** (creativos on-brand desde tu URL) ([Labs Google][1])
+
+> Nota: Stitch es una herramienta de Google Labs para generar UI y código front-end rápidamente. ([Stitch][2])
+> Supabase tiene documentación oficial de MCP. ([Supabase][3])
+> Video base: ([YouTube][4])
+
+---
+
+## 0) Requisitos previos (antes de empezar)
+
+### Cuentas (mínimo)
+
+1. **Google account** (para NotebookLM, Stitch, AI Studio, Antigravity).
+2. **Supabase account** (gratis, para auth/db). ([Supabase][3])
+3. (Opcional) Cuenta en un **hosting Node.js** (Hostinger u otro) si querés dominio propio y público.
+
+### Herramientas instaladas (si vas a usar Antigravity en local)
+
+* **Node.js** (ideal LTS)
+* **Git** (opcional pero muy recomendado)
+* **Google Antigravity** (app de escritorio, según el video)
+
+### Conceptos mínimos (no hace falta programar)
+
+* Qué es una **variable de entorno** (`.env`)
+* Qué es **Vite** (build tool común para front-end)
+* Qué es **Auth** y **DB** (login + tablas)
+
+---
+
+## 1) Fase Investigación con NotebookLM (validar idea con “datos”)
+
+### 1.1 Crear un cuaderno
+
+1. Abrí **NotebookLM**.
+2. Creá un “Notebook” nuevo con el nombre de tu proyecto (ej. `Fitnavi`).
+
+### 1.2 Prompt de “Deep Research” (plantilla)
+
+En el video, la lógica es: **3 pilares**:
+
+* evidencia científica / buenas prácticas (si aplica a tu rubro),
+* análisis de competidores,
+* necesidades reales de usuarios (foros, reseñas, Reddit, etc.).
+
+Pegá algo como esto (adaptalo a tu idea):
+
+**Prompt (copiar/pegar):**
+
+* “Investigá profundamente el sector de [TU TEMA] y devolveme:
+
+  1. Hallazgos basados en estudios / fuentes confiables sobre [comportamiento objetivo] (ej. adherencia, hábito, aprendizaje, etc.).
+  2. Análisis de las apps/productos líderes: features clave, UX, pricing, qué funciona y por qué.
+  3. Problemas y deseos reales de usuarios (foros, reseñas, comunidades): qué les falta hoy y qué piden.
+     Cerrá con una lista priorizada de oportunidades (high impact / low effort) para una app nueva.”
+
+3. Activá **Deep Research** (en el video cambian de “fast” a “deep”).
+4. Ejecutá.
+
+**Salida esperada:** un informe con varias fuentes + síntesis accionable (en el video habla de ~20+ fuentes). ([YouTube][4])
+
+---
+
+## 2) Convertir investigación en “Requerimientos” (spec para diseño)
+
+### 2.1 Generar reporte de requerimientos dentro de NotebookLM
+
+1. Andá a **Reports** (o “Informes”).
+2. “Create your own / Crear informe”.
+3. Pedile que convierta el research en un documento tipo PRD (Product Requirements Doc).
+
+**Prompt (copiar/pegar):**
+
+* “Con base en todo el research del notebook:
+
+  * definí el **objetivo** de la app, usuario ideal y casos de uso principales,
+  * listá **features imprescindibles** (MVP) y features “wow” (v2),
+  * definí **pantallas necesarias** (con descripción de cada una),
+  * definí **modelo de datos** mínimo (qué se guarda),
+  * definí flujos: onboarding, uso principal, guardado de progreso, perfil/config.
+  * proponé una arquitectura simple (front + backend + auth + db).
+    Entregalo como un documento estructurado, listo para pegar en una herramienta de diseño IA.”
+
+**Tip clave:** Tu objetivo acá es salir con:
+
+* lista de pantallas
+* componentes por pantalla
+* comportamiento (qué pasa al tocar cada botón)
+* datos que se guardan
+
+---
+
+## 3) Fase Diseño y Prototipo con Stitch (UI profesional en minutos)
+
+### 3.1 Entrar a Stitch
+
+1. Abrí Stitch: `stitch.withgoogle.com` ([Stitch][2])
+2. Elegí si vas a diseñar **Web app** (responsive) o **Mobile app** (vertical).
+
+### 3.2 Pegar el PRD/requerimientos
+
+1. Pegá TODO el informe (Stitch soporta contextos grandes, en el video mencionan una ventana enorme). ([YouTube][4])
+2. Pedí un estilo visual claro (ej. moderno, minimal, profesional).
+
+**Prompt recomendado para Stitch (ejemplo):**
+
+* “Diseñá una web app responsive para [NOMBRE APP].
+  Estilo: moderno, limpio, profesional, accesible.
+  Pantallas: [lista].
+  Componentes: [lista].
+  Incluir: navegación consistente, estados vacíos, microcopy claro, CTA visibles, versión mobile.”
+
+### 3.3 Generar variantes + seleccionar pantallas
+
+1. Generá 1ª versión.
+2. Si algo no te gusta: pedí variantes (layout, navegación lateral vs superior, etc.).
+3. Seleccioná **todas** las pantallas finales.
+
+### 3.4 Prototipo interactivo (clickable)
+
+1. Botón **Prototype / Prototipar** (según UI de Stitch).
+2. Entrá en modo **Interact**.
+3. Probá navegación y coherencia.
+
+**Objetivo:** salir con un prototipo que “parece real” aunque todavía no tenga backend.
+
+---
+
+## 4) Exportar de Stitch a Google AI Studio (paso bisagra)
+
+### 4.1 Export
+
+En el video:
+
+1. En el prototipo: **More (…) → Export**
+2. Elegir: **Google AI Studio** (recomendado por ser lo más directo). ([YouTube][4])
+
+Esto suele exportar **HTML / estructura front** + contexto de pantallas.
+
+---
+
+## 5) Convertir el prototipo en App funcional en Google AI Studio
+
+### 5.1 Primer build (normalmente solo UI)
+
+1. En AI Studio, seleccioná modelo (en el video mencionan Gemini “Pro/3 Pro”).
+2. Click en **Build**.
+
+**Esperá esto:** primera versión “bonita” pero con lógica incompleta (solo front). ([YouTube][4])
+
+### 5.2 Iteración guiada (cómo pedir funcionalidades)
+
+Acá la regla es: **una feature por iteración**, con criterios claros.
+
+#### Iteración tipo: onboarding + perfil
+
+**Prompt ejemplo:**
+
+* “Implementá el flujo completo de onboarding:
+
+  * objetivo (fuerza/hipertrofia/salud/etc.),
+  * edad, peso, altura, frecuencia semanal, username,
+  * al finalizar, generá un plan inicial (mock primero) y guardalo en estado local.
+    Requisitos: validaciones, mensajes de error, persistencia en localStorage.”
+
+#### Iteración tipo: rutinas + tracking
+
+* “En ‘Rutinas’: listá rutinas (mock).
+  Al abrir una rutina: permitir editar peso/reps por ejercicio y marcar completado.
+  Guardar histórico por fecha.”
+
+#### Si una pantalla se rompe visualmente
+
+En el video: volver a Stitch y “forzar”:
+
+* Copiar HTML o incluso imagen de referencia desde Stitch y pedir que lo iguale. ([YouTube][4])
+  Esto es útil cuando AI Studio “deforma” tu UI.
+
+### 5.3 Agregar IA dentro de la app (chatbot/coach)
+
+En el video activan algo tipo “AI Powered Chatbot”.
+Pedile:
+
+* un panel/chat,
+* contexto de la app,
+* capacidad de responder con rutinas/recomendaciones.
+
+**Prompt ejemplo:**
+
+* “Agregá un ‘Coach IA’ dentro de la app con chat.
+  Debe usar la API de Gemini, conocer el perfil del usuario, su historial y rutinas.
+  Incluir: sugerencias diarias, respuestas cortas, y botón para adjuntar imagen/video (por ahora solo UI).”
+
+---
+
+## 6) Descargar el proyecto y llevarlo a Antigravity (trabajo “pro” y backend real)
+
+### 6.1 Dos caminos para llevarlo a Antigravity
+
+En el video mencionan:
+
+* Subir a **GitHub** desde AI Studio (cómodo), o
+* **Descargar ZIP** y abrir carpeta local (a veces menos errores). ([YouTube][4])
+
+### 6.2 Abrir en Antigravity
+
+1. Abrí Antigravity
+2. **Open Folder**
+3. Elegí la carpeta del proyecto.
+
+### 6.3 Configurar `.env` (claves y variables)
+
+Clave del video: todas las APIs/servicios deben estar en `.env`.
+
+* Si usás Gemini API: generás clave en Google (AI Studio / “Get API key”) y la ponés en `.env`. ([YouTube][4])
+
+**Buenas prácticas rápidas:**
+
+* Nunca subas `.env` a GitHub
+* Usá `.env.example` (sin secretos) para documentar
+
+---
+
+## 7) Backend “en serio” con Supabase vía MCP (login + DB)
+
+### 7.1 Qué es MCP en este flujo
+
+El video usa MCP para que el agente (Antigravity) pueda:
+
+* crear/configurar cosas en Supabase,
+* generar auth,
+* crear tablas,
+* escribir código conectado.
+
+Supabase documenta su MCP oficialmente. ([Supabase][3])
+
+### 7.2 Instalar MCP de Supabase en Antigravity
+
+1. En Antigravity: menú de **MCP Server** (tres puntitos).
+2. Buscar **Supabase MCP**.
+3. Instalar / habilitar.
+4. Te va a pedir una clave/token (según el conector).
+
+### 7.3 Crear proyecto en Supabase
+
+1. En Supabase: New project
+2. Nombre + password + región cercana.
+
+### 7.4 “Llamar” al MCP desde el prompt (modo FAST)
+
+En el video: usar `@` para invocar MCP.
+
+**Prompt ejemplo (tal cual la idea del video):**
+
+* “@mcpserver supabase
+  Conectá este proyecto con mi Supabase ‘NOMBRE_PROYECTO’.
+  Necesito:
+
+  1. Auth completo (registro/login/logout, confirmación por email).
+  2. Tabla `routines` con: id, user_id, name, description, created_at.
+  3. Tabla `workouts` o `history` para registrar sets por fecha (user_id, routine_id, exercise, reps, weight, date).
+  4. Actualizá `.env` con las variables necesarias (SUPABASE_URL, SUPABASE_ANON_KEY).
+  5. Integrá en el front: pantalla de login obligatoria antes de usar la app y guardado real en Supabase.”
+
+**Resultado esperado:**
+
+* login aparece,
+* usuario se registra y confirma email,
+* datos se guardan en tablas.
+  Esto coincide con el ejemplo del video (registro + confirmación + tabla). ([YouTube][4])
+
+---
+
+## 8) Iterar features avanzadas (landing, pagos, etc.)
+
+### 8.1 Crear “página de venta” previa (modo PLANNING)
+
+En el video: cambiar de fast a planning para cambios grandes.
+
+**Prompt ejemplo:**
+
+* “Modo Planning:
+  Diseñá e implementá una landing previa a la app:
+
+  * misma identidad visual,
+  * animaciones suaves,
+  * CTA ‘Empezar gratis’,
+  * sección beneficios, FAQ, testimonios.
+    Luego ejecutá el plan y dejá todo funcionando con rutas.”
+
+### 8.2 Pagos (si quisieras monetizar)
+
+En el video mencionan MCPs para Stripe/PayPal.
+Si lo hacés, pedí:
+
+* plan gratis vs premium,
+* tabla `subscriptions`,
+* webhooks.
+
+---
+
+## 9) Publicar la app (para que cualquiera entre con un link)
+
+### 9.1 Preparar build y comandos
+
+Si tu proyecto es Vite/Node típico:
+
+* `npm install`
+* `npm run build`
+* `npm run dev` (local)
+
+En Antigravity podés correr terminal o pedí al agente que ejecute.
+
+### 9.2 Deploy en Hostinger (método del video)
+
+Flujo del video:
+
+1. Comprimir el proyecto en ZIP
+2. Hostinger: “Add website” → “Node.js web app”
+3. Subir ZIP o conectar GitHub
+4. Detecta framework (ej. Vite)
+5. Cargar **Environment variables** (copiar cada variable del `.env`)
+6. Deploy → te da URL pública ([YouTube][4])
+
+**Punto crítico:** en el panel de hosting, las variables se cargan como:
+
+* KEY = (nombre)
+* VALUE = (lo que está después del `=` en tu `.env`)
+
+### 9.3 Alternativas de publicación
+
+El video menciona alternativas (Firebase / Google Cloud / publicar desde herramientas). ([YouTube][4])
+En general:
+
+* Firebase Hosting (ideal front)
+* Cloud Run / App Engine (si hay backend Node)
+* Vercel/Netlify (si es front+serverless)
+
+---
+
+## 10) Difusión y lanzamiento (Gemini + Pomelli)
+
+### 10.1 Pitch deck / presentación con Gemini (Canvas)
+
+El video propone:
+
+* Adjuntar el prototipo/export
+* Pedir una presentación para inversores o socios
+* Usar Canvas para estructurar
+
+**Prompt ejemplo:**
+
+* “Actuá como equipo senior (producto, marketing, ventas).
+  Con esta app y su prototipo adjunto:
+
+  * creá un pitch deck de 10 diapositivas (texto listo para slides)
+  * propuesta de valor, mercado, diferenciación, modelo de negocio, roadmap, go-to-market.”
+
+### 10.2 Creativos automáticos con Pomelli (desde tu URL)
+
+Pomelli genera piezas “on-brand” leyendo tu sitio/app y sacando:
+
+* tipografías/colores,
+* estilo de marca,
+* templates para redes, incluso animables. ([Labs Google][1])
+
+**Paso a paso:**
+
+1. Entrá a Pomelli (Google Labs). ([Labs Google][1])
+2. Pegá la URL publicada.
+3. Confirmá identidad visual.
+4. Generá:
+
+   * posts IG,
+   * historias,
+   * anuncios,
+   * (si está) versión animada/video.
+5. Editá copy y CTA.
+
+---
+
+## Checklist final (para saber si lo hiciste “igual al método”)
+
+✅ NotebookLM: research profundo + reporte de requerimientos
+✅ Stitch: UI profesional + prototipo clickable
+✅ Export a AI Studio: build inicial + iteraciones hasta que sea funcional
+✅ Antigravity: abrir proyecto + `.env` + ajustes reales
+✅ MCP Supabase: login/registro + tablas + guardado real
+✅ Deploy: URL pública + variables de entorno cargadas
+✅ Marketing: pitch + creativos on-brand
+
+---
+
+Si querés, decime **qué tipo de app** querés crear (tema + público + objetivo) y te dejo:
+
+1. el **prompt exacto** para NotebookLM (Deep Research)
+2. el **prompt exacto** para el reporte PRD
+3. el **prompt de Stitch** con pantallas y componentes
+4. el set de **iteraciones** para AI Studio (en el orden más efectivo)
+
+[1]: https://labs.google.com/pomelli/about?utm_source=chatgpt.com "Pomelli by Google Labs"
+[2]: https://stitch.withgoogle.com/?utm_source=chatgpt.com "Stitch - Design with AI - Google"
+[3]: https://supabase.com/docs/guides/getting-started/mcp?utm_source=chatgpt.com "Model context protocol (MCP) | Supabase Docs"
+[4]: https://www.youtube.com/watch?v=HsGoqAokX5o&utm_source=chatgpt.com "Google now creates real APPs by AI for FREE in minutes 🚀"

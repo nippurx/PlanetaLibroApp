@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Book Details - Sustainable Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Noto+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "surface-dark": "#1a2332",
+                    },
+                    fontFamily: {
+                        display: ["Newsreader", "serif"],
+                        sans: ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<div class="hidden lg:flex w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111418]">
+<div class="flex h-full flex-col justify-between p-4">
+<div class="flex flex-col gap-6">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 bg-primary/20" data-alt="Abstract nature pattern logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCWGKJairdePF2SfUP9e6-mzXdDqHcZtpXMezwiYDMSZm5E_3ZlyQizFK_HJBjPZzoViXHi1Nfzw421Zl-nULQdGjsmCP7eWVEuPmF-HjFDKwRbuCGq5dJ6hGB_uWecizG_ZKOdWqcuJu1umEsrE_PsGu2LsWg_I0jiVqi2w60WFKAZAGRO3xCo-ol-3iCUEfgpRrhgWEkOitZkoHN5OpubqipVVDWkAiuhbsjSDVolvD1lYHFZnd_nkM9duiUS5SwgfnNmo4nJzvCZ");'></div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-base font-bold leading-normal font-display">Sustainable Reader</h1>
+<p class="text-slate-500 dark:text-[#9da8b9] text-xs font-normal leading-normal">Hábitos eco-amigables</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39] transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 dark:text-[#9da8b9] group-hover:text-primary transition-colors">home</span>
+<p class="text-slate-700 dark:text-[#9da8b9] text-sm font-medium leading-normal group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Inicio</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 dark:bg-[#282f39] text-primary dark:text-white" href="#">
+<span class="material-symbols-outlined fill-1">library_books</span>
+<p class="text-sm font-medium leading-normal">Biblioteca</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39] transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 dark:text-[#9da8b9] group-hover:text-primary transition-colors">headphones</span>
+<p class="text-slate-700 dark:text-[#9da8b9] text-sm font-medium leading-normal group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Audiolibros</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39] transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 dark:text-[#9da8b9] group-hover:text-primary transition-colors">bar_chart</span>
+<p class="text-slate-700 dark:text-[#9da8b9] text-sm font-medium leading-normal group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Estadísticas</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39] transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 dark:text-[#9da8b9] group-hover:text-primary transition-colors">settings</span>
+<p class="text-slate-700 dark:text-[#9da8b9] text-sm font-medium leading-normal group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Configuración</p>
+</a>
+</nav>
+</div>
+<div class="px-3 py-4 border-t border-slate-200 dark:border-slate-800 mt-auto">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39] cursor-pointer transition-colors">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-9 w-9" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD94RNEAEEUhQI4h0sLsSgDBwomet273rxgjqdDHiAL05ve0Sv3r_mo8zWhx2sVnhTJTKc56tLlGOYDfjCBDcFk4DRDdhedJYrqRPNrrv9iXw79sJu9oBBZ7l6lJJQTmG2OWFj0M1m058VxLK4hqwI7mCGC4jFCf3m1s-C8iIawaAeL8w-TKoElPAhVtw1BGLybjSF5KIvK7Xy6aknv-d4-GWYlZxWpfiuf8dmLWYLWiMdvbrAeywXgeEJIfKBTIMAqSstXAgdwG0su");'></div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-medium">Ana García</p>
+<p class="text-slate-500 dark:text-[#9da8b9] text-xs">Premium</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Header -->
+<header class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111418] z-10">
+<div class="flex items-center gap-4">
+<button class="lg:hidden p-2 text-slate-500 dark:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39]">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-[#282f39] transition-colors">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold font-display hidden sm:block">Detalles del Libro</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 dark:text-[#9da8b9] text-[20px]">search</span>
+</div>
+<input class="block w-full rounded-full border-0 py-2 pl-10 pr-4 text-slate-900 dark:text-white bg-slate-100 dark:bg-[#282f39] placeholder:text-slate-400 dark:placeholder:text-[#9da8b9] focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 transition-all w-64" placeholder="Buscar libros, autores..." type="text"/>
+</div>
+<button class="p-2 text-slate-500 dark:text-[#9da8b9] hover:text-primary dark:hover:text-white transition-colors relative">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary border-2 border-white dark:border-[#111418]"></span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
+<div class="max-w-5xl mx-auto px-6 py-8 pb-20">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-[#9da8b9] mb-8">
+<a class="hover:text-primary transition-colors" href="#">Biblioteca</a>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Fantasía</a>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<span class="text-slate-900 dark:text-white font-medium">El nombre del viento</span>
+</div>
+<!-- Book Hero Section -->
+<div class="flex flex-col md:flex-row gap-8 lg:gap-12">
+<!-- Left Column: Cover & Primary Actions -->
+<div class="flex-shrink-0 w-full md:w-[300px] flex flex-col gap-6">
+<div class="relative group aspect-[2/3] w-full rounded-xl overflow-hidden shadow-2xl shadow-primary/10">
+<img alt="Book cover art abstract" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="El Nombre del Viento Book Cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVIgYrm0R68EL8GAtiR1To9P8QG2A7pwZaUsv_MT8xY5xCf913N7tEP71ftzJ4SJyAkMJKpi9A28unm4q9OXq22jK0XPKss2U2oY3fFuk8dNhmoXiC4jf4v7buBr2RLG1wHg53n33AuRILRvyhKpoIhZy5bJUtbCOJ5Hozx0dG6wEz77phuLPdH2BkmqDCJReN074nhH9pfE31ej4Eqh6yg7wDltASkC5gVggbS7N9ljV3WJnA_xascwFv0H8ZBLF7vj1t0k7qNfpW"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
+<button class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<button class="w-full flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/25 active:scale-95">
+<span class="material-symbols-outlined">headphones</span>
+<span>Escuchar Audiolibro</span>
+</button>
+<button class="w-full flex items-center justify-center gap-3 bg-slate-200 dark:bg-[#282f39] hover:bg-slate-300 dark:hover:bg-[#323b47] text-slate-900 dark:text-white font-bold py-3.5 px-6 rounded-xl transition-colors active:scale-95">
+<span class="material-symbols-outlined">menu_book</span>
+<span>Leer Libro</span>
+</button>
+</div>
+<div class="flex items-center justify-between gap-2">
+<button class="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39] text-slate-500 dark:text-[#9da8b9] hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bookmark_add</span>
+<span class="text-xs font-medium">Guardar</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39] text-slate-500 dark:text-[#9da8b9] hover:text-pink-500 transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+<span class="text-xs font-medium">Me gusta</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#282f39] text-slate-500 dark:text-[#9da8b9] hover:text-primary transition-colors">
+<span class="material-symbols-outlined">share</span>
+<span class="text-xs font-medium">Compartir</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Details & Metadata -->
+<div class="flex-1 flex flex-col">
+<div class="mb-6">
+<div class="flex flex-wrap items-center gap-2 mb-3">
+<span class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-bold uppercase tracking-wider">Fantasía Épica</span>
+<span class="px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-bold uppercase tracking-wider">Eco-Friendly</span>
+</div>
+<h1 class="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white font-display leading-tight mb-2">El nombre del viento</h1>
+<a class="text-xl text-primary hover:text-primary/80 font-medium font-display transition-colors" href="#">Patrick Rothfuss</a>
+</div>
+<div class="flex items-center gap-6 mb-8 pb-8 border-b border-slate-200 dark:border-slate-800/50">
+<div class="flex items-center gap-1 text-yellow-500">
+<span class="material-symbols-outlined fill-1 text-[20px]">star</span>
+<span class="text-lg font-bold text-slate-900 dark:text-white ml-1">4.8</span>
+<span class="text-sm text-slate-500 dark:text-[#9da8b9] font-normal">(12.5k reseñas)</span>
+</div>
+<div class="h-4 w-px bg-slate-300 dark:bg-slate-700"></div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-[#9da8b9]">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span class="text-sm font-medium">28h 45m</span>
+</div>
+<div class="h-4 w-px bg-slate-300 dark:bg-slate-700"></div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-[#9da8b9]">
+<span class="material-symbols-outlined text-[20px]">auto_stories</span>
+<span class="text-sm font-medium">662 págs</span>
+</div>
+</div>
+<div class="prose dark:prose-invert max-w-none text-slate-600 dark:text-[#9da8b9] mb-8">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white font-display mb-3">Sinopsis</h3>
+<p class="leading-relaxed">
+                                    En una posada en tierra de nadie, un hombre se dispone a relatar, por primera vez, la auténtica historia de su vida. Una historia que únicamente él conoce y que ha quedado diluida tras los rumores, las conjeturas y los cuentos de taberna que le han convertido en un personaje legendario a quien todos daban ya por muerto: Kvothe... músico, mendigo, ladrón, estudiante, mago, héroe y asesino.
+                                </p>
+<p class="mt-4 leading-relaxed">
+                                    Ahora va a revelar la verdad sobre sí mismo. Y para ello debe empezar por el principio: su infancia en una troupe de artistas itinerantes, los años malviviendo como un ladronzuelo en las calles de una gran ciudad y su llegada a una universidad donde esperaba encontrar todas las respuestas que había estado buscando.
+                                </p>
+</div>
+<!-- Progress & Status -->
+<div class="bg-slate-100 dark:bg-[#1a2332] rounded-xl p-6 mb-8">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+<div>
+<h4 class="text-slate-900 dark:text-white font-bold text-sm mb-1">Tu progreso</h4>
+<p class="text-slate-500 dark:text-[#9da8b9] text-xs">Última lectura: hace 2 días</p>
+</div>
+<div class="relative">
+<select class="appearance-none bg-white dark:bg-[#282f39] text-slate-900 dark:text-white pl-4 pr-10 py-2 rounded-lg border-none ring-1 ring-slate-200 dark:ring-slate-700 text-sm font-medium focus:ring-primary focus:outline-none cursor-pointer">
+<option>Leyendo</option>
+<option>Por leer</option>
+<option>Terminado</option>
+<option>Abandonado</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<div class="w-full bg-slate-200 dark:bg-[#282f39] rounded-full h-2.5 mb-2">
+<div class="bg-primary h-2.5 rounded-full" style="width: 35%"></div>
+</div>
+<div class="flex justify-between text-xs text-slate-500 dark:text-[#9da8b9]">
+<span>Página 231 de 662</span>
+<span>35%</span>
+</div>
+</div>
+<!-- Review Section Snippet -->
+<div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white font-display">Reseñas destacadas</h3>
+<a class="text-primary text-sm font-medium hover:underline" href="#">Ver todas</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-white dark:bg-[#1a2332] p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
+<div class="flex items-center gap-3 mb-3">
+<div class="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 font-bold text-xs">MJ</div>
+<div>
+<p class="text-slate-900 dark:text-white text-sm font-bold">María Jiménez</p>
+<div class="flex text-yellow-500 text-[10px]">
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+</div>
+</div>
+</div>
+<p class="text-slate-600 dark:text-[#9da8b9] text-sm line-clamp-3">
+                                            Una obra maestra de la fantasía moderna. La prosa de Rothfuss es poética y atrapante. No pude soltarlo hasta terminar.
+                                        </p>
+</div>
+<div class="bg-white dark:bg-[#1a2332] p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
+<div class="flex items-center gap-3 mb-3">
+<div class="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">CR</div>
+<div>
+<p class="text-slate-900 dark:text-white text-sm font-bold">Carlos Ruiz</p>
+<div class="flex text-yellow-500 text-[10px]">
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+<span class="material-symbols-outlined fill-1 text-[12px]">star</span>
+<span class="material-symbols-outlined text-[12px]">star</span>
+</div>
+</div>
+</div>
+<p class="text-slate-600 dark:text-[#9da8b9] text-sm line-clamp-3">
+                                            El sistema de magia es increíblemente detallado y lógico. Me encantó la parte de la Universidad. Esperando el siguiente con ansias.
+                                        </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

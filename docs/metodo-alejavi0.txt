@@ -1,0 +1,402 @@
+Google ahora crea APPs reales por IA GRATIS en minutos 🚀
+
+https://www.youtube.com/watch?v=HsGoqAokX5o
+
+Antes cada idea necesitaba años de aprendizaje, 
+fuertes inversiones o un equipo completo, pero hoy solo necesito una visión 
+clara. Google no ha hecho más que   sacar herramientas de inteligencia artificial 
+accesibles y útiles para casos de uso concreto, pero combinándolas es capaz de emprender un 
+proyecto de un equipo completo de personas. Para comprobarlo, estaremos viendo el paso a paso 
+para crear una aplicación completa, desde empezar   por una idea, convertir en una aplicación, 
+publicarla e incluso cómo difundirla. Para hacer lo posible estaremos utilizando Notebook LM 
+para validar, buscar información, estructurar los pronts y que nos sirva como base. Luego usaremos 
+Stitch para crear todo el prototipo de nuestra aplicación. Con esto iremos a Google AI Studio y 
+Antigravity para hacer de nuestro prototipo una aplicación funcional y con backend para que luego 
+esta esté lista para publicarla en un servidor   propio. Por último, también utilizaremos el modelo 
+de Yemin 3 para apoyarnos en todo el apartado de lanzamiento y difusión. Todo el flujo que 
+veremos lo podrás hacer hoy mismo y de una forma   totalmente gratuita. ¿Suena bien? Pues empecemos 
+por el primer paso. Vamos a comenzar construyendo el prototipo de nuestra aplicación, pero para ello 
+lo vamos a hacer basándonos en datos. para validar   y ver realmente qué funcionalidades y aspectos 
+importantes debería tener nuestra aplicación. Para hacer esto tenemos que saltar a Notebook 
+LM, siendo esta aplicación de aquí que junto   con todas te dejaré el enlace abajo en 
+la descripción. Y ahora desde aquí lo que vamos a poder hacer va a ser empezar nuestra 
+investigación sobre la aplicación que queramos   crear. Para ello se me ocurrió, ¿por qué no?, de 
+crear una aplicación que ayuda a las personas a mantener con constancia todos sus entrenamientos 
+deportivos. Yo no sé a ti, pero a mí me cuesta   bastante y últimamente estoy fallando mucho, por 
+lo que quiero crear una aplicación que cuente con diferentes funcionalidades, que ayude tanto a la 
+persona que quiera empezar a entrenar como incluso   a motivar a la persona que ya haya empezado a 
+hacer sus entrenamientos. Y para hacer esto bien, primero tenemos que empezar con la investigación. 
+Para ello, yo voy a estar utilizando este primer   pron, que por cierto te lo voy a dejar abajo en la 
+descripción junto todo lo demás prom que estaremos utilizando a lo largo de este vídeo. En este 
+primero, lo que yo le voy a pedir va a ser una   investigación con tres principales pilares. Por un 
+lado, que me investigue estudios científicos sobre la adherencia al entrenamiento, cómo se deben de 
+estructurar las rutinas, cómo podemos mantenerlo   con constancia y cómo podríamos seguir avanzando 
+para aquellos que ya estén entrenando. Luego, en segundo lugar, le pido también que analice 
+aquellas aplicaciones que ya tengan éxito   relacionadas con el sector fitness. Pero 
+por último, le pido algo muy importante, que son las necesidades reales de los usuarios que 
+están dejando por los foros y comentarios de otras plataformas discutiendo sobre funcionalidades 
+que a día de hoy no existen pero que nuestra   aplicación podría tener. De aquí ten en cuenta 
+que todo lo que ves subrayado en amarillo son variables que tú puedes modificar por alguna 
+aplicación de cualquier otra cosa. Pero yo,   sin embargo, como lo voy a dejar así, voy a 
+copiar todo, lo voy a pegar en notebook LM. Y ahora donde pone fast research, yo le voy a 
+cambiar a deep research, ya que queremos hacer   una investigación profunda de todo esto. Le doy 
+a enviar y nada, un par de minutos más tarde ya tendré integrado más de 20 fuentes de información 
+e incluso desde aquí en el primer resultado voy a tener toda la investigación profunda que 
+nos ha hecho la inteligencia artificial   basándose en todas esas fuentes de información. 
+Y ahora con este cuaderno, pues sería como si tuviésemos a un equipo de profesionales que sabe 
+realmente mucho sobre este sector, ya sea por el apartado de estudios científicos sobre cómo hacer 
+deporte, investigadores de mercados que conocen   qué aplicaciones funcionan mejor o incluso grupos 
+que han encuestado a personas que realmente exigen funcionalidades que aún no existen. Y si yo cierro 
+aquí podemos ver todo, desde reseñas en Reddit de aplicaciones, otras aplicaciones directamente, 
+artículos científicos y demás información. Así que ahora con todo esto lo que vamos a hacer 
+va a ser empezar a crear nuestro prototipo y para   ello vamos a empezar creando los requerimientos. 
+Para hacer esto, vamos a clicar en reportes y una vez estamos aquí dentro vamos a clicar en crear 
+el nuestro propio y desde aquí le vamos a pedir   que nos estructure toda la información para crear 
+nuestro prototipo. Para ello, sobre el documento que te voy a dejar, yo voy a copiar este pron de 
+aquí, donde básicamente le digo que de todas esas   fuentes me genere las funcionalidades que debe 
+tener mi aplicación llamada, en este caso Fitnavi, para que se posicione como líder y que con ello 
+pues que haga esta tarea en donde básicamente   generador web para que haga todo este prototipo, 
+por lo que copiando esto y pegándole un notebook LM, si le doy a generar, pues unos 5 minutos 
+más tarde ya tendríamos un informe completo   sobre el diseño y funcionalidad de nuestra 
+aplicación que, como puedes ver por aquí, tiene un montón de detalles. Así que con esto 
+estaríamos listos para saltar a Stitch, siendo esta plataforma de aquí que trae muchas novedades, 
+entre ellas que ya está utilizando el modelo de   Gemini 3 Pro y algunas otras cosas más que te 
+estaré mostrando en breve. Desde aquí, ten en cuenta que tú pudieras diseñar directamente tanto 
+una aplicación directamente para móvil, que sea   en vertical, o en mi caso una para web, para que 
+realmente valga tanto para dispositivos ordenador como incluso para móviles. Así que como yo voy a 
+crear una aplicación web, me voy a ir a Notebook   LM para copiar todo el informe que nos ha hecho 
+previamente con los requisitos y pegándolo desde aquí ya tendríamos todo eso añadido. Como puedes 
+ver, realmente no elimina nada porque tenemos una   ventana de contexto de 1 millón de tokens. Así que 
+ya con todos los requisitos voy a clicar en enviar y ya por aquí habiéndose bebido todo Gemini 3, 
+realmente lo empezaría a trabajar. Y efectivamente unos 7 minutos más tarde fíjate que tenemos 
+al primer intento, ya que me puedo encontrar   desde aquí una primera página en donde estaría 
+preguntando al usuario por sus objetivos. Luego va a aparecería también un apartado de entrenamiento 
+con su contador y tipo de ejercicio. También aparecería un apartado en donde tendría todas las 
+analíticas importantes a tener en cuenta de los   avances que está haciendo la persona. Y no solo 
+eso, sino que también ha añadido funcionalidades como un apartado de logro para que realmente pueda 
+mantener su constancia e incluso otra pantalla con toda la comunidad con la que podría interactuar y 
+que entre ellos se desafíen para seguir avanzando una forma más divertida. Y es que con esto, fíjate 
+lo que hemos conseguido con la información de   valor de notebook LM. Se lo hemos pasado Stitch y 
+realmente es como si ya tuviésemos a dos personas encargadas, una por toda la parte de investigación 
+y otra del diseño web que realmente lo ha hecho   genial. Lo mejor de esto es que yo, además, 
+todas estas pantallas que estás viendo por aquí, más allá de verlas en formato imagen de una en 
+una, yo podría ahora seleccionarlas todas, clicar   en generar y ahora en este botón de prototipa le 
+voy a dar un clic y nada, poquito más tarde me ha generado este prototipo de aquí, así que le voy a 
+dar un poco de zoom y si ahora clico en el botón   de interactuar, pues desde aquí me diría que ya 
+esto sería funcional. Así que si yo ahora, por ejemplo, clico en siguiente, pues puedo ver que 
+ya podría haber todo el apartado analítico. En el   apartado entrenar también podría haber diferente 
+información con la que yo voy a poder interactuar, al igual que los logros y en la comunidad que 
+tenemos por aquí. Además de todos los elementos, yo también lo voy a poder ir modificando. 
+Y es que, fíjate, ya no solamente estamos   hablando que hemos creado los diseños en forma 
+autoim imagen, sino que realmente tendríamos un prototipo totalmente funcional para empezar a 
+pasarlo a una aplicación realmente funcional que estaremos viendo en los próximos pasos. Esto que 
+acabamos de ver nos podría ayudar a crear nuestros   propios activos digitales de verdad, pero es 
+importante que una vez los empieces a crear estos tengan visibilidad. Por ello, te quiero presentar 
+este kit de aquí que te ayudará a saber dominar el futuro de las búsquedas con inteligencia 
+artificial. En esta guía tendrás todo lo necesario   para conocer más sobre la visibilidad de los 
+modelos de inteligencia artificial, como generar contenido optimizado para los LLM. Y es que de una 
+forma práctica y sencilla accederás a un checklist con los aspectos claves para salir los resultados 
+de la inteligencia artificial, conociendo así la   estructura correcta, cómo debería ser el contenido 
+y demás. Personalmente, me gustó mucho esta hoja de cálculo que actúa como un centro de control 
+de visibilidad para los LLM, pero con lo que más me quedo son con los 14 pronts, listos para 
+copiar y pegar para ser óptimos en aspectos como la planificación, estrategia o medición. que sepas 
+que vas a poder acceder a todo esto de una forma totalmente gratuita con un enlace que te voy a 
+dejar abajo en la descripción para que puedas   acceder a estos recursos elaborado por Hpot, que 
+además les agradezco por ser los patrocinadores de este vídeo. En ese segundo bloque vamos a ver 
+cómo el prototipo que hemos hecho anteriormente lo vamos a poder convertir en una aplicación 
+totalmente funcional. Para hacer esto posible,   vamos a volver a donde teníamos nuestro prototipo 
+y ahora voy a clicar aquí en parar interacción, ya que realmente vamos a querer exportar todo esto 
+para la inteligencia artificial para que realmente nos haga algo exactamente igual de lo que teníamos 
+aquí diseñado, que realmente tiene un diseño muy   profesional. Así que ahora lo que tenemos que 
+hacer sobre el prototipo sería clicar en more. Y ahora vamos a clicar en exportar. Una vez la 
+hayamos dado, fíjate que nos aparecen diferentes   opciones, pero la que yo te recomiendo, que es 
+la más fácil, sería la de Google AI Studio. Aquí, además, le podrías añadir un prom, pero esto 
+lo vas a poder modificar luego, así que yo   lo voy a dejar tal y como está. Voy a clicar 
+ahora en with Google AI Studio y al hacerlo, automáticamente nos redirigirá a Google AI Studio 
+para empezar a construir nuestra aplicación. Ten   en cuenta que aquí deberías de esperar al menos un 
+minuto porque puede ser que tarde un poco en pasar los diferentes archivos de nuestro prototipo. En 
+este caso estaría en formato HTML, así que como ya   lo tenemos estaría todo listo. No obstante, ten en 
+cuenta que desde aquí podrías añadir otras cosas. Yo, por ejemplo, le puedo decir algún cambio 
+antes de esto, como por ejemplo, que ponga el   menú que estaba arriba en el apartado lateral, ya 
+que realmente vas a poder ver que desde aquí lo vamos a poder también iterar. Y además de esto 
+también le podríamos añadir funcionalidades de   inteligencia artificial. Y es que ahora imagina 
+que yo quisiera añadir una especie de coach virtual de inteligencia artificial que sigan a los 
+usuarios que utilicen esta aplicación. Pues hacer   esto sería tan fácil como buscar desde aquí esa 
+opción, que aquí en este caso yo tendría esta de AI Powered Chatbot. Así que lo voy a seleccionar 
+y ya con esta aplicación, pues realmente voy a   tener un chatbot que va a tener en cuenta todo 
+el contexto de la aplicación para poder ofrecer un valor añadido. Aparte de esto, ten en cuenta 
+que también podrás añadir otras cosas como que   generere imágenes o incluso lo que me parece 
+más interesante, darle habilidades de que pueda analizar imágenes y vídeos para que realmente las 
+personas a través de ese chatbot puedan enviarles fotos de cómo hacen los ejercicios y que la 
+inteligencia artificial les corrija. Además   de eso, ten en cuenta que podrías añadir otras 
+cosas, pero yo lo voy a estar dejando así. Así que teniendo seleccionado el modelo de Gemini 3 
+Pro, voy a clicar en build y nada, después de unos   minutos y algunas interacciones, ya lo tendría por 
+aquí funcional. Ten en cuenta que probablemente la primera entrega que te dé Google Studio sea sin 
+más el HTML que has visto previamente en Stitch, es decir, algo visual pero que no es nada 
+funcional. Así que desde el apartado izquierdo   de aquí tú tendrías que ir iterando para que 
+vaya añadiendo las diferentes funcionalidades hasta que realmente tenga el comportamiento que tú 
+quieras. Otra de las cosas que pueden pasar es que   alguna de las páginas no aparezcan igual. Y para 
+ello, fíjate como yo desde esta interacción le he dicho que el apartado analítico debería apecerse 
+igual al código que le he especificado desde aquí,   ya que realmente lo vamos a poder forzar, porque 
+en el caso que a ti te pasara esto también, ten en cuenta que desde Stitch tú vas a tener también 
+todas las páginas desde aquí. Así que ahora   imagina que realmente toda la parte de analítico 
+no lo ha hecho bien. Y es que desde esa pantalla, si tú clicas en el botón derecho, vas a tener una 
+opción de copiar cómo. Así que yo te recomiendo que copies tanto el código, que sería el HTML, 
+o incluso la imagen, pudiéndole pegar las dos   cosas para forzar que realmente sea exactamente 
+igual que la pantalla en el caso de que con las iteraciones haya modificado algún aspecto visual. 
+Bien, yo es así como lo he hecho, así que para   poderlo bien voy a clicar aquí en full screen 
+y fíjate el comportamiento que tendría ahora, ya que si yo ahora clico en empezar ahora, tendría 
+por aquí diferentes objetivos que yo, por ejemplo,   si selecciono fuerza y ahora relleno algunos datos 
+más, como por ejemplo, hombre de 40 años que pesa 75 kg y mide 175 cm. Al clicar en siguiente 
+me pregunta por cuál es la frecuencia del entrenamiento. Voy a seleccionar cuatro. Y ahora 
+me pregunta por un nombre de usuario, así que voy   a seleccionar por aquí Aleji. Y voy a clicar 
+ahora en finalizar configuración. Desde aquí ahora me estaría diciendo que por inteligencia 
+artificial estaría creando un plan. Y desde aquí,   fíjate como tenemos una pantalla exactamente 
+igual que como teníamos en el prototipo de Stitch, solo que aquí lo tendríamos totalmente funcional. 
+Aquí nos aparecen datos como el volumen total,   el peso que tenemos actualmente, cuál es el 
+tiempo de actividad que hemos tenido a lo largo de la semana e incluso la frecuencia. Y fíjate 
+como el apartado aquí arriba tendríamos semana,   mes y años. Si yo clico, por ejemplo, en mes, pues 
+ya automáticamente se me actualizarían todos los datos acorde al histórico que podríamos 
+tener con esta aplicación. También nos   aparece una progresión de carga, ejercicios que 
+podríamos realizar, que luego vemos esa parte, la consistencia a lo largo del mes y unas principales 
+métricas en este apartado de abajo de los pesos   que estamos moviendo. Si yo ahora me voy, por 
+ejemplo, a la parte de rutina, pues me puedo encontrar con un montón de rutinas por aquí. Ten 
+en cuenta que a mí me apareció en torno a cuatro,   perando, le dije que me hiciera en torno a 20. Y 
+si yo entrara, por ejemplo, en cualquier rutina, como por ejemplo esta de aquí de empujar al 
+iniciar, pues ya me empezaría por aquí a tener un   contador desde el cual yo voy a poder ir haciendo 
+cada uno de los ejercicios que estás viendo por aquí. Y además cada uno de estos ejercicios 
+yo puedo modificar, por ejemplo, el peso.   Imagina que yo he movido 85 kg, pues pongo 85, 
+pongo desde aquí las repeticiones que he hecho, le doy al check y de esa forma pues podríamos ir 
+guardando todo el progreso histórico de ejercicio   que hayamos hecho. Aparte del tema de las rutinas, 
+fíjate que también literé de que aquí arriba a la derecha me dejase añadir rutinas personalizadas. 
+Y es que si yo, por ejemplo, aquí pongo cuerpo   completo y le añadiese una descripción y desde 
+aquí le pusiese a los diferentes ejercicios, tanto en peso como en repeticiones, al clicar 
+en añadir ejercicio y luego en crear rutina,   pues ya por aquí abajo nos va a aparecer la rutina 
+nuestra que hemos hecho personalizada para que realmente también podamos hacer cosas que no nos 
+haya hecho la inteligencia artificial. Más allá   de esto, también tenemos un apartado de logro, 
+que, como puedes ver, sería un sistema gamificado para seguir los entrenamientos, el apartado 
+de comunidad que también teníamos en nuestro   diseño de la aplicación, que aquí de hecho, si 
+yo pongo, por ejemplo, hola y le doy a publicar, pues como puedes ver también aparecería por aquí. 
+Junto a esto también tendríamos un calendario con   los principales puntos importantes a tener en 
+cuenta para nuestra vida saludable y por último un apartado de configuración que por probar le 
+voy a cambiar el nombre a simplemente academia artificial para que cuando yo guarde los cambios 
+pues pueda ver que realmente estaría teniendo en   cuenta todos los cambios de la configuración. Y 
+es sé que con esto realmente estaríamos añadiendo a nuestro equipo a un desarrollador que estaría 
+disponible todo el tiempo para nosotros para hacer real todas estas ideas y prototipos que hemos 
+trabajado en los pasos anteriores. Y ahora con   esto ten en cuenta que lo vamos a poder incluso 
+escalar más, ya que si volvemos a la aplicación ten en cuenta con que no te lo he dicho antes, 
+también tenemos por aquí inteligencia artificial,   en este caso llamado como coach Navi, desde el 
+cual vamos a poder interactuar. Yo si le digo hola se va a conectar a la API de Gemini para empezar 
+a darnos rutinas o ayuda con lo que necesitemos. E incluso, fíjate que podemos añadirle aquí 
+imágenes y vídeos para que nos corrija el   cómo hacemos los ejercicios o cualquier ayuda que 
+necesitemos. Pero no solamente podemos añadirle función a la inteligencia artificial desde aquí, 
+sino que realmente vamos a poder combinarlo con   otra plataforma para poder escalar de forma 
+seria esta aplicación. Para ello tenemos que saltar a Google Antigravity, siendo esta 
+herramienta de aquí gratuita por parte de   Google que te lo vas a encontrar disponible 
+tanto en Mac, Windows o Linux. Desde aquí ten en cuenta que vamos a estar frente a una 
+herramienta profesional para desarrolladores,   pero realmente desde ahí vamos a poder hacer 
+uso de agentes de inteligencia artificial que facilitan todo tanto que una persona como yo, que 
+no soy desarrollador, pueda hacer lo siguiente. Y es que si nosotros saltamos a Google Antigravity, 
+ten en cuenta que vamos a poder abrir el proyecto   que hemos hecho en Google AI Studio para poder 
+añadirle funcionalidades avanzadas. De aquí tiene en cuenta con que tengas que integrar una 
+aplicación, más allá de desarrollar aplicaciones,   es capaz de hacer otras muchas cosas más, cosa 
+de la que ya estuve hablando de todo detalle en este vídeo de aquí. Así que cuando ya lo tengas 
+instalado y hayas iniciado sesión con tu cuenta,   todo lo que tenemos que hacer sería traernos 
+el proyecto de Google AI Studio. Para ello, volviendo a Google AI Studio, voy a minimizar 
+este apartado de aquí y ten en cuenta que desde   aquí vas a tener diferentes opciones. Una de 
+ellas sería, por ejemplo, subirlo a Jithub, cosa que yo he hecho previamente, ya que realmente 
+teniéndolo en esa nube, tú vas a poder luego   conectar tanto antigravity como otras aplicaciones 
+que estaremos utilizando luego. Este sería el método más sencillo, aunque en mi caso no sé por 
+qué a la hora de iterar me salía algún error más.   Así que otra de las opciones que también podrías 
+hacer sería clicar directamente en este apartado de descargar aplicación y al darle un clic pues ya 
+automáticamente lo vas a tener en tu dispositivo. Y si le das un doble clic para descomprimir este 
+archivo ZIP, pues ya te encontrarías una carpeta como esta de aquí en donde tendrías todo el 
+proyecto listo para seguir trabajándolo en   Antigravity. Así que desde Google Antigravity lo 
+que podrías hacer sería clicar en Open Folder. seleccionas esa carpeta del proyecto y al clicar 
+en abrir ya tendrías desde aquí el proyecto abierto con todos los archivos tal y como estás 
+viendo por aquí. Y ahora tendrías que tener en   cuenta dos puntos clave. El primero es que sobre 
+este archivo de punto ENV tengas por aquí todas las variables y appis que estés utilizando. 
+Yo aquí, por ejemplo, como estoy utilizando   Gemini por el chatbot que hemos visto antes, se lo 
+acabaría de poner aquí como Gemini/Api/ y la API que la acabaría de crear directamente en Google 
+A Studio clicando en este apartado de get Appy,   que aquí de hecho clicando en crear nueva clave 
+API y darle un nombre ya podrías copiarla y pegarla en ese apartado y una vez tengamos eso, 
+pues ya podemos seguir iterando. Para ello vamos a   subir el nivel añadiéndole todo un back por detrás 
+que se cargue tanto de guardar el historial, por ejemplo, de entrenamientos personalizados que 
+haga la persona, como incluso un sistema de inicio   y sesión y registro para que puedan utilizarlas 
+solamente personas registradas. Y hacer esto ahora desde Google Antigravity es más fácil 
+que nunca, ya que si volvemos a la aplicación,   fíjate que más allá de tener por aquí un chatbot 
+como en Google AI Studio desde el cual vamos a poder seguir iterando, nosotros también tenemos, 
+si clicamos en este apartado de los tres puntitos,   una opción llamada MCP Server. Si le damos un 
+clic, fíjate que tenemos un montón de MCPs. Ten en cuenta que esto básicamente lo que 
+ayuda es a interconectar herramientas con   modelos de inteligencia artificial para que 
+se comuniquen entre sí. Así que yo ahora desde Google Antigravity podría elegir mcps por ejemplo 
+para añadir pasadas de pago Stripe. Podría añadir también a golpe de un click que añada otras 
+paselas de pago como por ejemplo PayPal que   lo conecte por ejemplo a Perplexity o incluso 
+que se conecte con aplicaciones como Supabase que son encargadas de poder hacer todo el back 
+por detrás de nuestra aplicación. Así que yo   voy a clicar en esta y una vez la abramos te 
+va a aparecer por aquí un botón de instalar. Yo en este caso ya la tengo habilitada porque la 
+he instalado previamente, pero ten en cuenta que   tú tendrías simplemente que instalarlo desde aquí 
+y al copiar tu clave, que también te la va a dar la plataforma, una vez te crees una cuenta, pues 
+ya lo tendrás sincronizado directamente desde tu   proyecto de Google Antigravity. Ten en cuenta 
+también que desde la plataforma de Supabase te crees un proyecto gratuitamente puedes crear 
+hasta dos. Y para hacer esto, simplemente tenías   que clicar aquí arriba en el nombre del proyecto 
+en el que estés. Y si le das a nuevo proyecto, desde aquí simplemente tenías que poner el nombre 
+de tu proyecto, una contraseña, seleccionas una   región que esté lo más cercana posible donde tú 
+estés viviendo, en mi caso sería Europa, y le darías a crear nuevo proyecto. En mi caso ya tengo 
+uno creado llamado Fitnavi. Así que teniendo ya este nombre, todo lo que tendría que hacer sería 
+volverme a Google Antigravity. Clico en atrás para volver al apartado de la gente y desde aquí, 
+como yo ya tengo el MCP de Supabis integrado, sería tan fácil como hacer lo siguiente. Para ello 
+te recomiendo que utilices el modo fast, ya que es   una tarea concreta y tú tendrías que poner aquí el 
+símbolo de @ seleccionar mcpserver, seleccionas el que has instalado, en este caso Supase. Y una vez 
+lo tengas aquí integrado, ya Google Antigravity   no solamente va a ser capaz de hacer cambios 
+directamente aplicación, sino también sobre la herramienta de Supabase. Así que ahora simplemente 
+yo le voy a decir que me integre suabis para   añadir un login y un registro a nuestra aplicación 
+y que también me añada una pequeña base de datos para que se puedan guardar las rutinas creadas 
+de formas personalizadas por el usuario. Aquí   además le especifico que el nombre del proyecto 
+de Supabase es Fitnavi, ya casi lo nombré en Supabase y teniendo eso, si clico en enviar, pues 
+ya poquito más tarde me estaré diciendo por aquí   que ha integrado todo, diciéndome que por un lado 
+ha creado el proyecto en Supase, poniendo también en este archivo.nv todas las claves para que esto 
+esté conectado. En segundo lugar, me ha añadido   esa funcionalidad de autentificación y en tercer 
+lugar también añadido una base de datos para poder guardar todas las rutinas. Si yo ahora intento 
+acceder a la aplicación, fíjate que me aparece   porque tendría un inicio de sesión perfectamente 
+integrado y voy a poner cualquier correo random y una contraseña a ver si me deja entrar, como por 
+ejemplo este email que no lo he registrado. Voy   a clicar en iniciar sesión y me dice que no, que 
+las credenciales son incorrectas. Así que ahora voy a clicar en regístrate. Voy a seleccionar 
+ese mismo email y esa misma contraseña. Voy a   clicar en registrarme. Desde aquí parece que me 
+ha enviado algo. Y efectivamente acabo de recibir un email por parte de Subabase para confirmar mi 
+email. Así que le voy a dar a confirmar email. Y   ahora si clico en empezar ahora, pues ya sí que 
+me deja iniciar sesión. Y de hecho, si vuelvo a la página de atrás y clico iniciar sesión con 
+estas mismas credenciales, al darle un clic,   pues ya me aparecería que efectivamente la puedo 
+utilizar. Y aquí tendríamos este registro creado. De hecho, para comprobar si esto es real, me 
+he venido a Supabase. Voy a clicar en la parte   de autentificación y fíjate como tengo ahora un 
+registro llamado Alejandro unaconsulta@gmail.com, que es el que acabo de crear, donde me pondría 
+cuándo se ha creado la cuenta y cómo se ha   verificado, que en este caso sería por email, 
+así que es correcto. Y además, más allá del apartado de autentificación, pues también tendría 
+otra base de datos que si yo le doy un clic,   pues voy a poder ver que me ha añadido una tabla 
+de rutinas para que los usuarios cuando le den a guardar me aparezca por aquí todo guardado en 
+una nube para que nunca se pierda y que realmente tengamos algo por detrás funcional. Y es que 
+con esto ya no solamente estamos hablando de   crear una aplicación atractiva, sino que realmente 
+vamos a poder añadirle funcionalidades por detrás, tanto autentificación, pasar a las de 
+pago, bases de datos o lo que necesitemos,   integrándolo de forma fácilmente a través de 
+los MCP. No solo esto, sino que también podemos seguir iterando. Y es que si yo me vuelo sobre el 
+proyecto de Google Antigravity, yo le puedo seguir   pidiendo desde aquí cambios, como por ejemplo, 
+que me cree una página de venta que me aparezca antes de iniciar la aplicación. Esta debe tener 
+la misma imagen de marca, lleno de animaciones,   CT y que luzca atractivo y profesional al igual 
+que la aplicación. Aquí yo sí que te recomendaría que cambies el modo fast al modo planning para que 
+realmente haga una planificación completa sobre cómo debería integrar todo esto, ya que realmente 
+sería como otra especie de proyecto distinto. Así   que le voy a dar a enviar y 10 minutos más tarde 
+aproximadamente me diría que ha seguido una lista de tareas, que si le doy un clic voy a poder ver 
+que ha seguido una planificación como la que veis   por aquí. Y por último, pues me dice que tras 
+varios comandos y varios aspectos desarrollados, pues ya lo tendríamos creado. Y para ver si 
+esto es verdad, acabaría de abrir nuevamente   la aplicación. Y fíjate qué página tenemos 
+que pone entrena con inteligencia artificial, todo perfectamente integrado. Desde aquí incluso 
+le podríamos añadir una imagen de preview,   que esto se lo podríamos pasar, 
+de una captura de la aplicación. También nos podría diferentes tipos de información 
+y en definitiva pues tendríamos una página web lista de venta que realmente sigue en detalle 
+toda la imagen de marca en nuestra aplicación.   Ten en cuenta que además si yo clico en cualquier 
+botón como por ejemplo el de empieza gratis, pues automáticamente nos va a saltar a la aplicación y 
+en el caso de que estemos logue pues ya podríamos   continuar con toda la configuración para que 
+realmente si le damos a finalizar configuración, pues la inteligencia artificial nos configure 
+todo para que podamos acceder y utilizarla. Y   es que con esto ya no solamente hablamos de 
+iterar a la aplicación, sino que realmente podemos construir un montón de activos alrededor 
+para hacer de nuestra idea algo más profesional. Vamos a pasar ahora al último bloque. Nos 
+estaremos comentando aspectos importantes como   es la publicación en un servidor propio para que 
+cualquier persona pueda utilizarla e incluso cómo este proyecto lo podríamos difundir. Para ello, 
+antes de nada, ten en cuenta que yo he abierto la   aplicación desde Google anti gratis simplemente 
+preguntándole desde aquí que me la abra por mí, que eso lo puedes hacer directamente. Hu otra 
+cosa que podrías hacer sería clicar en este   apartado de arriba para desplegar el terminal. 
+Y si le pones comandos como npm install y npm RAMD dep también lo podrías ejecutar, cosa que si 
+no quieres poner comandos en el terminal también   se lo puedes pedir a la gente y te la abrirá 
+por ti. Bien dicho esto, yo ya tengo guardada mi aplicación en mi escritorio, ya que todos los 
+cambios que se han estado ejecutando lo tendría en   mi ordenador. No obstante, nuevamente tú también 
+podrías conectarlo a GitHub, que de hecho si ya lo tuvieses conectado, si clicas aquí vas a poder 
+ir subiendo todas las actualizaciones que vayas   haciendo desde aquí para tenerlo directamente en 
+la nube. Aunque en mi caso, como he trabajado en local, lo tendría todo sobre esta carpeta 
+de descarga. Así que para poder publicarlo,   lo primero que tendrías que hacer sería clicar en 
+el botón derecho, ahora seleccionar comprimir y el nombre de la aplicación que tú hayas creado y 
+desde aquí ya empezaría a comprimirse. Una vez ya   tú ya tengas este zip, pues desde un servicio 
+de hosting, como por ejemplo el de Hostinger, podudrías clicar en añadir este sitio web. Clicas 
+ahora la opción de app web de NOD JS. Y ahora desde aquí nuevamente vas a tener dos opciones. 
+Por un lado, continuar con GitHub. Esto sería en   el caso que hayas trabajado con la nube GitHub. 
+Podrías seleccionar directamente el proyecto desde aquí o en el caso que hayas trabajado en 
+local, también podrías clicar en continuar para   subir los archivos. Aquí nos empezarían a crear un 
+servidor y una vez creado, todo lo que tenemos que hacer sería clicar en subir. Seleccionamos 
+el zip que hemos comprimido previamente,   lo abrimos y ya se empezaría por aquí a subir. Una 
+vez subido, le damos a continuar y ya por aquí nos va a reconocer cuál es el preajuste del marco. En 
+mi caso es vite, que eso está correcto, así que lo   dejo exactamente igual. Todo lo que tendrías que 
+cambiar realmente sería clicar en variables de entorno. Así que le vamos a dar en añadir y desde 
+aquí tendrías que importar todas las variables del   archivo punv. Recuerda que esto lo tienes clicando 
+en esta opción de explorador de archivos clicando en punto ENV y tendrías que copiar todas estas 
+variables. En mi caso tendría tanto la de Yemini porque estoy utilizando la inteligencia artificial 
+de Google como las dos que se me han añadido de   Supabase, tanto para la autentificación como la 
+base de datos. Y en definitiva, ten en cuenta tú podrías tener también más en el caso que hayas 
+interconectado otras tecnologías. Así que aquí   todo lo que tenías que hacer sería todo lo que 
+esté en azul lo copias una por una y donde pone clave pondrías ese nombre azul y luego en valor 
+tendrías que poner todo el código que hay justo después del igual. El igual lo tendrías que dejar 
+sin copiar. Así que desde aquí pegaría ese valor y así sucesivamente le doy añadir más para pegar 
+las tres claves. Una vez añadidas, si clicamos en implementar, ya nos aparecería un panel como 
+este de aquí con un montón de información. Pero   lo más importante es que si clicamos en esta URL 
+de aquí, pues sería la URL por la cual cualquier persona ahora va a poder acceder porque lo tenemos 
+público en un servidor. Con esto ya tendríamos   nuestra aplicación pública, pero ten en cuenta 
+que también tenés otros métodos. Por ejemplo, podrías publicarlo en Farbase directamente 
+desde Google AI Studio o con un MCP, que también lo tienes en Google Antigravity. 
+Simplemente lo instalas y lo dices que lo publique   en su nube. Y otra opción también sería utilizar 
+Google Cloud, es decir, la nube que tiene Google. todos estos métodos que te estoy comentando 
+ya entraríamos en temas más profesionales,   así que aquí ten en cuenta que en cualquiera 
+de ellas vas a tener un coste siempre y cuando lo quieras publicar de una forma profesional 
+para que nuestra aplicación pueda soportar   mucho tráfico. No obstante, si no lo quieres 
+profesionalizar porque no lo vas a monetizar ni lo va a utilizar un equipo de personas, lo 
+podrías mantener tanto en Google A Studio o en   tu ordenador y eso será totalmente gratuito 
+junto a lo próximo que te estaré comentando, en donde estaremos viendo cómo podemos hacer la 
+difusión de nuestra aplicación. Para hacer esto,   ten en cuenta que tenemos varios caminos. Por 
+un lado, podemos incluso crear una presentación para presentarlo, por ejemplo, a inversores o una 
+persona que podría ser nuestro socio potencial.   Hacer esto sería tan fácil como venirnos a Gemini 
+desde aquí ponerle un prompt como la de que me quiera para presentar nuestra aplicación llamada, 
+aquí pondríamos su nombre en mi caso Fitna Navi, a inversores reales. Desde aquí en Tools clic 
+el apartado canvas para que te pueda crear   la aplicación y en el apartado de adjuntar tú 
+podrías venir por ejemplo a Stitch, seleccionar el prototipo, clicar en los tres puntos y ahora 
+en descargar. Una vez descargado, nos podemos volver a Gemini, arrastrar ese prototipo y ya 
+teniendo todo el contexto en nuestra aplicación, si clicamos en enviar, pues en apenas unos 5 
+minutos más tarde ya tendríamos una aplicación   totalmente personalizada acorde a nuestra imagen 
+de marca, que si le damos a siguiente vamos a poder ver un montón de información de valor. Y de 
+hecho, como puedes ver, tenemos partes de nuestra   propia aplicación que has traído y en definitiva 
+un diseño que encaja perfectamente a la aplicación que hemos hecho previamente. Otra de las cosas que 
+podemos hacer es crear nuestros propios archivos   para que nos guíe sobre aspectos como la difusión 
+en el marketing, las ventas y otros aspectos más. Para ello, si volvemos a Gemini, manteniendo el 
+prototipo que hemos hecho en Stitch, nosotros   desde el apartado pront podríamos pegar este prom 
+que también te voy a dejar por el documento de abajo, en donde básicamente le digo que actúe 
+como un equipo completo senior donde quiero que   me ayuden aspectos como el marketing, las ventas 
+o incluso el negocio. Así que voy a añadir todo este prom que la verdad que es bastante extenso 
+y teniendo ya todo copiado, si lo pego aquí   en Yemine, que realmente va a tener en cuenta 
+todo el prom por completo, activo nuevamente la funcionalia canvas y le doy a enviar, pues un 
+poquito más tarde nos podríamos encontrar con   esta aplicación de aquí que nos estaría diciendo 
+los puntos más importantes a tener en cuenta, qué aspectos deberíamos hacer de cara al lanzamiento, 
+así como puntos importantes de cara al marketing,   a todo el apartado financiero con diferentes 
+calculadoras que deberíamos tener en cuenta e incluso plan de ejecución de negocio, que nosotros 
+podríamos tanto utilizar desde aquí como incluso   añadir la funcionalidad de Gemini para que cuando 
+le demos un clic, pues toda la aplicación vaya generando contenido por inteligencia artificial 
+conforme nosotros interactuemos con esta. Además,   esto no acaba aquí, ya que Google ha lanzado 
+nuevas herramientas para la difusión de proyectos profesionales. Y es que si nosotros saltamos a 
+herramientas como Pomegi, que también tendrás   abajo en la descripción, nos permiten crear un 
+montón de contenidos para proyectos. Todo lo que tendremos que hacer sería clicar en let's get 
+started. Y desde aquí, si clicamos en let's go,   ten en cuenta que todo lo que tenemos que hacer 
+sería poner la URL de donde tengamos publicada, ya sea la página web o la aplicación. En mi caso, 
+he utilizado este dominio temporal, así que lo voy a copiar, aunque ten cuenta que también podrías 
+poner algún otro dominio de pago, pero como yo la   tengo ahí, la pego por aquí, le doy a continuar y 
+ya esta inteligencia artificial va a navegar por mi sitio web y aplicación para poder extraer toda 
+la imagen de marca. Apenas unos 5 segundos más tarde, porque realmente no tengo tampoco mucha 
+información, me había extraído cuál sería la   fuente, colores principales y otros aspectos como 
+lo que representa valores de marca, así como un desglos la imagen de marca. Y si le doy a que esto 
+se ve bien, pues ya se me estaría creando por aquí   diferentes contenidos que podríamos utilizar tanto 
+en las redes sociales como en anuncios de pago. Aquí, de hecho, si no nos gusta ser lo que nos ha 
+hecho ya, podríamos crear desde aquí otras cosas,   como, por ejemplo, contenidos para redes sociales 
+en español, pero yo manteniendo lo que ya me ha hecho, fíjate que tendríamos diferentes diseños 
+como este de aquí que nuevamente vamos a poder   editar por completo y ahora con una reciente 
+actualización incluso lo podríamos animar al formato vídeo. Para ello, sobre cualquiera de 
+estos diseños, yo podría clicar en animar y   también podría animarlo sin imágenes, simplemente 
+clicándolo aquí. Poquito más tarde ya tendría creado esos vídeos y si, por ejemplo, le doy al 
+primero, pues puedo ver que me habría animado   ese vídeo con las letras y el CTA que le he puesto 
+previamente. Y luego, por otro lado, tendría este otro vídeo aquí sin ningún tipo de letra, listo 
+para que nosotros podamos editarlo y añadirle diferentes cosas para difundir la aplicación que 
+hayamos hecho. Y es que con esto podemos hacer de   todo para un proyecto real. El intentarlo nos 
+da dos caminos, el éxito o un aprendizaje. Ok.

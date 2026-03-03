@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PlanetaLibro Landing Page</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3e94ea",
+                        "primary-content": "#ffffff",
+                        "primary-dark": "#2c7abf",
+                        "primary-light": "#e0effb",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111921",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a242f",
+                        "text-main": "#111418",
+                        "text-sub": "#637588",
+                        "border-light": "#f0f2f4",
+                    },
+                    fontFamily: {
+                        display: ["Lexend", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        lg: "1rem",
+                        xl: "1.5rem",
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', "Noto Sans", sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light text-text-main antialiased selection:bg-primary/20 selection:text-primary">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Mobile Header / Top Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-border-light bg-surface-light px-4 py-3 shadow-sm lg:px-10">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary">
+<svg class="w-full h-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-text-main text-lg font-bold leading-tight tracking-[-0.015em] hidden sm:block">PlanetaLibro</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4 lg:gap-8">
+<div class="hidden items-center gap-6 lg:flex">
+<a class="text-text-main hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Biblioteca</a>
+<a class="text-text-main hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Audiolibros</a>
+<a class="text-text-main hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Precios</a>
+<a class="text-text-main hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Comunidad</a>
+</div>
+<div class="flex gap-2">
+<button class="flex h-10 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-primary px-4 text-sm font-bold leading-normal text-white transition-all hover:bg-primary-dark hover:shadow-md">
+<span class="truncate">Empezar</span>
+</button>
+<button class="hidden h-10 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-surface-light border border-border-light px-4 text-sm font-bold leading-normal text-text-main transition-all hover:bg-gray-50 sm:flex">
+<span class="truncate">Ya tengo cuenta</span>
+</button>
+<button class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-light border border-border-light text-text-main lg:hidden">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 justify-center py-5 px-4 lg:px-40">
+<div class="layout-content-container flex w-full max-w-[1200px] flex-col gap-6 lg:flex-row">
+<!-- Sidebar Navigation (Desktop) -->
+<aside class="hidden w-64 shrink-0 flex-col gap-4 lg:flex">
+<div class="flex flex-col rounded-xl bg-surface-light p-4 shadow-sm border border-border-light">
+<div class="mb-4 flex flex-col">
+<h1 class="text-text-main text-base font-bold leading-normal">PlanetaLibro</h1>
+<p class="text-text-sub text-sm font-normal leading-normal">Tu espacio de lectura</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 rounded-lg bg-primary-light px-3 py-2 text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<p class="text-sm font-medium leading-normal">Inicio</p>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-main hover:bg-gray-50 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] text-text-sub group-hover:text-text-main">book</span>
+<p class="text-sm font-medium leading-normal">Mi Lectura</p>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-main hover:bg-gray-50 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] text-text-sub group-hover:text-text-main">explore</span>
+<p class="text-sm font-medium leading-normal">Descubrir</p>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-main hover:bg-gray-50 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] text-text-sub group-hover:text-text-main">settings</span>
+<p class="text-sm font-medium leading-normal">Ajustes</p>
+</a>
+</nav>
+</div>
+<!-- Mini Promo Card in Sidebar -->
+<div class="rounded-xl bg-gradient-to-br from-primary to-primary-dark p-5 text-white shadow-md">
+<h3 class="mb-2 text-lg font-bold">Premium</h3>
+<p class="mb-4 text-sm opacity-90">Desbloquea audiolibros ilimitados y estadísticas avanzadas.</p>
+<button class="w-full rounded-lg bg-white py-2 text-sm font-bold text-primary hover:bg-gray-50">Ver planes</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex flex-1 flex-col gap-6">
+<!-- Hero Section -->
+<section class="@container rounded-2xl bg-surface-light p-6 shadow-sm border border-border-light lg:p-8">
+<div class="flex flex-col-reverse gap-8 @[864px]:flex-row @[864px]:items-center">
+<div class="flex flex-1 flex-col gap-6 text-left">
+<div class="flex flex-col gap-3">
+<div class="inline-flex w-fit items-center rounded-full bg-primary-light px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">
+                                            Nuevo
+                                        </div>
+<h1 class="text-text-main text-4xl font-black leading-[1.1] tracking-[-0.033em] @[480px]:text-5xl lg:text-6xl">
+                                            Leé y escuchá más, <span class="text-primary">sin presión.</span>
+</h1>
+<h2 class="text-text-sub text-lg font-normal leading-relaxed max-w-md">
+                                            Transformá la lectura en un hábito sostenible. Libros y audiolibros en un solo lugar.
+                                        </h2>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-xl bg-primary px-6 text-base font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lg hover:-translate-y-0.5 shadow-primary/30 shadow-md">
+<span class="truncate">Empezar gratis</span>
+</button>
+<button class="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-xl bg-background-light px-6 text-base font-bold text-text-main transition-all hover:bg-gray-200">
+<span class="truncate">Saber más</span>
+</button>
+</div>
+<div class="flex items-center gap-2 text-sm text-text-sub pt-2">
+<div class="flex -space-x-2">
+<div class="h-8 w-8 rounded-full border-2 border-white bg-gray-200 bg-cover bg-center" data-alt="User avatar 1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAYRCkalZb-irgyoijRXybp9PkITDQxL7N57TX6SCZ3LMylSaZwcaUn2Oeu28Ume5Y_wb1_2w0ncEIFCMr327MR80oiEJecU_VGljleEhyGJRtboxb_luMq1Fwb4gxoM3DnzUzstu845RltBbYnHGkTXheuNnEdUeNVOynKPb5gOwL5PwjHCBMjDzsor2D-3pkgeST4vJcLWu782YmwVrkzeQHLbKHxMN1Cy5hfpmbDqD9QoQ7QdPhvY3UurFZtIUA3cCK_a9MP-I5d")'></div>
+<div class="h-8 w-8 rounded-full border-2 border-white bg-gray-200 bg-cover bg-center" data-alt="User avatar 2" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRyShzsrJBlG3uL5qsEjlOBDmtSd9M64x1slnSrTpQfSDbpKM1lJAAThZPic1_SPseqZwtxat0UQXppviNPmsZgl984rLMewFZCjxRiqf7cVXsRiNx2RgcBxaJ_4KpWmN4T0FEZbeQi3m8xQrxcSF2322MkPmt1jp-gioAH8TzVvUq2GqaQ9QbVJBV_AI7duqa05pldRoYLT3DJNBr6C-MyZ5G-jB3b5IusI_i8axuW3iF6tz43apkBNKdcb0hRkdzJ23vtH78Z3CS")'></div>
+<div class="h-8 w-8 rounded-full border-2 border-white bg-gray-200 bg-cover bg-center" data-alt="User avatar 3" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBkn737A7QkceMH2DSRL-7CPz-e-pkJCg66zDWQ5v1B6bXmDs5upwPokYVcFhycyLOrm3KYXKTiy3B1MeyPUVEE-mtqHNb2q2t0ZCdOY92KaSCffPPDRnn1qc6fgiTMQlPIcaecGY8IfbdKDK9iesPLmWOFh03mgctTlEERg55nGWHvIHDYE8CIadYXvtkNj-kdDalTSwwoQwzt8XC-ABRF-nUQR0BZI5ShiOcjeISgAXPdkHN0KBm5FI69Yhdo-BnPrHfeZncpV4hE")'></div>
+</div>
+<p>+10k lectores activos hoy</p>
+</div>
+</div>
+<div class="w-full flex-1 @[864px]:max-w-[50%]">
+<div class="aspect-[4/3] w-full rounded-2xl bg-cover bg-center shadow-lg" data-alt="Open book with glasses on a wooden table, sunlight streaming in" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWHnObdms-Ewvh76osLay47zK-GBz_LFsSsrHsHGzNCXw7cLG2V-aj0yICdgJVfjGnyVhnPZ1NOlWv2gUKbZEPKVEL7aLM439jJWew-zSPNKA2MZ89_N7242b-rPglXBqBV9B17KR2hDzRkFySBWKXYH0NO53OSAQftO495USegSP1WJKfovtvBHcs7PtONEXdlak-tLknvR0NKFPp7Lao-JQAv_4fK1QiNI_XaJs-sjcMfE8JFPP3iG2xTKNtLJKPzs1RroY1yjpw")'></div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="flex flex-col gap-6 rounded-2xl bg-surface-light p-6 shadow-sm border border-border-light lg:p-8">
+<div class="flex flex-col gap-2 text-center md:text-left">
+<h2 class="text-2xl font-bold text-text-main md:text-3xl">Por qué PlanetaLibro</h2>
+<p class="text-text-sub text-base max-w-2xl">Diseñado para lectores modernos que buscan equilibrio y consistencia.</p>
+</div>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+<!-- Card 1 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-light bg-background-light/50 p-5 transition-all hover:bg-white hover:shadow-md">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-light text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]">bar_chart</span>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-lg font-bold text-text-main">Progreso visible</h3>
+<p class="text-sm text-text-sub leading-relaxed">Visualiza tus hábitos de lectura con gráficos claros, sin la presión de metas imposibles.</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-light bg-background-light/50 p-5 transition-all hover:bg-white hover:shadow-md">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-600 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]">headphones</span>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-lg font-bold text-text-main">Audiolibros incluidos</h3>
+<p class="text-sm text-text-sub leading-relaxed">Cambia entre texto y audio con un solo clic sin perder tu lugar en la historia.</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group flex flex-col gap-4 rounded-xl border border-border-light bg-background-light/50 p-5 transition-all hover:bg-white hover:shadow-md">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]">psychology</span>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-lg font-bold text-text-main">Seguimiento inteligente</h3>
+<p class="text-sm text-text-sub leading-relaxed">Estadísticas profundas que te ayudan a entender tus mejores momentos para leer.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Banner -->
+<section class="relative overflow-hidden rounded-2xl bg-surface-dark p-8 text-white shadow-lg lg:p-12">
+<!-- Abstract Background Pattern -->
+<div class="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-primary opacity-20 blur-3xl"></div>
+<div class="absolute bottom-0 left-0 -ml-16 -mb-16 h-64 w-64 rounded-full bg-purple-500 opacity-20 blur-3xl"></div>
+<div class="relative z-10 flex flex-col items-center gap-6 text-center">
+<h2 class="max-w-xl text-3xl font-black tracking-tight sm:text-4xl">Empieza tu viaje de lectura hoy mismo</h2>
+<p class="max-w-lg text-gray-300 text-lg">Únete a una comunidad de lectores que valoran la calidad sobre la cantidad.</p>
+<button class="mt-2 flex h-14 min-w-[200px] cursor-pointer items-center justify-center rounded-full bg-primary px-8 text-lg font-bold text-white transition-all hover:bg-white hover:text-primary hover:shadow-xl">
+                                    Crear cuenta gratis
+                                </button>
+<p class="text-xs text-gray-500">Sin tarjeta de crédito requerida • Cancela cuando quieras</p>
+</div>
+</section>
+</main>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-auto border-t border-border-light bg-surface-light px-4 py-10 text-center sm:px-10">
+<div class="layout-content-container mx-auto flex max-w-[1200px] flex-col gap-8">
+<div class="flex flex-col items-center justify-between gap-6 md:flex-row">
+<div class="flex items-center gap-2">
+<div class="size-6 text-primary">
+<svg class="w-full h-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<span class="font-bold text-text-main">PlanetaLibro</span>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-8">
+<a class="text-text-sub hover:text-primary transition-colors text-sm font-medium" href="#">Términos</a>
+<a class="text-text-sub hover:text-primary transition-colors text-sm font-medium" href="#">Privacidad</a>
+<a class="text-text-sub hover:text-primary transition-colors text-sm font-medium" href="#">Contacto</a>
+<a class="text-text-sub hover:text-primary transition-colors text-sm font-medium" href="#">Blog</a>
+</div>
+<div class="flex gap-4">
+<a class="text-text-sub hover:text-primary transition-colors" href="#">
+<div class="h-6 w-6"> <!-- Instagram Icon placeholder -->
+<svg fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path></svg>
+</div>
+</a>
+<a class="text-text-sub hover:text-primary transition-colors" href="#">
+<div class="h-6 w-6"> <!-- Twitter Icon placeholder -->
+<svg fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path></svg>
+</div>
+</a>
+</div>
+</div>
+<div class="h-px w-full bg-border-light"></div>
+<p class="text-text-sub text-sm font-normal leading-normal">© 2024 PlanetaLibro. Todos los derechos reservados.</p>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

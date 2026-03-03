@@ -1,0 +1,409 @@
+# 📌 STITCH — BRIEF / PRD DE DISEÑO
+
+**Proyecto:** PlanetaLibroApp
+**Tipo:** Web App Responsive (Mobile-first)
+**Objetivo:** Crear una aplicación moderna centrada en lectura y escucha de libros completos, diseñada para fomentar el hábito lector sostenible, con progreso visible, fricción mínima y experiencia inmersiva.
+
+---
+
+# 🎯 PROPÓSITO DEL PRODUCTO
+
+PlanetaLibroApp no es un catálogo.
+
+Es un **centro personal de lectura y escucha** donde el usuario puede:
+
+* 📖 Leer libros completos
+* 🎧 Escuchar audiolibros (YouTube embed)
+* 📊 Medir su progreso
+* 🧠 Construir hábito lector sin presión
+* 🏆 Visualizar su crecimiento intelectual
+
+Algunos libros tienen:
+
+* Solo texto
+* Solo audiolibro
+* Ambos formatos
+
+Si el libro tiene audiolibro:
+👉 La opción de escuchar debe ser visible y prioritaria.
+
+---
+
+# 🎨 IDENTIDAD VISUAL
+
+Estilo:
+
+* Moderno
+* Minimalista
+* Premium
+* Calm tech (productividad suave)
+* Enfoque en legibilidad
+
+UI:
+
+* Bordes redondeados
+* Cards suaves
+* Espacios amplios
+* Animaciones sutiles
+* Celebraciones discretas (micro-victorias)
+* Modo claro y modo oscuro
+
+Tono:
+
+* Motivador pero amable
+* Sin culpa
+* Sin presión agresiva de rachas
+
+---
+
+# 🧭 NAVEGACIÓN GLOBAL
+
+### Mobile:
+
+Bottom Navigation (5 tabs):
+
+1. Inicio
+2. Biblioteca
+3. Buscar
+4. Progreso
+5. Perfil
+
+### Desktop:
+
+Sidebar izquierda + header superior.
+
+---
+
+# 🖥 PANTALLAS DEL MVP
+
+---
+
+## 1️⃣ Welcome / Pantalla de Valor
+
+Objetivo: Mostrar valor antes de pedir registro.
+
+Componentes:
+
+* Hero headline:
+  “Leé y escuchá más, sin presión.”
+* Subtexto:
+  “Transformá la lectura en un hábito sostenible.”
+* 3 beneficios en cards:
+
+  * Progreso visible
+  * Audiolibros incluidos
+  * Seguimiento inteligente
+* CTA principal:
+  “Empezar”
+* CTA secundario:
+  “Ya tengo cuenta”
+* Link opcional:
+  “Explorar sin registrarme”
+
+---
+
+## 2️⃣ Onboarding (rápido y claro)
+
+Paso 1: Meta
+
+* Selector:
+
+  * Minutos por día
+  * Páginas por día
+  * Libros por año
+    (Default recomendado: minutos/día)
+
+Paso 2: Tiempo disponible
+
+* Slider: 5 / 10 / 15 / 20 / 30 min
+
+Paso 3: Intereses
+
+* Chips de géneros
+* Chips de estado de ánimo (moods):
+
+  * Inspirador
+  * Relajado
+  * Intenso
+  * Corto
+  * Largo
+
+Paso 4:
+
+* “Prefiero leer / Prefiero escuchar / Ambos”
+
+Paso 5:
+Registro opcional (post primera acción).
+
+---
+
+## 3️⃣ Inicio / Dashboard
+
+Centro neurálgico de hábito.
+
+Componentes:
+
+### Card principal:
+
+Libro actual con:
+
+* Tapa
+* Título
+* Autor
+* Barra de progreso
+* Página actual
+* Tiempo restante estimado
+
+Si tiene audio:
+
+Mostrar dos botones:
+
+🎧 Escuchar
+📖 Leer
+
+Si no tiene audio:
+
+📖 Leer
+
+---
+
+### Meta diaria:
+
+“Te faltan 8 minutos hoy”
+
+Barra visual de cumplimiento.
+
+---
+
+### Sección “Para vos hoy”
+
+Recomendaciones personalizadas (cards horizontales).
+
+---
+
+### Actividad reciente:
+
+* Última sesión
+* Minutos totales
+* Libros completados
+
+---
+
+## 4️⃣ Buscar
+
+Componentes:
+
+* Search bar sticky
+* Filtros:
+
+  * Género
+  * Longitud
+  * Mood
+  * Solo con audio (toggle)
+* Resultados en BookCards:
+
+  * Tapa
+  * Título
+  * Autor
+  * Audio badge si aplica
+  * Botón Guardar
+
+Estado vacío amigable si no hay resultados.
+
+---
+
+## 5️⃣ Ficha de Libro (Book Detail)
+
+Hero:
+
+* Tapa grande
+* Título
+* Autor
+* Tags
+* Duración estimada lectura
+* Duración audiolibro (si existe)
+
+Acciones principales:
+
+Si tiene audio:
+
+Botón primario:
+🎧 Escuchar Audiolibro
+
+Botón secundario:
+📖 Leer
+
+Si no tiene audio:
+
+Botón primario:
+📖 Leer
+
+Acciones adicionales:
+
+* Guardar
+* Marcar como:
+
+  * Leyendo
+  * Por leer
+  * Finalizado
+  * DNF
+
+Mostrar progreso si ya comenzó.
+
+---
+
+## 6️⃣ Lector (Reader Screen)
+
+Objetivo: Experiencia inmersiva.
+
+Componentes:
+
+* Header mínimo:
+
+  * Back
+  * Título
+  * Menú
+
+* Controles:
+
+  * Cambiar tamaño de fuente
+  * Toggle claro/oscuro
+  * Interlineado
+  * Barra de progreso
+  * Página actual
+  * Prev / Next
+
+Área central amplia para texto.
+
+Botón opcional:
+
+* Guardar marcador
+
+Diseño premium, limpio, cómodo.
+
+---
+
+## 7️⃣ Pantalla Audiolibro (Audio Player)
+
+Componentes:
+
+* Thumbnail del libro
+
+* Título
+
+* Autor
+
+* YouTube player embed
+
+* Controles:
+
+  * Play / Pause
+  * Avance
+  * Velocidad (si posible)
+
+* Barra de progreso audio
+
+* Tiempo restante
+
+Botones:
+
+📖 Cambiar a lectura
+Guardar posición
+
+Diseño tipo “mini Spotify para libros”.
+
+---
+
+## 8️⃣ Biblioteca
+
+Tabs:
+
+* Leyendo
+* Por leer
+* Finalizado
+* DNF
+
+Cards muestran:
+
+* Tapa
+* Progreso
+* Botón Continuar (Leer o Escuchar según preferencia)
+
+En DNF:
+Copy amable:
+“Está bien dejar un libro si no conecta contigo.”
+
+---
+
+## 9️⃣ Progreso / Estadísticas
+
+Componentes:
+
+* Minutos leídos
+
+* Minutos escuchados
+
+* Total combinado
+
+* Gráfico semanal
+
+* Heatmap de actividad
+
+* Libros completados
+
+* Metas actuales
+
+Visualización moderna, clara.
+
+---
+
+## 🔟 Perfil / Configuración
+
+* Cuenta
+* Objetivos
+* Preferencias de lectura
+* Preferencia por audio/texto
+* Notificaciones
+* Modo oscuro
+* Privacidad
+
+---
+
+# 🧩 COMPONENTES REUTILIZABLES
+
+* BookCard
+* AudioBadge
+* ProgressBar
+* GoalCard
+* MoodChips
+* SectionCarousel
+* MiniAudioPlayer
+* EmptyState
+* SkeletonLoader
+
+---
+
+# 🧠 PRINCIPIOS UX
+
+* Productividad suave
+* Progreso visible constante
+* Celebración de micro-logros
+* Minimizar fricción
+* No presión agresiva de rachas
+* Identidad lectora positiva
+
+---
+
+# 🎯 DIFERENCIADOR CLAVE
+
+PlanetaLibroApp combina:
+
+📚 Libros completos
+🎧 Audiolibros completos
+📊 Seguimiento real
+🧠 Hábito lector sostenible
+
+No es solo una app de catálogo.
+Es un ecosistema personal de lectura y escucha.
+
+---

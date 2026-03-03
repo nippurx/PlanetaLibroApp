@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reading Progress Stats</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "primary-hover": "#0f5bbd",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "card-dark": "#1a2430",
+                        "border-dark": "#283445",
+                        "text-main": "#e2e8f0",
+                        "text-muted": "#94a3b8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-text-main antialiased min-h-screen flex flex-col">
+<!-- Navbar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-border-dark px-10 py-3 bg-white dark:bg-[#111418]">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 dark:text-white">
+<div class="size-8 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined !text-3xl">auto_stories</span>
+</div>
+<h2 class="dark:text-white text-slate-900 text-lg font-bold leading-tight tracking-[-0.015em]">ReadSustain</h2>
+</div>
+<div class="hidden md:flex items-center gap-9">
+<a class="dark:text-white text-slate-600 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Dashboard</a>
+<a class="dark:text-white text-slate-600 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Library</a>
+<a class="dark:text-white text-slate-600 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Challenges</a>
+<a class="dark:text-white text-slate-600 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Community</a>
+</div>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="hidden lg:flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-[#282f39] focus-within:ring-2 focus-within:ring-primary/50">
+<div class="text-slate-400 dark:text-[#9da8b9] flex items-center justify-center pl-3" data-icon="MagnifyingGlass">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg bg-transparent border-none text-slate-900 dark:text-white focus:outline-0 focus:ring-0 placeholder:text-slate-400 dark:placeholder:text-[#9da8b9] px-3 text-sm font-normal leading-normal" placeholder="Search books, authors..." value=""/>
+</div>
+</label>
+<button class="flex items-center justify-center rounded-lg size-10 bg-slate-100 dark:bg-[#282f39] text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-slate-200 dark:border-border-dark" data-alt="User profile picture showing a smiling woman" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA_zauDyAr7bJJfYLN2OR0B9hRiAWpeiiY3dallNvDBDS5LWF_c3hXjYWnWDG1nT2ubTeXAJOQHeEHnxpTPZ1RxAebdlJTJr_KSRjpBO-_iylcvmWmS-5Gob4ke_kD4R0_-_RILRYWWcoO6I2KTv7Y-cU1x-GhHfFpoZbm8SacNdpct5Oy7jKEYx-XCGC2V3Kb2A-3n83KHz94V_0KjzKA9lhThjpA-6SNV_W4ONBK3Tk4MkHrScWph5w3ZNnMhLSL3duDCFTkvPsap");'></div>
+</div>
+</header>
+<main class="flex-1 w-full max-w-[1400px] mx-auto px-6 py-8">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl md:text-4xl font-black leading-tight tracking-tight dark:text-white text-slate-900">Your Reading Stats</h1>
+<p class="text-slate-500 dark:text-text-muted text-base font-normal">Track your sustainable reading habits and progress this week.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-200 dark:bg-card-dark text-slate-700 dark:text-white text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-lg">calendar_month</span>
+                    Last 30 Days
+                 </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-lg">download</span>
+                    Export Report
+                 </button>
+</div>
+</div>
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="flex flex-col gap-3 rounded-xl p-6 border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm">
+<div class="flex justify-between items-start">
+<div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-primary">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<span class="flex items-center text-emerald-500 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full">+2%</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-text-muted text-sm font-medium leading-normal">Total Books</p>
+<p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1">12</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl p-6 border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm">
+<div class="flex justify-between items-start">
+<div class="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined">timer</span>
+</div>
+<span class="flex items-center text-emerald-500 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full">+15%</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-text-muted text-sm font-medium leading-normal">Hours Read</p>
+<p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1">48h</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl p-6 border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm">
+<div class="flex justify-between items-start">
+<div class="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined">headphones</span>
+</div>
+<span class="flex items-center text-emerald-500 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full">+8%</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-text-muted text-sm font-medium leading-normal">Hours Listened</p>
+<p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1">32h</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl p-6 border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm">
+<div class="flex justify-between items-start">
+<div class="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<span class="flex items-center text-emerald-500 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full">+5%</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-text-muted text-sm font-medium leading-normal">Eco Score</p>
+<p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mt-1">94<span class="text-lg text-slate-400 dark:text-slate-500 font-medium">/100</span></p>
+</div>
+</div>
+</div>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+<!-- Large Chart Section -->
+<div class="lg:col-span-2 flex flex-col rounded-xl border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-border-dark flex justify-between items-center">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Activity Overview</h3>
+<p class="text-sm text-slate-500 dark:text-text-muted">Reading vs Listening over time</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">Reading</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-full bg-purple-500"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">Listening</span>
+</div>
+</div>
+</div>
+<div class="p-6 flex-1 min-h-[300px] flex flex-col justify-end relative">
+<!-- Custom SVG Chart (Abstract representation) -->
+<div class="w-full h-64 relative">
+<!-- Grid lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+<div class="w-full h-px bg-slate-100 dark:bg-border-dark/50"></div>
+<div class="w-full h-px bg-slate-100 dark:bg-border-dark/50"></div>
+<div class="w-full h-px bg-slate-100 dark:bg-border-dark/50"></div>
+<div class="w-full h-px bg-slate-100 dark:bg-border-dark/50"></div>
+<div class="w-full h-px bg-slate-100 dark:bg-border-dark/50"></div>
+</div>
+<!-- Line 1: Reading (Primary) -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<defs>
+<lineargradient id="gradientPrimary" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#136dec" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#136dec" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,80 C10,75 20,60 30,65 C40,70 50,40 60,35 C70,30 80,45 90,20 L100,25 L100,100 L0,100 Z" fill="url(#gradientPrimary)"></path>
+<path d="M0,80 C10,75 20,60 30,65 C40,70 50,40 60,35 C70,30 80,45 90,20 L100,25" fill="none" stroke="#136dec" stroke-linecap="round" stroke-width="3" vector-effect="non-scaling-stroke"></path>
+</svg>
+<!-- Line 2: Listening (Purple) -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<defs>
+<lineargradient id="gradientPurple" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#a855f7" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#a855f7" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,90 C15,85 25,80 35,75 C45,70 55,75 65,60 C75,45 85,55 100,40 L100,100 L0,100 Z" fill="url(#gradientPurple)"></path>
+<path d="M0,90 C15,85 25,80 35,75 C45,70 55,75 65,60 C75,45 85,55 100,40" fill="none" stroke="#a855f7" stroke-linecap="round" stroke-width="3" vector-effect="non-scaling-stroke"></path>
+</svg>
+</div>
+<!-- X Axis Labels -->
+<div class="flex justify-between mt-4 text-xs font-semibold text-slate-400 dark:text-text-muted">
+<span>Mon</span>
+<span>Tue</span>
+<span>Wed</span>
+<span>Thu</span>
+<span>Fri</span>
+<span>Sat</span>
+<span>Sun</span>
+</div>
+</div>
+</div>
+<!-- Goal Section -->
+<div class="flex flex-col gap-6">
+<!-- Weekly Goal Card -->
+<div class="rounded-xl border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Weekly Goal</h3>
+<span class="text-sm font-medium text-primary cursor-pointer hover:underline">Edit</span>
+</div>
+<div class="flex items-end gap-2 mb-2">
+<span class="text-3xl font-bold text-slate-900 dark:text-white">245</span>
+<span class="text-sm text-slate-500 dark:text-text-muted mb-1.5">/ 300 mins</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 mb-4">
+<div class="bg-primary h-3 rounded-full relative" style="width: 82%">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 size-4 bg-white dark:bg-primary border-2 border-primary dark:border-white rounded-full shadow-sm"></div>
+</div>
+</div>
+<p class="text-sm text-slate-500 dark:text-text-muted">You're on track! Read for <span class="text-slate-900 dark:text-white font-semibold">55 more mins</span> to reach your weekly sustainability badge.</p>
+</div>
+<!-- Activity Heatmap -->
+<div class="rounded-xl border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm p-6 flex-1">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Consistency</h3>
+<div class="grid grid-cols-7 gap-2">
+<!-- Days of week headers -->
+<div class="text-center text-[10px] text-slate-400 uppercase tracking-wider">M</div>
+<div class="text-center text-[10px] text-slate-400 uppercase tracking-wider">T</div>
+<div class="text-center text-[10px] text-slate-400 uppercase tracking-wider">W</div>
+<div class="text-center text-[10px] text-slate-400 uppercase tracking-wider">T</div>
+<div class="text-center text-[10px] text-slate-400 uppercase tracking-wider">F</div>
+<div class="text-center text-[10px] text-slate-400 uppercase tracking-wider">S</div>
+<div class="text-center text-[10px] text-slate-400 uppercase tracking-wider">S</div>
+<!-- Heatmap cells (4 weeks) -->
+<!-- Week 1 -->
+<div class="aspect-square rounded bg-primary/20 hover:bg-primary/30 transition-colors"></div>
+<div class="aspect-square rounded bg-primary/60 hover:bg-primary/70 transition-colors"></div>
+<div class="aspect-square rounded bg-primary hover:bg-primary-hover transition-colors"></div>
+<div class="aspect-square rounded bg-primary/40 hover:bg-primary/50 transition-colors"></div>
+<div class="aspect-square rounded bg-slate-100 dark:bg-slate-700/50"></div>
+<div class="aspect-square rounded bg-primary/80 hover:bg-primary/90 transition-colors"></div>
+<div class="aspect-square rounded bg-primary/30 hover:bg-primary/40 transition-colors"></div>
+<!-- Week 2 -->
+<div class="aspect-square rounded bg-primary/90 hover:bg-primary transition-colors"></div>
+<div class="aspect-square rounded bg-primary/20 hover:bg-primary/30 transition-colors"></div>
+<div class="aspect-square rounded bg-slate-100 dark:bg-slate-700/50"></div>
+<div class="aspect-square rounded bg-primary/50 hover:bg-primary/60 transition-colors"></div>
+<div class="aspect-square rounded bg-primary hover:bg-primary-hover transition-colors"></div>
+<div class="aspect-square rounded bg-primary/80 hover:bg-primary/90 transition-colors"></div>
+<div class="aspect-square rounded bg-primary/40 hover:bg-primary/50 transition-colors"></div>
+<!-- Week 3 -->
+<div class="aspect-square rounded bg-primary hover:bg-primary-hover transition-colors"></div>
+<div class="aspect-square rounded bg-primary/60 hover:bg-primary/70 transition-colors"></div>
+<div class="aspect-square rounded bg-primary/40 hover:bg-primary/50 transition-colors"></div>
+<div class="aspect-square rounded bg-primary/20 hover:bg-primary/30 transition-colors"></div>
+<div class="aspect-square rounded bg-primary/80 hover:bg-primary/90 transition-colors"></div>
+<div class="aspect-square rounded bg-primary hover:bg-primary-hover transition-colors"></div>
+<div class="aspect-square rounded bg-slate-100 dark:bg-slate-700/50"></div>
+<!-- Week 4 -->
+<div class="aspect-square rounded bg-primary/30 hover:bg-primary/40 transition-colors"></div>
+<div class="aspect-square rounded bg-primary/50 hover:bg-primary/60 transition-colors"></div>
+<div class="aspect-square rounded bg-primary/90 hover:bg-primary transition-colors"></div>
+<div class="aspect-square rounded bg-primary hover:bg-primary-hover transition-colors border-2 border-white dark:border-slate-800 shadow-md"></div>
+<div class="aspect-square rounded bg-slate-100 dark:bg-slate-700/50 opacity-50"></div>
+<div class="aspect-square rounded bg-slate-100 dark:bg-slate-700/50 opacity-50"></div>
+<div class="aspect-square rounded bg-slate-100 dark:bg-slate-700/50 opacity-50"></div>
+</div>
+<div class="flex justify-end items-center gap-2 mt-3 text-[10px] text-slate-400">
+<span>Less</span>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded bg-slate-100 dark:bg-slate-700/50"></div>
+<div class="w-2 h-2 rounded bg-primary/30"></div>
+<div class="w-2 h-2 rounded bg-primary/60"></div>
+<div class="w-2 h-2 rounded bg-primary"></div>
+</div>
+<span>More</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Recently Completed & Current Reads -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<!-- List of Completed Books -->
+<div class="rounded-xl border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Completed Recently</h3>
+<a class="text-sm font-medium text-primary hover:text-primary-hover" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer">
+<div class="w-12 h-16 rounded overflow-hidden shadow-sm flex-shrink-0 bg-slate-200">
+<img alt="Book cover of The Sustainable Future" class="w-full h-full object-cover" data-alt="Minimalist book cover with green leaf pattern" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCStuH7MXOCTUakGD92lAUQvXEp5YBKlQIopX0ADsmpQ91ocM78mz63oID8uI8t5Xq-bX4QAhhaYH_4mGjjjHo3o2u70Xw1nqpFq8PsKTZv5mNnnnkTGamW36fc6w_uJVLP5rxmL5hMDeVZWU0Bmv90LJFK2zcwcJd-BQk0Vahvr4UBFVOM8VYE_LrNsYxJQnTPYev3_1Iv9J-RCFJKsWkmsI6cnAO-HaSrp2oQI-Dlp3rl9uwKFdeBImx2KKEN1jAWGlIj3Tw4Zify"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-slate-900 dark:text-white font-semibold truncate">The Sustainable Future</h4>
+<p class="text-sm text-slate-500 dark:text-text-muted truncate">Sarah Jenkins</p>
+</div>
+<div class="text-right">
+<div class="flex items-center gap-1 text-amber-400 text-sm">
+<span class="material-symbols-outlined text-[16px] fill-current">star</span>
+<span class="font-medium text-slate-700 dark:text-slate-300">4.8</span>
+</div>
+<p class="text-xs text-slate-400 mt-1">Finished 2d ago</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer">
+<div class="w-12 h-16 rounded overflow-hidden shadow-sm flex-shrink-0 bg-slate-200">
+<img alt="Book cover of Mindful Tech" class="w-full h-full object-cover" data-alt="Abstract blue geometric book cover design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF8ylWyX5o6bEL2GRLof2OhbZ7lceV3nAP3Soqu3vUyK7wPJSuu3t04uIhdifhrRQxSbMpcJS4X-w39JrNDEpz5I-LNdx-dJvcY--DnkErzPWF2YcGanoHmEj73yyUOqmrQe14qrxF886PDpbqzw84YFfsnWokwcKHLl58Qrt_KAMklpIRfds_0dPGKZ89KmtUJpVNtgs4a57JMv2ZwE8InsxPYrBo-TMCSpoWG8VmCU-xVYiEZcaJAohpFeCOIG7M8X7RpVM0WiJO"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-slate-900 dark:text-white font-semibold truncate">Mindful Tech</h4>
+<p class="text-sm text-slate-500 dark:text-text-muted truncate">David Cal Newman</p>
+</div>
+<div class="text-right">
+<div class="flex items-center gap-1 text-amber-400 text-sm">
+<span class="material-symbols-outlined text-[16px] fill-current">star</span>
+<span class="font-medium text-slate-700 dark:text-slate-300">5.0</span>
+</div>
+<p class="text-xs text-slate-400 mt-1">Finished 5d ago</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer">
+<div class="w-12 h-16 rounded overflow-hidden shadow-sm flex-shrink-0 bg-slate-200">
+<img alt="Book cover of Green Living" class="w-full h-full object-cover" data-alt="Book cover featuring a cozy home interior illustration" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFmggJlDpjswTDvqSZoQ2bPf5c_EpLz3cbpN5bf5_X-P6R2IDVZ9iCetnoO06CqJo8tAX7Sg4BDOuRODnkbWMeW8cpUERUgP3sZvp25qFXtmvfivwDTpxmqfwaP7Yd51c7aNt2evIz0vYkoXf3QzfNd1UGh25KtgZd3TzePIQRLzVuY536hMuym9uYjw_8DynfEIG9MWMYrrFeG7vLG5A6ewDBXWQND1nKwVf38pxeGIMVxHp5U82U0w1Zjo1a8xi8WBRSQVaeQw6X"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-slate-900 dark:text-white font-semibold truncate">Green Living Guide</h4>
+<p class="text-sm text-slate-500 dark:text-text-muted truncate">Elena Rodriguez</p>
+</div>
+<div class="text-right">
+<div class="flex items-center gap-1 text-amber-400 text-sm">
+<span class="material-symbols-outlined text-[16px] fill-current">star</span>
+<span class="font-medium text-slate-700 dark:text-slate-300">4.2</span>
+</div>
+<p class="text-xs text-slate-400 mt-1">Finished 1w ago</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Genre Distribution / Badge -->
+<div class="rounded-xl border border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark shadow-sm p-6 flex flex-col">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Content Distribution</h3>
+<div class="flex-1 flex flex-col justify-center">
+<div class="flex flex-col gap-4">
+<!-- Bar 1 -->
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-slate-700 dark:text-slate-300">Sustainability &amp; Nature</span>
+<span class="text-slate-500 dark:text-slate-400">45%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500 rounded-full" style="width: 45%"></div>
+</div>
+</div>
+<!-- Bar 2 -->
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-slate-700 dark:text-slate-300">Technology &amp; Future</span>
+<span class="text-slate-500 dark:text-slate-400">30%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 30%"></div>
+</div>
+</div>
+<!-- Bar 3 -->
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-slate-700 dark:text-slate-300">Self Development</span>
+<span class="text-slate-500 dark:text-slate-400">15%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-purple-500 rounded-full" style="width: 15%"></div>
+</div>
+</div>
+<!-- Bar 4 -->
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-slate-700 dark:text-slate-300">Fiction</span>
+<span class="text-slate-500 dark:text-slate-400">10%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-orange-500 rounded-full" style="width: 10%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-4 border-t border-slate-100 dark:border-border-dark flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
+<span class="material-symbols-outlined">emoji_events</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">Eco-Reader Champion</p>
+<p class="text-xs text-slate-500 dark:text-text-muted">Top 5% of community</p>
+</div>
+</div>
+<button class="text-xs font-bold text-primary hover:text-primary-hover uppercase tracking-wide">View Badges</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

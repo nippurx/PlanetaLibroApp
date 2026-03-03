@@ -1,0 +1,39 @@
+# PlanetaLibro App (/app) — Bitacora
+
+Chat
+https://chatgpt.com/g/g-p-69864a26ef5c8191938e158674235645-planetalibroapp/project
+
+
+Notebookllm
+https://notebooklm.google.com/notebook/9f9cd090-3c5b-4204-9d93-f70b83bca81e
+
+
+video alejavi
+https://www.youtube.com/watch?v=HsGoqAokX5o
+
+Crear un reporte
+https://youtu.be/HsGoqAokX5o?si=o4Xz_pSbcOKX_mqy&t=253
+
+NotebookLM Report 
+Según los estudios científicos, aprendizajes del éxito de apps y las necesidades de los 
+usuarios, lista un conjunto de funcionalidades para que mi app llamada "PlanetaLibro App" se posicione 
+como líder. Tu tarea es desarrollar un informe para un diseñador web que va a prototipar la 
+app ideal basándose en las instrucciones de este reporte.
+
+
+
+STICH
+https://stitch.withgoogle.com/
+
+Proyecto
+https://stitch.withgoogle.com/projects/18118202391121234082
+
+
+## crear /api
+
+## visual studio
+La app quedó montada en Vite + React + TypeScript + Tailwind sin CDN, con router, mock data y las 9 rutas pedidas. La base está en [package.json](D:/Desarrollo/PlanetaLibroApp/package.json), [tailwind.config.js](D:/Desarrollo/PlanetaLibroApp/tailwind.config.js), [index.html](D:/Desarrollo/PlanetaLibroApp/index.html) y el shell reusable en [src/layout/AppShell.tsx](D:/Desarrollo/PlanetaLibroApp/src/layout/AppShell.tsx). El mock principal quedó en [src/mock/book.ts](D:/Desarrollo/PlanetaLibroApp/src/mock/book.ts), y las pantallas en [src/pages](D:/Desarrollo/PlanetaLibroApp/src/pages).
+
+Implementé `AppShell` para todas las vistas de app y dejé `onboarding` standalone; `listen` y `read` usan el mismo shell en modo inmersivo para conservar el layout full-screen de Stitch. También quedó creada [src/api/README.md](D:/Desarrollo/PlanetaLibroApp/src/api/README.md) como placeholder para la integración futura.
+
+Verificación: `npm install` y `npm run build` pasaron correctamente. Si querés verlo en local, el siguiente paso natural es ejecutar `npm run dev`.

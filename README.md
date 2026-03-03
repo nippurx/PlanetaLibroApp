@@ -37,6 +37,8 @@ La app debe permitir:
 ⚠️ React **NO accede directo a MySQL**  
 Debe hacerse vía **API en PHP** que devuelva JSON.
 
+- La estructura de las tablas esta en el archivo: docs/c2380538_main_stru.sql
+
 ---
 
 ### 2.2 Estructura real de archivos (libros)
