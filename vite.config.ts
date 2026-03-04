@@ -11,11 +11,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy API requests in dev so the frontend can use host-relative /api paths without CORS.
+      // Keep dev requests same-origin while forwarding to the live backend.
       "/api": {
-        target: "http://localhost/planetalibro",
+        target: "https://planetalibro.net",
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   },

@@ -37,3 +37,19 @@ La app quedó montada en Vite + React + TypeScript + Tailwind sin CDN, con route
 Implementé `AppShell` para todas las vistas de app y dejé `onboarding` standalone; `listen` y `read` usan el mismo shell en modo inmersivo para conservar el layout full-screen de Stitch. También quedó creada [src/api/README.md](D:/Desarrollo/PlanetaLibroApp/src/api/README.md) como placeholder para la integración futura.
 
 Verificación: `npm install` y `npm run build` pasaron correctamente. Si querés verlo en local, el siguiente paso natural es ejecutar `npm run dev`.
+
+
+MARTES
+
+FALTA:
+agregar llamadas api a planetalibroApp
+esta ejecutando en planetalibroapp... pero va a tener problemas con los path
+
+planetalibroapp  
+integracion api, faltan tapas
+https://chatgpt.com/g/g-p-69864a26ef5c8191938e158674235645-planetalibroapp/c/69a784b3-c3e8-8327-9b0a-ddb399730571?tab=chats
+
+
+* asegurarse de que la api arme los paths bien 
+https://chatgpt.com/g/g-p-6826006e7d14819194c484f18f44fb87-planetalibro/c/69a6f09b-4ff8-8332-9106-53af434dc419
+

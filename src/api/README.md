@@ -1,4 +1,5 @@
-API integration placeholder.
+Shared API layer for PlanetaLibroApp.
 
-Use host-relative endpoints only so the frontend stays domain-agnostic and works the same across production domains and localhost.
-The shared helper lives in `client.ts` and starts from `/api/v1/public`.
+- `client.ts` reads `import.meta.env.VITE_API_BASE` and centralizes HTTP errors.
+- `books.ts` contains the current book-facing contracts and fetch helpers.
+- Additional entities should follow the same pattern (`authors.ts`, `categories.ts`, etc.).
