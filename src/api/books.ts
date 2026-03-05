@@ -1,12 +1,15 @@
-﻿import { apiClient } from "./client";
+import { apiClient } from "./client";
 
 type ApiEnvelope<T> = {
   data: T;
 };
 
+const PLANETA_LIBRO_ORIGIN = "https://planetalibro.net";
+
 type BookListApiItem = {
   id: number;
   uri: string;
+  author_uri?: string | null;
   titulo: string;
   subtitulo: string | null;
   autor: {
@@ -18,7 +21,7 @@ type BookListApiItem = {
     read_online: boolean;
     video_audiolibro: string | null;
   };
-  formatos: {
+  formatos?: {
     pdf: boolean;
     epub: boolean;
     mobi: boolean;
@@ -91,9 +94,30 @@ function normalizeAuthorName(value: string | null): string {
   return value?.trim() || "Autor desconocido";
 }
 
+function normalizeCoverUrl(value?: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  if (value.startsWith("/")) {
+    return `${PLANETA_LIBRO_ORIGIN}${value}`;
+  }
+
+  return `${PLANETA_LIBRO_ORIGIN}/${value}`;
+}
+
 function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
   const audioId = normalizeAudioId(apiBook.recursos.video_audiolibro);
-  const coverUrl = apiBook.cover_url ?? null;
+  const coverUrl = normalizeCoverUrl(apiBook.cover_url);
+  const formatos = apiBook.formatos ?? {
+    pdf: false,
+    epub: false,
+    mobi: false,
+  };
 
   return {
     id: apiBook.id,
@@ -102,33 +126,19 @@ function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
     subtitulo: apiBook.subtitulo ?? "",
     descripcion: "descripcion" in apiBook && apiBook.descripcion ? apiBook.descripcion : "",
     autorNombre: normalizeAuthorName(apiBook.autor.nombre),
-    autorUri: apiBook.autor.uri,
+    autorUri: apiBook.autor.uri ?? apiBook.author_uri ?? null,
     cover_url: coverUrl,
     hasCover: Boolean(coverUrl),
     readOnline: apiBook.recursos.read_online,
     hasAudio: Boolean(audioId),
     youtubeVideoId: audioId,
-    formatos: apiBook.formatos,
+    formatos,
     idioma: "idioma" in apiBook ? apiBook.idioma : null,
     updatedAt: "updated_at" in apiBook ? apiBook.updated_at : null,
     currentPage: 1,
     progressPercent: 0,
-    currentChapter: "Capítulo inicial",
+    currentChapter: "Capitulo inicial",
   };
-}
-
-function filterBooks(books: Book[], q: string): Book[] {
-  const normalizedQuery = q.trim().toLocaleLowerCase();
-
-  if (!normalizedQuery) {
-    return books;
-  }
-
-  return books.filter((book) =>
-    [book.titulo, book.subtitulo, book.autorNombre, book.uri]
-      .filter(Boolean)
-      .some((value) => value.toLocaleLowerCase().includes(normalizedQuery)),
-  );
 }
 
 export async function getBookByUri(uri: string): Promise<Book> {
@@ -141,9 +151,17 @@ export async function getHomeBooks(limit = 10): Promise<Book[]> {
   return response.data.items.map(mapBook);
 }
 
-export async function searchBooks(q: string): Promise<Book[]> {
-  const response = await apiClient.get<ApiEnvelope<BookListResponse>>("/public/libros?limit=60");
-  return filterBooks(response.data.items.map(mapBook), q).slice(0, 20);
+export async function searchBooks(q: string, limit = 20, offset = 0): Promise<Book[]> {
+  const normalizedQuery = q.trim();
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  const encodedQuery = encodeURIComponent(normalizedQuery);
+  const response = await apiClient.get<ApiEnvelope<BookListResponse>>(
+    `/public/buscar?q=${encodedQuery}&limit=${limit}&offset=${offset}`,
+  );
+  return response.data.items.map(mapBook);
 }
 
 export async function getApiHealth(): Promise<HealthResponse> {

@@ -1,34 +1,75 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { type Book, getHomeBooks, searchBooks } from "../api/books";
+import { Link, useSearchParams } from "react-router-dom";
+import { type Book, searchBooks } from "../api/books";
 import { ApiError } from "../api/client";
 import { BookCover } from "../components/BookCover";
 import { AppShell } from "../layout/AppShell";
 
 export function BookDiscoverySearchPage() {
-  const [query, setQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialQuery = (searchParams.get("q") ?? "").trim();
+
+  const [query, setQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [audioOnly, setAudioOnly] = useState(false);
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [results, setResults] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const queryFromUrl = (searchParams.get("q") ?? "").trim();
+    setQuery(queryFromUrl);
+    setDebouncedQuery(queryFromUrl);
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedQuery(query.trim());
+    }, 400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [query]);
+
+  function commitQueryToUrl(value: string) {
+    const normalizedQuery = value.trim();
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (normalizedQuery) {
+      nextParams.set("q", normalizedQuery);
+    } else {
+      nextParams.delete("q");
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  }
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadBooks() {
+    async function runSearch() {
+      if (!debouncedQuery) {
+        setResults([]);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
       try {
-        const result = query.trim() ? await searchBooks(query) : await getHomeBooks(12);
-        const filtered = audioOnly ? result.filter((book) => book.hasAudio) : result;
+        const items = await searchBooks(debouncedQuery, 20, 0);
+        const filtered = audioOnly ? items.filter((book) => book.hasAudio) : items;
 
         if (!cancelled) {
-          setBooks(filtered);
+          setResults(filtered);
         }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof ApiError ? err.message : "No se pudieron cargar los libros.");
+          setResults([]);
         }
       } finally {
         if (!cancelled) {
@@ -37,12 +78,12 @@ export function BookDiscoverySearchPage() {
       }
     }
 
-    void loadBooks();
+    void runSearch();
 
     return () => {
       cancelled = true;
     };
-  }, [audioOnly, query]);
+  }, [audioOnly, debouncedQuery]);
 
   return (
     <AppShell theme="light" title="Search" contentClassName="bg-background-light dark:bg-background-dark">
@@ -56,6 +97,13 @@ export function BookDiscoverySearchPage() {
               <input
                 className="flex w-full flex-1 border-none bg-transparent px-4 text-base font-normal leading-normal text-slate-900 placeholder:text-slate-400 focus:ring-0 dark:text-white"
                 onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    const normalizedQuery = query.trim();
+                    setDebouncedQuery(normalizedQuery);
+                    commitQueryToUrl(normalizedQuery);
+                  }
+                }}
                 placeholder="Search by title, author, or ISBN"
                 type="text"
                 value={query}
@@ -91,7 +139,7 @@ export function BookDiscoverySearchPage() {
       </header>
       <div className="mx-auto w-full max-w-[1400px] flex-1 p-6 md:px-10 md:py-8">
         <h2 className="mb-6 px-2 text-xl font-semibold dark:text-white">
-          {query.trim() ? `Resultados para "${query}"` : "Libros destacados"}
+          {debouncedQuery ? `Resultados para "${debouncedQuery}"` : "Busca libros por titulo o autor"}
         </h2>
         {loading ? (
           <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-[#111418] dark:text-slate-400">
@@ -101,14 +149,18 @@ export function BookDiscoverySearchPage() {
           <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
             {error}
           </div>
-        ) : books.length === 0 ? (
+        ) : !debouncedQuery ? (
           <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-[#111418] dark:text-slate-400">
-            No se encontraron libros para esa búsqueda.
+            Escribi una busqueda para ver resultados reales.
+          </div>
+        ) : results.length === 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-[#111418] dark:text-slate-400">
+            No se encontraron libros para esa busqueda.
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {books.map((book) => (
-              <Link key={book.uri} className="group flex cursor-pointer flex-col gap-3" to={`/book/${book.uri}`}>
+            {results.map((book) => (
+              <Link key={book.id} className="group flex cursor-pointer flex-col gap-3" to={`/book/${book.uri}`}>
                 <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
                   <BookCover book={book} className="h-full w-full object-cover" />
                   {book.hasAudio && (
@@ -126,6 +178,9 @@ export function BookDiscoverySearchPage() {
                   <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-900 transition-colors group-hover:text-primary dark:text-white">
                     {book.titulo}
                   </h3>
+                  {book.subtitulo ? (
+                    <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{book.subtitulo}</p>
+                  ) : null}
                   <p className="mt-1 text-xs font-normal text-slate-500 dark:text-slate-400">{book.autorNombre}</p>
                   <div className="mt-1.5 flex items-center gap-1">
                     <span className="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">

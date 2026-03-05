@@ -41,7 +41,6 @@ Verificación: `npm install` y `npm run build` pasaron correctamente. Si querés
 
 MARTES
 
-FALTA:
 agregar llamadas api a planetalibroApp
 esta ejecutando en planetalibroapp... pero va a tener problemas con los path
 
@@ -53,3 +52,32 @@ https://chatgpt.com/g/g-p-69864a26ef5c8191938e158674235645-planetalibroapp/c/69a
 * asegurarse de que la api arme los paths bien 
 https://chatgpt.com/g/g-p-6826006e7d14819194c484f18f44fb87-planetalibro/c/69a6f09b-4ff8-8332-9106-53af434dc419
 
+
+MIERCOLES
+https://planetalibro.net/api/v1/public/buscar?q=a
+{"error":{"code":"internal_error"}}
+
+
+https://planetalibro.net/api/v1/public/buscar?q=hamlet&limit=20&offset=0
+
+{"data":{"items":[{"id":10907,"uri":"shakespeare-william-hamlet-principe-de-dinamarca","author_uri":"shakespeare-william","cover_url":"/biblioteca/s/h/shakespeare/shakespeare-william-hamlet-principe-de-dinamarca/shakespeare-william-hamlet-principe-de-dinamarca.webp","titulo":"Hamlet, Principe de Dinamarca","subtitulo":null,"autor":{"uri":"shakespeare-william","nombre":"Shakespeare, William Shakespeare"},"cover":{"available":true,"link":null},"recursos":{"read_online":true,"video_audiolibro":"DYhjtCCRcMg"},"formatos":{"pdf":true,"epub":true,"mobi":true}},{"id":12806,"uri":"shakespeare-william-hamlet_es","author_uri":"shakespeare-william","cover_url":"/biblioteca/s/h/shakespeare/shakespeare-william-hamlet_es/shakespeare-william-hamlet_es.webp","titulo":"Hamlet","subtitulo":null,"autor":{"uri":"shakespeare-william","nombre":"Shakespeare, William Shakespeare"},"cover":{"available":true,"link":null},"recursos":{"read_online":true,"video_audiolibro":"DYhjtCCRcMg"},"formatos":{"pdf":false,"epub":false,"mobi":false}},{"id":69938,"uri":"michael-innes-hamlet-venganza","author_uri":"michael-innes","cover_url":"/biblioteca/m/i/michael/michael-innes-hamlet-venganza/michael-innes-hamlet-venganza.webp","titulo":"¡Hamlet, venganza!","subtitulo":"","autor":{"uri":"michael-innes","nombre":"Michael Innes Michael Innes"},"cover":{"available":true,"link":null},"recursos":{"read_online":false,"video_audiolibro":null},"formatos":{"pdf":false,"epub":false,"mobi":false}},{"id":60372,"uri":"hamlet-alcantara-donde-la-oscuridad-penetra","author_uri":"hamlet-alcantara","cover_url":"/biblioteca/h/a/hamlet/hamlet-alcantara-donde-la-oscuridad-penetra/hamlet-alcantara-donde-la-oscuridad-penetra.webp","titulo":"Donde la oscuridad penetra","subtitulo":"","autor":{"uri":"hamlet-alcantara","nombre":"Hamlet Alcantara Hamlet Alcantara"},"cover":{"available":false,"link":null},"recursos":{"read_online":false,"video_audiolibro":null},"formatos":{"pdf":false,"epub":false,"mobi":false}},{"id":40547,"uri":"paulino-masip-el-diario-de-hamlet-garcia","author_uri":"paulino-masip","cover_url":"/biblioteca/p/a/paulino/paulino-masip-el-diario-de-hamlet-garcia/paulino-masip-el-diario-de-hamlet-garcia.webp","titulo":"El diario de Hamlet García","subtitulo":"","autor":{"uri":"paulino-masip","nombre":"Paulino Masip Paulino Masip"},"cover":{"available":true,"link":null},"recursos":{"read_online":false,"video_audiolibro":null},"formatos":{"pdf":false,"epub":false,"mobi":false}}],"pagination":{"q":"hamlet","limit":20,"offset":0}}}
+
+
+
+
+Correcto, los archivos editados son estos en tu proyecto:
+
+- `src/api/books.ts`
+- `src/pages/BookDiscoverySearchPage.tsx`
+
+Rutas absolutas en tu entorno:
+
+- `d:\Desarrollo\PlanetaLibroApp\src\api\books.ts`
+- `d:\Desarrollo\PlanetaLibroApp\src\pages\BookDiscoverySearchPage.tsx`
+
+
+* API - agregar foto autor
+https://chatgpt.com/g/g-p-69864a26ef5c8191938e158674235645-planetalibroapp/c/69a8d14c-3004-832e-abb9-be6ec1d8d2a1?tab=chats
+* subir api
+
++ APP - agregar pagina autor / con foto y libros

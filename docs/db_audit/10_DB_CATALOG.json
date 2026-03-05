@@ -1,0 +1,4698 @@
+{
+  "source": "docs/c2380538_main_stru.sql",
+  "table_count": 56,
+  "tables_without_pk": [
+    "chats",
+    "ebooks_packs",
+    "favorites",
+    "sneakers",
+    "stats_country_ip",
+    "visit_stats"
+  ],
+  "tables_with_explicit_fk": [
+    "mailing_users",
+    "user_tags"
+  ],
+  "explicit_fk_count": 3,
+  "tables": [
+    {
+      "name": "ab_events",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) UNSIGNED",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "experiment",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "variant",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "event",
+          "type": "enum('impression','click')",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "session_id",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "user_agent",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD KEY `idx_exp_var` (`experiment`,`variant`)",
+        "ADD KEY `idx_event` (`event`)",
+        "ADD KEY `idx_created` (`created_at`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "avatars",
+      "columns": [
+        {
+          "name": "avatar_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "avatar_image",
+          "type": "blob",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "avatar_id"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "utf8",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "blocked_ip_domains",
+      "columns": [
+        {
+          "name": "bid",
+          "type": "int(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ip",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "domain",
+          "type": "varchar(300)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "email",
+          "type": "varchar(300)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "refer",
+          "type": "varchar(500)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "referaldomain",
+          "type": "varchar(300)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "desci",
+          "type": "varchar(2000)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "valid",
+          "type": "int(3)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "type",
+          "type": "int(2)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "bid"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "books_tags",
+      "columns": [
+        {
+          "name": "book_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tag_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "book_id",
+        "tag_id"
+      ],
+      "indexes": [
+        "ADD KEY `idx_book_id` (`book_id`)",
+        "ADD KEY `idx_tag_id` (`tag_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "utf8mb4",
+      "collate": "utf8mb4_unicode_ci",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "categories",
+      "columns": [
+        {
+          "name": "category__auto_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "category_lang",
+          "type": "char(4) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "'es'",
+          "extra": "-"
+        },
+        {
+          "name": "category_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "category_parent",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "category_name",
+          "type": "char(32) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "category_uri",
+          "type": "char(32) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "category__auto_id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `category_lang` (`category_lang`,`category_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "utf8",
+      "collate": "utf8_spanish_ci",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "chats",
+      "columns": [
+        {
+          "name": "chat_time",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "chat_uid",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "chat_room",
+          "type": "enum('all','friends')",
+          "null": "NO",
+          "default": "'all'",
+          "extra": "-"
+        },
+        {
+          "name": "chat_user",
+          "type": "char(32)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "chat_text",
+          "type": "char(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [],
+      "indexes": [
+        "ADD KEY `chat_time` (`chat_time`) USING BTREE"
+      ],
+      "foreign_keys": [],
+      "engine": "MEMORY",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "1000"
+    },
+    {
+      "name": "comments",
+      "columns": [
+        {
+          "name": "comment_id",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "comment_randkey",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "comment_parent",
+          "type": "int(20)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "comment_link_id",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "comment_user_id",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "comment_date",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        },
+        {
+          "name": "comment_ip",
+          "type": "varchar(24) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "comment_order",
+          "type": "smallint(6)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "comment_votes",
+          "type": "smallint(4)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "comment_karma",
+          "type": "smallint(6)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "comment_content",
+          "type": "text COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "comment_id"
+      ],
+      "indexes": [
+        "ADD KEY `comment_link_id_2` (`comment_link_id`,`comment_date`)",
+        "ADD KEY `comment_date` (`comment_date`)",
+        "ADD KEY `comment_user_id` (`comment_user_id`,`comment_date`)",
+        "ADD KEY `comment_link_id` (`comment_link_id`,`comment_order`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "utf8",
+      "collate": "utf8_spanish_ci",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "download_log",
+      "columns": [
+        {
+          "name": "download_log_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "download_log_object",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "download_log_object_format",
+          "type": "varchar(4)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "download_log_remote_host",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "download_log_user_ip",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "download_log_user_id",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "download_log_timestamp",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        },
+        {
+          "name": "download_log_country_code",
+          "type": "char(2)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "download_log_status",
+          "type": "varchar(16)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "download_log_type",
+          "type": "varchar(16)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_doc_type",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "'books'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "download_log_id"
+      ],
+      "indexes": [
+        "ADD KEY `download_log_object` (`download_log_object`)",
+        "ADD KEY `ndx_timestamp` (`download_log_timestamp`)",
+        "ADD KEY `ndx_country_code` (`download_log_country_code`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_authors",
+      "columns": [
+        {
+          "name": "ebooks_authors_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "uri",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_name",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_surname",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_htm_bio",
+          "type": "text",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_organisation",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_fallecimiento",
+          "type": "smallint(4)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_rank",
+          "type": "int(10)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_ranked",
+          "type": "tinyint(1) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "dompub",
+          "type": "tinyint(1) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "dompubreal",
+          "type": "tinyint(1) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_authors_id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `uri` (`uri`)",
+        "ADD UNIQUE KEY `ebooks_authors_name` (`ebooks_authors_name`)",
+        "ADD KEY `ebooks_authors_id` (`ebooks_authors_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "DYNAMIC",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_authors 2015-02",
+      "columns": [
+        {
+          "name": "ebooks_authors_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "uri",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_name",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_surname",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_htm_bio",
+          "type": "text",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_organisation",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_fallecimiento",
+          "type": "smallint(4)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_rank",
+          "type": "int(10)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_authors_ranked",
+          "type": "tinyint(1) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "dompub",
+          "type": "tinyint(1) UNSIGNED",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_authors_id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `ebooks_authors_name` (`ebooks_authors_name`)",
+        "ADD KEY `ebooks_authors_id` (`ebooks_authors_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "DYNAMIC",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_books",
+      "columns": [
+        {
+          "name": "ebooks_books_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "uri",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_title",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_subtitle",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_author",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_author2",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_category",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "server",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "texto_online",
+          "type": "char(4)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_date",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_publisher",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_cover",
+          "type": "smallint(6)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_file",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_txt_abs",
+          "type": "longtext",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_txt_inf",
+          "type": "longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_file_english",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_editor_english",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_file_alternative",
+          "type": "text",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_file_audiobook",
+          "type": "text",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_webAlternative",
+          "type": "varchar(60)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_ebookversion",
+          "type": "varchar(20)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_datePublicationdigital",
+          "type": "date",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "descargar",
+          "type": "tinyint(1) UNSIGNED ZEROFILL",
+          "null": "NO",
+          "default": "'1'",
+          "extra": "COMMENT 'si = 1 cambia el path con ! para evitar descargar'"
+        },
+        {
+          "name": "ebooks_format_mobi",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_format_pdf",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_format_epub",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_format_doc",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "external_pdf",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "videos",
+          "type": "mediumtext",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "videos_sugeridos",
+          "type": "mediumtext",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "video_audiolibro",
+          "type": "mediumtext",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "video_audiolibro_revisado",
+          "type": "tinyint(1) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "has_video_review",
+          "type": "tinyint(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "COMMENT 'si el libro tiene video reseña de pl'"
+        },
+        {
+          "name": "read_online",
+          "type": "tinyint(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "COMMENT '\t0 no tiene \t\t1 si tiene \t\t2 no publicar'"
+        },
+        {
+          "name": "ebooks_books_download_rank",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "views",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "views_last",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "views_last_week",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "views_last_year",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_last_download",
+          "type": "datetime",
+          "null": "YES",
+          "default": "'0000-00-00 00:00:00'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_ebookdate",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_labels",
+          "type": "text",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_updated",
+          "type": "timestamp",
+          "null": "YES",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_price",
+          "type": "double",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_doc_type",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "'books'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_video",
+          "type": "text",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "link_mercadolibre",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "link_p2p",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "link_hotmart",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "link_amazon",
+          "type": "smallint(1)",
+          "null": "YES",
+          "default": "'1'",
+          "extra": "-"
+        },
+        {
+          "name": "url_amazon",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_lang",
+          "type": "char(2)",
+          "null": "YES",
+          "default": "'es'",
+          "extra": "-"
+        },
+        {
+          "name": "demo",
+          "type": "smallint(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "dompub",
+          "type": "smallint(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "dompub_status",
+          "type": "smallint(1)",
+          "null": "NO",
+          "default": "'-1'",
+          "extra": "-"
+        },
+        {
+          "name": "recomendado",
+          "type": "smallint(1) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "pinterest",
+          "type": "smallint(1) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "procesado",
+          "type": "smallint(1) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "cover_link",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "COMMENT 'link a imagen del cover'"
+        },
+        {
+          "name": "pubfbig",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "COMMENT 'pubilcado en fb instagram'"
+        },
+        {
+          "name": "resumen",
+          "type": "tinyint(1) UNSIGNED ZEROFILL",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "label_procesado",
+          "type": "smallint(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "link_gpt",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "pubfbig_readonline",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "release_date",
+          "type": "date",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_books_id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `uri` (`uri`)",
+        "ADD KEY `ebooks_books_category` (`ebooks_books_category`)",
+        "ADD KEY `ebooks_books_title` (`ebooks_books_title`)",
+        "ADD KEY `ebooks_books_download_rank` (`ebooks_books_download_rank`)",
+        "ADD KEY `ebooks_books_ebookdate` (`ebooks_books_ebookdate`)",
+        "ADD KEY `ebooks_books_author` (`ebooks_books_author`)",
+        "ADD KEY `views` (`views`)",
+        "ADD KEY `ebooks_books_lang` (`ebooks_books_lang`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "DYNAMIC",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_categories",
+      "columns": [
+        {
+          "name": "ebooks_categories_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebooks_categories_category",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_categories_nicename",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_categories_description",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_categories_rank",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "lang",
+          "type": "varchar(2)",
+          "null": "NO",
+          "default": "'es'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_categories_id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `ebooks_categories_nicename` (`ebooks_categories_nicename`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_digitalizar",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebook_id",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "fecha_pedido",
+          "type": "date",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "fecha_hecho",
+          "type": "date",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "status",
+          "type": "varchar(15)",
+          "null": "NO",
+          "default": "'pend'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `ebook_id` (`ebook_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_formats",
+      "columns": [
+        {
+          "name": "ebooks_formats_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebooks_formats_name",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_formats_extension",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_formats_id"
+      ],
+      "indexes": [
+        "ADD KEY `ebooks_formats_id` (`ebooks_formats_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_mva_textos",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "texto",
+          "type": "varchar(300)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_packs",
+      "columns": [
+        {
+          "name": "ebooks_packs_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebooks_packs_code",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_packs_name",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_packs_price",
+          "type": "double",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [],
+      "indexes": [
+        "ADD UNIQUE KEY `ebooks_packs_id` (`ebooks_packs_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_packs_ebooks",
+      "columns": [
+        {
+          "name": "ebooks_packs_ebooks_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebooks_packs_code",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_file",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_packs_ebooks_id"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_packs_users",
+      "columns": [
+        {
+          "name": "ebooks_packs_users_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "sys_users_code",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_packs_code",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_packs_users_id"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_publishers",
+      "columns": [
+        {
+          "name": "ebooks_publishers_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebooks_publishers_publisher",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_publishers_web",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_publishers_id"
+      ],
+      "indexes": [
+        "ADD KEY `ebooks_publishers_publisher` (`ebooks_publishers_publisher`)",
+        "ADD KEY `ebooks_publishers_id` (`ebooks_publishers_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_ranking_historic",
+      "columns": [
+        {
+          "name": "ebooks_ranking_historic_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebooks_ranking_historic_date",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "ON UPDATE CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "ebooks_ranking_historic_position",
+          "type": "smallint(6)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_ranking_historic_book",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_ranking_historic_nro_requests",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_ranking_historic_id"
+      ],
+      "indexes": [
+        "ADD KEY `ebooks_ranking_historic_id` (`ebooks_ranking_historic_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_trivia_questions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebooks_books_id",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tema",
+          "type": "varchar(255) COLLATE utf8mb4_unicode_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "punto_clave",
+          "type": "text COLLATE utf8mb4_unicode_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "pregunta",
+          "type": "text COLLATE utf8mb4_unicode_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "respuesta_correcta",
+          "type": "text COLLATE utf8mb4_unicode_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "respuesta_falsa1",
+          "type": "text COLLATE utf8mb4_unicode_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "respuesta_falsa2",
+          "type": "text COLLATE utf8mb4_unicode_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "explicacion",
+          "type": "text COLLATE utf8mb4_unicode_ci",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": "YES",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `uq_trivia_unique` (`ebooks_books_id`,`tema`,`punto_clave`(255),`pregunta`(255))"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "utf8mb4",
+      "collate": "utf8mb4_unicode_ci",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "ebooks_users_ebooks",
+      "columns": [
+        {
+          "name": "ebooks_users_ebooks_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "ebooks_packs_code",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_code",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_file",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_users_ebooks_current_page",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'1'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_users_ebooks_first_read",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_users_ebooks_last_read",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_users_ebooks_last_read_from",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_users_ebooks_html_access",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_users_ebooks_wap_access",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "ebooks_users_ebooks_id"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "failed_login",
+      "columns": [
+        {
+          "name": "failedid",
+          "type": "int(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "loc",
+          "type": "varchar(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "username",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "password",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "sms",
+          "type": "varchar(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "smstok",
+          "type": "varchar(30)",
+          "null": "YES",
+          "default": "'empty'",
+          "extra": "-"
+        },
+        {
+          "name": "msg",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "inital_attempt",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "current_attempt",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "country",
+          "type": "varchar(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "setid",
+          "type": "int(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ipad",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "refurl",
+          "type": "varchar(1000)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "failedid"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "failed_searches",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "normalized_text",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "cantidad",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'1'",
+          "extra": "-"
+        },
+        {
+          "name": "agregado",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "last_search",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "ON UPDATE CURRENT_TIMESTAMP"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `normalized_text` (`normalized_text`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "favorites",
+      "columns": [
+        {
+          "name": "favorite_user_id",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "favorite_link_id",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "favorite_date",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        }
+      ],
+      "pk": [],
+      "indexes": [
+        "ADD UNIQUE KEY `favorite_user_id` (`favorite_user_id`,`favorite_link_id`)",
+        "ADD KEY `favorite_link_id` (`favorite_link_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "utf8",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "libros_pedidos",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "libro",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "pedido",
+          "type": "smallint(15) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "publicado",
+          "type": "tinyint(15)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "userid",
+          "type": "int(15) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `libro` (`libro`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "libros_pedidos_old",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "libro",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "pedido",
+          "type": "smallint(15) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "publicado",
+          "type": "tinyint(15)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "userid",
+          "type": "int(15) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `libro` (`libro`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "mailing",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "name",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "subject",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "message",
+          "type": "text",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": "YES",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        },
+        {
+          "name": "is_global",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "completed",
+          "type": "tinyint(1)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "last_mail",
+          "type": "date",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "mailing_users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "mailing_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "status",
+          "type": "enum('pending','sent','failed')",
+          "null": "YES",
+          "default": "'pending'",
+          "extra": "-"
+        },
+        {
+          "name": "retries",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "sent_at",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD KEY `mailing_id` (`mailing_id`)"
+      ],
+      "foreign_keys": [
+        "ADD CONSTRAINT `mailing_users_ibfk_1` FOREIGN KEY (`mailing_id`) REFERENCES `mailing` (`id`) ON DELETE CASCADE"
+      ],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "migracion_estado",
+      "columns": [
+        {
+          "name": "proceso",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ultimo_id",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "actualizado",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "ON UPDATE CURRENT_TIMESTAMP"
+        }
+      ],
+      "pk": [
+        "proceso"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "mp_antispam",
+      "columns": [
+        {
+          "name": "id_token",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "token",
+          "type": "varchar(255) CHARACTER SET utf8 COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tipo",
+          "type": "smallint(6)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "spam",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ham",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "freq",
+          "type": "double",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "error",
+          "type": "double",
+          "null": "NO",
+          "default": "'1'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id_token"
+      ],
+      "indexes": [
+        "ADD KEY `TOKEN` (`token`)",
+        "ADD KEY `TIPO` (`tipo`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "mp_config",
+      "columns": [
+        {
+          "name": "setting",
+          "type": "varchar(60) CHARACTER SET utf8 COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "value",
+          "type": "text CHARACTER SET utf8 COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "setting"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "sneakers",
+      "columns": [
+        {
+          "name": "sneaker_id",
+          "type": "char(24)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "sneaker_time",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "sneaker_user",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [],
+      "indexes": [
+        "ADD UNIQUE KEY `sneaker_id` (`sneaker_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MEMORY",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "1000"
+    },
+    {
+      "name": "stats_browser",
+      "columns": [
+        {
+          "name": "browser_code",
+          "type": "varchar(5)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "browser_name",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "browser_code"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "stats_country_ip",
+      "columns": [
+        {
+          "name": "ipstart",
+          "type": "bigint(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ipend",
+          "type": "bigint(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "2letter",
+          "type": "varchar(2)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "3letter",
+          "type": "varchar(3)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "full",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [],
+      "indexes": [
+        "ADD KEY `ipstart` (`ipstart`)",
+        "ADD KEY `ipend` (`ipend`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "stats_country_iso_codes",
+      "columns": [
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "code",
+          "type": "varchar(4)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "code"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "stats_lang",
+      "columns": [
+        {
+          "name": "langid",
+          "type": "mediumint(4)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "lang_code",
+          "type": "varchar(5)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "language",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "langid"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "sys_users",
+      "columns": [
+        {
+          "name": "sys_users_id",
+          "type": "int(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "sys_users_code",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_movilcode",
+          "type": "varchar(16)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_firstname",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_lastname",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_password",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_country",
+          "type": "char(2)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_group",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_open_last_book",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'1'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "sys_users_id"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "sys_users_email",
+      "columns": [
+        {
+          "name": "sys_users_email_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "sys_users_email_timestamp",
+          "type": "datetime",
+          "null": "NO",
+          "default": "'0000-00-00 00:00:00'",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_from",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_to",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_subject",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_text",
+          "type": "text",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_type",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_country_code",
+          "type": "char(2)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_user_ip",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_doc",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_doc_id",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "sys_users_email_doc_type",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "sys_users_email_id"
+      ],
+      "indexes": [
+        "ADD KEY `sys_users_email_doc` (`sys_users_email_doc`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "tags",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "uri",
+          "type": "varchar(255) COLLATE utf8mb4_unicode_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "nombre_es",
+          "type": "varchar(255) COLLATE utf8mb4_unicode_ci",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "nombre_en",
+          "type": "varchar(255) COLLATE utf8mb4_unicode_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "ranking",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `uri` (`uri`)",
+        "ADD UNIQUE KEY `nombre_es` (`nombre_es`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "utf8mb4",
+      "collate": "utf8mb4_unicode_ci",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "tareas",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "name",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "script",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "interval",
+          "type": "int(6)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "last_exec",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "next_exec",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "enabled",
+          "type": "tinyint(4)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "contador",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "prioridad",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `name` (`name`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "utf8",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "users",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "user_login",
+          "type": "varchar(32) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_level",
+          "type": "enum('disabled','normal','special','blogger','admin','god') COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "'normal'",
+          "extra": "-"
+        },
+        {
+          "name": "user_avatar",
+          "type": "tinyint(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "user_modification",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        },
+        {
+          "name": "user_date",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "'0000-00-00 00:00:00'",
+          "extra": "-"
+        },
+        {
+          "name": "user_validated_date",
+          "type": "timestamp",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_ip",
+          "type": "varchar(32) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_pass",
+          "type": "varchar(64) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_email",
+          "type": "varchar(64) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_names",
+          "type": "varchar(60) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_login_register",
+          "type": "varchar(32) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_email_register",
+          "type": "varchar(64) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_lang",
+          "type": "tinyint(2) UNSIGNED",
+          "null": "NO",
+          "default": "'1'",
+          "extra": "-"
+        },
+        {
+          "name": "user_comment_pref",
+          "type": "tinyint(2) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "user_karma",
+          "type": "decimal(10,2)",
+          "null": "YES",
+          "default": "'6.00'",
+          "extra": "-"
+        },
+        {
+          "name": "user_public_info",
+          "type": "varchar(64) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_url",
+          "type": "varchar(128) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_adcode",
+          "type": "varchar(24) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_adchannel",
+          "type": "varchar(12) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_country",
+          "type": "varchar(2) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "user_id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `user_login` (`user_login`)",
+        "ADD KEY `user_email` (`user_email`)",
+        "ADD KEY `user_karma` (`user_karma`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "utf8",
+      "collate": "utf8_spanish_ci",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "users_copy",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "user_login",
+          "type": "varchar(32) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_level",
+          "type": "enum('disabled','normal','special','blogger','admin','god') COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "'normal'",
+          "extra": "-"
+        },
+        {
+          "name": "user_avatar",
+          "type": "tinyint(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "user_modification",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        },
+        {
+          "name": "user_date",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "'0000-00-00 00:00:00'",
+          "extra": "-"
+        },
+        {
+          "name": "user_validated_date",
+          "type": "timestamp",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_ip",
+          "type": "varchar(32) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_pass",
+          "type": "varchar(64) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_email",
+          "type": "varchar(64) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_names",
+          "type": "varchar(60) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_login_register",
+          "type": "varchar(32) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_email_register",
+          "type": "varchar(64) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_lang",
+          "type": "tinyint(2) UNSIGNED",
+          "null": "NO",
+          "default": "'1'",
+          "extra": "-"
+        },
+        {
+          "name": "user_comment_pref",
+          "type": "tinyint(2) UNSIGNED",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "user_karma",
+          "type": "decimal(10,2)",
+          "null": "YES",
+          "default": "'6.00'",
+          "extra": "-"
+        },
+        {
+          "name": "user_public_info",
+          "type": "varchar(64) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_url",
+          "type": "varchar(128) COLLATE utf8_spanish_ci",
+          "null": "NO",
+          "default": "''",
+          "extra": "-"
+        },
+        {
+          "name": "user_adcode",
+          "type": "varchar(24) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_adchannel",
+          "type": "varchar(12) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "user_country",
+          "type": "varchar(2) COLLATE utf8_spanish_ci",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "user_id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `user_login` (`user_login`)",
+        "ADD KEY `user_email` (`user_email`)",
+        "ADD KEY `user_karma` (`user_karma`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "utf8",
+      "collate": "utf8_spanish_ci",
+      "row_format": "DYNAMIC",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "user_books",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "user_id",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_id",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "current_page",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "leidas",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "'1'",
+          "extra": "-"
+        },
+        {
+          "name": "first_read",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "last_read",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "device",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "stat_web",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "stat_movil",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `user_id_ebooks_books_id` (`user_id`,`ebooks_books_id`)",
+        "ADD KEY `user_id` (`user_id`)",
+        "ADD KEY `ebooks_books_id` (`ebooks_books_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "user_books_log",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) UNSIGNED",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "user_id",
+          "type": "int(10) UNSIGNED",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "book_id",
+          "type": "int(10) UNSIGNED",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "page_number",
+          "type": "smallint(5) UNSIGNED",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "read_at",
+          "type": "timestamp",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD KEY `user_id` (`user_id`)",
+        "ADD KEY `book_id` (`book_id`)",
+        "ADD KEY `page_number` (`page_number`)",
+        "ADD KEY `read_at` (`read_at`)",
+        "ADD KEY `book_id_2` (`book_id`,`read_at`)",
+        "ADD KEY `user_id_2` (`user_id`,`book_id`,`read_at`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "utf8mb4",
+      "collate": "utf8mb4_unicode_ci",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "user_groups",
+      "columns": [
+        {
+          "name": "groupid",
+          "type": "int(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "name",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "descip",
+          "type": "varchar(4000)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "valid",
+          "type": "int(2)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "group_type",
+          "type": "int(2)",
+          "null": "NO",
+          "default": "'1'",
+          "extra": "-"
+        },
+        {
+          "name": "fee",
+          "type": "decimal(20,2)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "expire_in_days",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "groupid"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "user_groups_copy",
+      "columns": [
+        {
+          "name": "groupid",
+          "type": "int(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "name",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "descip",
+          "type": "varchar(4000)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "valid",
+          "type": "int(2)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "group_type",
+          "type": "int(2)",
+          "null": "NO",
+          "default": "'1'",
+          "extra": "-"
+        },
+        {
+          "name": "fee",
+          "type": "decimal(20,2)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "expire_in_days",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "groupid"
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "DYNAMIC",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "user_table",
+      "columns": [
+        {
+          "name": "userid",
+          "type": "int(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "username",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "screenname",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "p_hash",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "s_hash",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "valid",
+          "type": "int(3)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "acti_code",
+          "type": "varchar(300)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ipad",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "date_joined",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "lastip",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "last_visit",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "email",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "gravtar_email",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "usergroup",
+          "type": "int(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "temppass",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tpdate",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tpip",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tp_flag",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "browser",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "'OBW'",
+          "extra": "-"
+        },
+        {
+          "name": "os",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "'OOS'",
+          "extra": "-"
+        },
+        {
+          "name": "lang",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "'ool'",
+          "extra": "-"
+        },
+        {
+          "name": "country",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "'ZZ'",
+          "extra": "-"
+        },
+        {
+          "name": "refid",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "refurl",
+          "type": "varchar(1000)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "refdomain",
+          "type": "varchar(100)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "contact",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "fname",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sname",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "mobilenum",
+          "type": "varchar(20)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "screenres",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "searchengine",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "searchterm",
+          "type": "varchar(300)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "smstok",
+          "type": "varchar(30)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "smsip",
+          "type": "varchar(30)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "smstimedate",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "oneuse",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "landingpage",
+          "type": "varchar(500)",
+          "null": "YES",
+          "default": "'none'",
+          "extra": "-"
+        },
+        {
+          "name": "openidurl",
+          "type": "varchar(500)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "authentication_source",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "'userbase'",
+          "extra": "-"
+        },
+        {
+          "name": "img_flag",
+          "type": "varchar(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "img_url",
+          "type": "varchar(1000)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "cookie_id",
+          "type": "varchar(1000)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "cookie_salt",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "cookie_expire",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "paid",
+          "type": "int(2)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "fee",
+          "type": "decimal(20,2)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "credit",
+          "type": "decimal(20,2)",
+          "null": "NO",
+          "default": "'0.00'",
+          "extra": "-"
+        },
+        {
+          "name": "renew_date",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "remember_token",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "userid"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `email` (`email`)",
+        "ADD KEY `usergroup` (`usergroup`)",
+        "ADD KEY `last_visit` (`last_visit`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "user_table_copy",
+      "columns": [
+        {
+          "name": "userid",
+          "type": "int(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "username",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "screenname",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "p_hash",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "s_hash",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "valid",
+          "type": "int(3)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "acti_code",
+          "type": "varchar(300)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "ipad",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "date_joined",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "lastip",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "last_visit",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "email",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "gravtar_email",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "usergroup",
+          "type": "int(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "temppass",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tpdate",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tpip",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tp_flag",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "browser",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "'OBW'",
+          "extra": "-"
+        },
+        {
+          "name": "os",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "'OOS'",
+          "extra": "-"
+        },
+        {
+          "name": "lang",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "'ool'",
+          "extra": "-"
+        },
+        {
+          "name": "country",
+          "type": "varchar(5)",
+          "null": "YES",
+          "default": "'ZZ'",
+          "extra": "-"
+        },
+        {
+          "name": "refid",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "refurl",
+          "type": "varchar(1000)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "refdomain",
+          "type": "varchar(100)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "contact",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "fname",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "sname",
+          "type": "varchar(50)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "mobilenum",
+          "type": "varchar(20)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "screenres",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "searchengine",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "searchterm",
+          "type": "varchar(300)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "smstok",
+          "type": "varchar(30)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "smsip",
+          "type": "varchar(30)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "smstimedate",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "oneuse",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "landingpage",
+          "type": "varchar(500)",
+          "null": "YES",
+          "default": "'none'",
+          "extra": "-"
+        },
+        {
+          "name": "openidurl",
+          "type": "varchar(500)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "authentication_source",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "'userbase'",
+          "extra": "-"
+        },
+        {
+          "name": "img_flag",
+          "type": "varchar(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "img_url",
+          "type": "varchar(1000)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "cookie_id",
+          "type": "varchar(1000)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "cookie_salt",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "cookie_expire",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "paid",
+          "type": "int(2)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "fee",
+          "type": "decimal(20,2)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "renew_date",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "userid"
+      ],
+      "indexes": [
+        "ADD KEY `usergroup` (`usergroup`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "DYNAMIC",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "user_tags",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "tag_id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "cantidad",
+          "type": "double",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "user_id",
+        "tag_id"
+      ],
+      "indexes": [
+        "ADD KEY `tag_id` (`tag_id`)"
+      ],
+      "foreign_keys": [
+        "ADD CONSTRAINT `user_tags_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user_table` (`userid`) ON DELETE CASCADE",
+        "ADD CONSTRAINT `user_tags_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE"
+      ],
+      "engine": "InnoDB",
+      "default_charset": "utf8mb4",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "user_video_audiolibros",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "user_id",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "ebooks_books_id",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "current_min",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "max_min",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "first_read",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "last_read",
+          "type": "datetime",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `user_id_ebooks_books_id` (`user_id`,`ebooks_books_id`)",
+        "ADD KEY `user_id` (`user_id`)",
+        "ADD KEY `ebooks_books_id` (`ebooks_books_id`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "COMPACT",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "videos",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "youtubeid",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "thumbnail",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "channelid",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "description",
+          "type": "mediumtext",
+          "null": "YES",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "channeltitle",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `youtubeid` (`youtubeid`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "utf8",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "videos_book",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "videoid",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "libro_uri",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "userid",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "fecha",
+          "type": "date",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "views",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "rank",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "lang",
+          "type": "varchar(2)",
+          "null": "NO",
+          "default": "'es'",
+          "extra": "-"
+        },
+        {
+          "name": "is_short",
+          "type": "tinyint(1)",
+          "null": "NO",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `videoid_libro_uri` (`videoid`,`libro_uri`)",
+        "ADD KEY `libro_uri` (`libro_uri`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "videos_sugeridos",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(10)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "uri",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "video",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "pagina",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "null": "YES",
+          "default": "NULL",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD KEY `tema` (`uri`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "utf8",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "video_audiolibros",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(11)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "videoid",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "libro_uri",
+          "type": "varchar(255)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "userid",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "fecha",
+          "type": "datetime",
+          "null": "NO",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "-"
+        },
+        {
+          "name": "views",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "rank",
+          "type": "int(11)",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "completo",
+          "type": "int(1) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        },
+        {
+          "name": "vozhumana",
+          "type": "int(1) UNSIGNED",
+          "null": "YES",
+          "default": "'0'",
+          "extra": "-"
+        }
+      ],
+      "pk": [
+        "id"
+      ],
+      "indexes": [
+        "ADD UNIQUE KEY `videoid_libro_uri` (`videoid`,`libro_uri`)"
+      ],
+      "foreign_keys": [],
+      "engine": "InnoDB",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "COMPACT",
+      "max_rows": "NO DEFINIDO"
+    },
+    {
+      "name": "visit_stats",
+      "columns": [
+        {
+          "name": "visitid",
+          "type": "int(15)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "AUTO_INCREMENT"
+        },
+        {
+          "name": "reg_flag",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "browser",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "os",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "lang",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "country",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "date_visited",
+          "type": "datetime",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "refurl",
+          "type": "varchar(500)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "refdomain",
+          "type": "varchar(200)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "refid",
+          "type": "varchar(50)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "screenres",
+          "type": "varchar(30)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "userid",
+          "type": "int(20)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "COMMENT 'if you really want to track users'"
+        },
+        {
+          "name": "searchengine",
+          "type": "varchar(100)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "searchterm",
+          "type": "varchar(300)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "admin_flag",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "landingpage",
+          "type": "varchar(500)",
+          "null": "YES",
+          "default": "'none'",
+          "extra": "-"
+        },
+        {
+          "name": "lp_flag",
+          "type": "int(1)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "parent_id",
+          "type": "int(15)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        },
+        {
+          "name": "landing_id",
+          "type": "int(15)",
+          "null": "NO",
+          "default": "NO DEFINIDO",
+          "extra": "-"
+        }
+      ],
+      "pk": [],
+      "indexes": [
+        "ADD UNIQUE KEY `visitid` (`visitid`)"
+      ],
+      "foreign_keys": [],
+      "engine": "MyISAM",
+      "default_charset": "latin1",
+      "collate": "NO DEFINIDO",
+      "row_format": "NO DEFINIDO",
+      "max_rows": "NO DEFINIDO"
+    }
+  ],
+  "inferred_relationships": []
+}

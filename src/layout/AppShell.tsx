@@ -1,5 +1,5 @@
-import { ReactNode, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { ReactNode, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 type ShellMode = "standard" | "immersive";
 type ShellTheme = "dark" | "light";
@@ -18,8 +18,8 @@ const navItems = [
   { href: "/home", label: "Inicio", icon: "home" },
   { href: "/library", label: "Mi Biblioteca", icon: "library_books" },
   { href: "/search", label: "Explorar", icon: "explore" },
-  { href: "/stats", label: "Estadísticas", icon: "bar_chart" },
-  { href: "/settings", label: "Configuración", icon: "settings" },
+  { href: "/stats", label: "Estadisticas", icon: "bar_chart" },
+  { href: "/settings", label: "Configuracion", icon: "settings" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -36,8 +36,33 @@ export function AppShell({
   theme = "dark",
   contentClassName = "",
 }: AppShellProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState("");
+
+  useEffect(() => {
+    const nextQuery = new URLSearchParams(search).get("q") ?? "";
+    setHeaderSearch(nextQuery);
+  }, [search]);
+
+  function submitHeaderSearch() {
+    const normalizedQuery = headerSearch.trim();
+    const params = new URLSearchParams();
+
+    if (normalizedQuery) {
+      params.set("q", normalizedQuery);
+    }
+
+    const target = params.toString() ? `/search?${params.toString()}` : "/search";
+    const currentTarget = `${pathname}${search}`;
+
+    if (currentTarget === target) {
+      return;
+    }
+
+    navigate(target, { replace: pathname === "/search" });
+  }
 
   if (mode === "immersive") {
     return (
@@ -136,20 +161,26 @@ export function AppShell({
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div
+            <form
               className={`hidden items-center rounded-full px-4 py-2 md:flex ${
                 dark
                   ? "border border-slate-800 bg-[#161d31]"
                   : "border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-[#282f39]"
               }`}
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitHeaderSearch();
+              }}
             >
               <span className="material-symbols-outlined text-[20px] text-slate-400">search</span>
               <input
                 className="w-64 border-none bg-transparent px-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 dark:text-white"
+                onChange={(event) => setHeaderSearch(event.target.value)}
                 placeholder={searchPlaceholder}
                 type="text"
+                value={headerSearch}
               />
-            </div>
+            </form>
             {headerRight}
           </div>
         </header>
