@@ -1,5 +1,6 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+﻿import { Navigate, Route, Routes } from "react-router-dom";
 import { ApiHealthBadge } from "./components/ApiHealthBadge";
+import { AuthorPage } from "./pages/AuthorPage";
 import { AudiobookPlayerPage } from "./pages/AudiobookPlayerPage";
 import { BookDetailsPage } from "./pages/BookDetailsPage";
 import { BookDiscoverySearchPage } from "./pages/BookDiscoverySearchPage";
@@ -18,6 +19,7 @@ function App() {
         <Route path="/home" element={<UserDashboardPage />} />
         <Route path="/library" element={<PersonalLibraryPage />} />
         <Route path="/search" element={<BookDiscoverySearchPage />} />
+        <Route path="/autor/:uri" element={<AuthorPage />} />
         <Route path="/book/:libro_uri" element={<BookDetailsPage />} />
         <Route path="/listen/:libro_uri" element={<AudiobookPlayerPage />} />
         <Route path="/read/:libro_uri/:page" element={<ImmersiveReaderPage />} />
@@ -32,3 +34,5 @@ function App() {
 }
 
 export default App;
+
+

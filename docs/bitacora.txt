@@ -11,6 +11,20 @@ https://notebooklm.google.com/notebook/9f9cd090-3c5b-4204-9d93-f70b83bca81e
 video alejavi
 https://www.youtube.com/watch?v=HsGoqAokX5o
 
+## COMO EJECUTARLO
+cd D:\Desarrollo\PlanetaLibroApp
+npm install
+npm run dev
+
+http://localhost:5173/app/
+
+para verlo en celular
+npm run dev -- --host
+http://TU_IP:5173/app/
+
+
+
+
 Crear un reporte
 https://youtu.be/HsGoqAokX5o?si=o4Xz_pSbcOKX_mqy&t=253
 

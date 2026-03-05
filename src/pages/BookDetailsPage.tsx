@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { type Book, getBookByUri } from "../api/books";
 import { ApiError } from "../api/client";
@@ -60,7 +60,7 @@ export function BookDetailsPage() {
           </div>
         ) : error || !book ? (
           <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-            {error ?? "No se encontró el libro solicitado."}
+            {error ?? "No se encontrÃ³ el libro solicitado."}
           </div>
         ) : (
           <>
@@ -119,9 +119,13 @@ export function BookDetailsPage() {
                     )}
                   </div>
                   <h1 className="mb-2 font-display text-4xl font-bold leading-tight text-slate-900 dark:text-white md:text-5xl">{book.titulo}</h1>
-                  <a className="font-display text-xl font-medium text-primary transition-colors hover:text-primary/80" href="#">
-                    {book.autorNombre}
-                  </a>
+                  {book.autorUri ? (
+                    <Link className="font-display text-xl font-medium text-primary transition-colors hover:text-primary/80" to={`/autor/${book.autorUri}`}>
+                      {book.autorNombre}
+                    </Link>
+                  ) : (
+                    <p className="font-display text-xl font-medium text-primary">{book.autorNombre}</p>
+                  )}
                   {book.subtitulo && <p className="mt-3 text-base text-slate-500 dark:text-slate-400">{book.subtitulo}</p>}
                 </div>
                 <div className="mb-8 flex items-center gap-6 border-b border-slate-200 pb-8 dark:border-slate-800/50">
@@ -143,14 +147,14 @@ export function BookDetailsPage() {
                 </div>
                 <div className="mb-8 max-w-none text-slate-600 dark:text-slate-400">
                   <h3 className="mb-3 font-display text-lg font-bold text-slate-900 dark:text-white">Sinopsis</h3>
-                  <p className="whitespace-pre-line leading-relaxed">{book.descripcion || "La API no devolvió una descripción para este libro."}</p>
+                  <p className="whitespace-pre-line leading-relaxed">{book.descripcion || "La API no devolviÃ³ una descripciÃ³n para este libro."}</p>
                 </div>
                 <div className="mb-8 rounded-xl bg-slate-100 p-6 dark:bg-surface-dark">
                   <div className="mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
                       <h4 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">Tu progreso</h4>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {book.updatedAt ? `Última actualización: ${book.updatedAt}` : "Sin actividad registrada"}
+                        {book.updatedAt ? `Ãšltima actualizaciÃ³n: ${book.updatedAt}` : "Sin actividad registrada"}
                       </p>
                     </div>
                     <div className="relative">
@@ -167,7 +171,7 @@ export function BookDetailsPage() {
                     <div className="h-2.5 rounded-full bg-primary" style={{ width: `${book.progressPercent}%` }} />
                   </div>
                   <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                    <span>Página {book.currentPage}</span>
+                    <span>PÃ¡gina {book.currentPage}</span>
                     <span>{book.progressPercent}%</span>
                   </div>
                 </div>
@@ -179,3 +183,5 @@ export function BookDetailsPage() {
     </AppShell>
   );
 }
+
+

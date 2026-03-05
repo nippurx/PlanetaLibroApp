@@ -141,3 +141,79 @@ Campos nuevos agregados sin romper los existentes:
   - `cover_url`, `author_uri`
 - `GET /autor/{uri}` (cada libro listado):
   - `cover_url`, `author_uri`
+## Author photo
+
+Se agrega el campo `author.photo` (en payloads donde el autor viaja como objeto `author` o `autor`) usando convencion de archivos, sin cambios en base de datos.
+
+Convencion:
+
+- `author_uri`: por ejemplo `kafka-franz`
+- URL publica: `https://planetalibro.com/img/authors/{author_uri}.jpg`
+- Path filesystem (server): `$_SERVER['DOCUMENT_ROOT'] . "/img/authors/{author_uri}.jpg"`
+- Validacion: `file_exists(...)`
+
+Schema del campo:
+
+```json
+"photo": {
+  "available": true,
+  "url": "https://planetalibro.com/img/authors/kafka-franz.jpg"
+}
+```
+
+Reglas de respuesta:
+
+- Si existe el archivo `.jpg`: `photo.available=true` y `photo.url` con dominio exacto `https://planetalibro.com`.
+- Si no existe: `photo.available=false` y `photo.url=null`.
+
+Endpoints impactados:
+
+- `GET /api/v1/public/autor/{uri}` en `data.author.photo`
+- `GET /api/v1/public/libro/{uri}` en `data.autor.photo`
+- `GET /api/v1/public/libros` en `data.items[].autor.photo`
+- `GET /api/v1/public/buscar` en `data.items[].autor.photo`
+
+Ejemplo de `GET /api/v1/public/autor/kafka-franz?limit=1&offset=0`:
+
+```json
+{
+  "data": {
+    "author": {
+      "id": 123,
+      "uri": "kafka-franz",
+      "nombre": "Franz Kafka",
+      "photo": {
+        "available": true,
+        "url": "https://planetalibro.com/img/authors/kafka-franz.jpg"
+      }
+    },
+    "books": [
+      {
+        "id": 456,
+        "uri": "kafka-franz-la-metamorfosis",
+        "autor": {
+          "uri": "kafka-franz",
+          "nombre": "Franz Kafka",
+          "photo": {
+            "available": true,
+            "url": "https://planetalibro.com/img/authors/kafka-franz.jpg"
+          }
+        }
+      }
+    ],
+    "pagination": {
+      "limit": 1,
+      "offset": 0
+    }
+  }
+}
+```
+
+Verificacion manual rapida:
+
+- Caso con imagen: consultar `/api/v1/public/autor/kafka-franz` y validar `photo.available=true`.
+- Caso sin imagen: consultar un `author_uri` inexistente en `/img/authors/` y validar `photo.available=false` y `photo.url=null`.
+
+Nota de configuracion:
+
+- En `api/v1/config/config.php` no existe hoy una constante para dominio base del sitio, por eso la URL de foto se arma con el dominio fijo requerido (`https://planetalibro.com`).
