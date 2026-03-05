@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { type Book, getBookByUri } from "../api/books";
 import { ApiError } from "../api/client";
+import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
 import { AppShell } from "../layout/AppShell";
 
@@ -10,6 +11,7 @@ export function AudiobookPlayerPage() {
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const bookAuthor = book ? resolveAuthor(book) : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -87,7 +89,7 @@ export function AudiobookPlayerPage() {
             </div>
           ) : error || !book ? (
             <div className="w-full max-w-[1200px] rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-              {error ?? "No se encontró el audiolibro solicitado."}
+              {error ?? "No se encontrÃ³ el audiolibro solicitado."}
             </div>
           ) : (
             <>
@@ -112,7 +114,12 @@ export function AudiobookPlayerPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">{book.titulo}</h1>
                     <div className="space-y-1">
                       <p className="text-lg font-medium text-slate-500 dark:text-slate-400">
-                        By <span className="cursor-pointer text-primary hover:underline">{book.autorNombre}</span>
+                        By{" "}
+                        <AuthorLink
+                          className="text-current hover:underline underline-offset-2"
+                          name={bookAuthor?.name ?? "Autor desconocido"}
+                          uri={bookAuthor?.uri ?? null}
+                        />
                       </p>
                       <p className="text-sm text-slate-400 dark:text-slate-500">
                         {book.hasAudio ? `Audiolibro disponible en YouTube (${book.youtubeVideoId})` : "Sin audiolibro vinculado"}
@@ -203,7 +210,11 @@ export function AudiobookPlayerPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <h4 className="truncate text-base font-semibold text-slate-900 transition-colors group-hover:text-primary dark:text-white">{book.titulo}</h4>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">{book.autorNombre}</p>
+                          <AuthorLink
+                            className="text-sm text-slate-500 dark:text-slate-400"
+                            name={bookAuthor?.name ?? "Autor desconocido"}
+                          uri={bookAuthor?.uri ?? null}
+                          />
                         </div>
                         <button className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-500 transition-all hover:border-primary hover:bg-primary hover:text-white dark:border-slate-600">
                           <span className="material-symbols-outlined text-[20px]">play_arrow</span>
@@ -220,3 +231,5 @@ export function AudiobookPlayerPage() {
     </AppShell>
   );
 }
+
+

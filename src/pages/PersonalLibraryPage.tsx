@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { type Book, getHomeBooks } from "../api/books";
 import { ApiError } from "../api/client";
+import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
 import { AppShell } from "../layout/AppShell";
 
@@ -87,41 +88,46 @@ export function PersonalLibraryPage() {
               {featuredBooks.map((book, index) => {
                 const accent = book.hasAudio ? accentClasses.audio : accentClasses.read;
                 const progress = Math.min(25 + index * 20, 80);
+                const author = resolveAuthor(book);
 
                 return (
-                  <Link key={book.uri} className="flex gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-[#1c2027]" to={`/book/${book.uri}`}>
-                    <div className="group relative h-36 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-slate-200 shadow-sm dark:bg-slate-700">
-                      <div className="absolute inset-0 z-10 bg-black/0 transition-colors group-hover:bg-black/10" />
-                      <BookCover book={book} className="h-full w-full object-cover" />
-                    </div>
-                    <div className="flex flex-1 flex-col justify-between py-1">
-                      <div>
-                        <div className="flex items-start justify-between">
-                          <span className={`mb-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${accent}`}>
-                            {book.hasAudio ? "Audiolibro" : "Ebook"}
-                          </span>
-                          <button className="text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-white">
-                            <span className="material-symbols-outlined text-[20px]">more_vert</span>
+                  <div key={book.uri} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-[#1c2027]">
+                    <div className="flex gap-4">
+                      <Link className="group relative h-36 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-slate-200 shadow-sm dark:bg-slate-700" to={`/book/${book.uri}`}>
+                        <div className="absolute inset-0 z-10 bg-black/0 transition-colors group-hover:bg-black/10" />
+                        <BookCover book={book} className="h-full w-full object-cover" />
+                      </Link>
+                      <div className="flex flex-1 flex-col justify-between py-1">
+                        <div>
+                          <div className="flex items-start justify-between">
+                            <span className={`mb-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${accent}`}>
+                              {book.hasAudio ? "Audiolibro" : "Ebook"}
+                            </span>
+                            <button className="text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-white">
+                              <span className="material-symbols-outlined text-[20px]">more_vert</span>
+                            </button>
+                          </div>
+                          <Link to={`/book/${book.uri}`}>
+                            <h3 className="line-clamp-1 text-lg font-bold leading-tight text-slate-900 hover:text-primary dark:text-white">{book.titulo}</h3>
+                          </Link>
+                          <AuthorLink className="mt-1 block text-sm text-slate-500 dark:text-slate-400" name={author.name} uri={author.uri} />
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                            <span>{progress}% completado</span>
+                            <span>{book.readOnline ? "Lectura lista" : "Ficha guardada"}</span>
+                          </div>
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
+                          </div>
+                          <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-200 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]">
+                            <span className="material-symbols-outlined text-[18px]">{book.hasAudio ? "play_arrow" : "menu_book"}</span>
+                            Continuar
                           </button>
                         </div>
-                        <h3 className="line-clamp-1 text-lg font-bold leading-tight text-slate-900 dark:text-white">{book.titulo}</h3>
-                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{book.autorNombre}</p>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                          <span>{progress}% completado</span>
-                          <span>{book.readOnline ? "Lectura lista" : "Ficha guardada"}</span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                          <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
-                        </div>
-                        <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-200 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]">
-                          <span className="material-symbols-outlined text-[18px]">{book.hasAudio ? "play_arrow" : "menu_book"}</span>
-                          Continuar
-                        </button>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
@@ -132,14 +138,14 @@ export function PersonalLibraryPage() {
                 </div>
                 <div className="flex-1">
                   <h4 className="mb-1 text-lg font-bold text-slate-900 dark:text-white">Tu zona DNF (Did Not Finish)</h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Está bien dejar un libro si no conecta contigo. La vida es demasiado corta para leer sin intención.</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">EstÃ¡ bien dejar un libro si no conecta contigo. La vida es demasiado corta para leer sin intenciÃ³n.</p>
                 </div>
                 <button className="shrink-0 text-sm font-medium text-primary hover:underline">Ver mis libros abandonados</button>
               </div>
             </div>
             <div className="mt-4">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Añadidos recientemente</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">AÃ±adidos recientemente</h2>
                 <a className="text-sm font-medium text-primary hover:underline" href="#">
                   Ver todo
                 </a>
@@ -158,7 +164,7 @@ export function PersonalLibraryPage() {
                 ))}
                 <div className="flex aspect-[2/3] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 transition-colors hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-slate-800/30">
                   <span className="material-symbols-outlined mb-1 text-3xl">add</span>
-                  <span className="text-xs font-medium">Añadir</span>
+                  <span className="text-xs font-medium">AÃ±adir</span>
                 </div>
               </div>
             </div>

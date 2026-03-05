@@ -2,6 +2,7 @@
 import { Link, useParams } from "react-router-dom";
 import { type Book, getBookByUri } from "../api/books";
 import { ApiError } from "../api/client";
+import { AuthorLink } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
 import { AppShell } from "../layout/AppShell";
 
@@ -119,13 +120,7 @@ export function BookDetailsPage() {
                     )}
                   </div>
                   <h1 className="mb-2 font-display text-4xl font-bold leading-tight text-slate-900 dark:text-white md:text-5xl">{book.titulo}</h1>
-                  {book.autorUri ? (
-                    <Link className="font-display text-xl font-medium text-primary transition-colors hover:text-primary/80" to={`/autor/${book.autorUri}`}>
-                      {book.autorNombre}
-                    </Link>
-                  ) : (
-                    <p className="font-display text-xl font-medium text-primary">{book.autorNombre}</p>
-                  )}
+                  <AuthorLink className="font-display text-xl font-medium text-primary transition-colors hover:text-primary/80" name={book.autorNombre} uri={book.autorUri} />
                   {book.subtitulo && <p className="mt-3 text-base text-slate-500 dark:text-slate-400">{book.subtitulo}</p>}
                 </div>
                 <div className="mb-8 flex items-center gap-6 border-b border-slate-200 pb-8 dark:border-slate-800/50">
@@ -183,5 +178,7 @@ export function BookDetailsPage() {
     </AppShell>
   );
 }
+
+
 
 

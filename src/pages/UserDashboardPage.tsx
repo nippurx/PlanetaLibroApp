@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { type Book, getHomeBooks } from "../api/books";
 import { ApiError } from "../api/client";
+import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
 import { AppShell } from "../layout/AppShell";
 
@@ -42,11 +43,12 @@ export function UserDashboardPage() {
 
   const currentBook = books[0] ?? null;
   const recommendationBooks = books.slice(1, 6);
+  const currentBookAuthor = currentBook ? resolveAuthor(currentBook) : null;
 
   return (
     <AppShell
       theme="dark"
-      title="Buenos días, Sofia"
+      title="Buenos dÃ­as, Sofia"
       contentClassName="bg-background-dark"
       headerRight={
         <button className="relative text-slate-400 transition-colors hover:text-white">
@@ -77,10 +79,14 @@ export function UserDashboardPage() {
                     <div>
                       <div className="mb-2 flex items-center gap-2">
                         <span className="rounded bg-primary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">En progreso</span>
-                        <span className="text-xs text-slate-500">· Fuente API real</span>
+                        <span className="text-xs text-slate-500">Â· Fuente API real</span>
                       </div>
                       <h1 className="mb-1 font-display text-4xl font-bold text-white">{currentBook.titulo}</h1>
-                      <p className="text-lg text-slate-400">{currentBook.autorNombre}</p>
+                      <AuthorLink
+                        className="text-lg text-slate-400"
+                        name={currentBookAuthor?.name ?? "Autor desconocido"}
+                        uri={currentBookAuthor?.uri ?? null}
+                      />
                     </div>
                     <div className="mt-6 space-y-4">
                       <div>
@@ -149,19 +155,25 @@ export function UserDashboardPage() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                {recommendationBooks.map((book) => (
-                  <Link key={book.uri} className="group cursor-pointer" to={`/book/${book.uri}`}>
-                    <div className="relative mb-3 aspect-[2/3] overflow-hidden rounded-xl">
-                      <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                      <div className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 backdrop-blur-sm">
-                        <span className="material-symbols-outlined fill-1 text-[14px] text-yellow-400">star</span>
-                        <span className="text-xs font-bold text-white">{book.hasAudio ? "Audio" : "Book"}</span>
-                      </div>
+                {recommendationBooks.map((book) => {
+                  const author = resolveAuthor(book);
+
+                  return (
+                    <div key={book.uri} className="group">
+                      <Link className="block cursor-pointer" to={`/book/${book.uri}`}>
+                        <div className="relative mb-3 aspect-[2/3] overflow-hidden rounded-xl">
+                          <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                          <div className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 backdrop-blur-sm">
+                            <span className="material-symbols-outlined fill-1 text-[14px] text-yellow-400">star</span>
+                            <span className="text-xs font-bold text-white">{book.hasAudio ? "Audio" : "Book"}</span>
+                          </div>
+                        </div>
+                        <h4 className="truncate font-semibold text-white transition-colors group-hover:text-primary">{book.titulo}</h4>
+                      </Link>
+                      <AuthorLink className="mt-0.5 block truncate text-sm text-slate-400" name={author.name} uri={author.uri} />
                     </div>
-                    <h4 className="truncate font-semibold text-white transition-colors group-hover:text-primary">{book.titulo}</h4>
-                    <p className="truncate text-sm text-slate-400">{book.autorNombre}</p>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             </section>
           </>
@@ -174,3 +186,5 @@ export function UserDashboardPage() {
     </AppShell>
   );
 }
+
+

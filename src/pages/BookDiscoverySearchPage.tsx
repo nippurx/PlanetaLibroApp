@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { type Book, searchBooks } from "../api/books";
 import { ApiError } from "../api/client";
+import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
 import { AppShell } from "../layout/AppShell";
 
@@ -159,42 +160,50 @@ export function BookDiscoverySearchPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {results.map((book) => (
-              <Link key={book.id} className="group flex cursor-pointer flex-col gap-3" to={`/book/${book.uri}`}>
-                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
-                  <BookCover book={book} className="h-full w-full object-cover" />
-                  {book.hasAudio && (
-                    <div className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur-md">
-                      <span className="material-symbols-outlined text-[18px]">headphones</span>
+            {results.map((book) => {
+              const author = resolveAuthor(book);
+
+              return (
+                <div key={book.id} className="group flex flex-col gap-3">
+                  <Link className="block" to={`/book/${book.uri}`}>
+                    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
+                      <BookCover book={book} className="h-full w-full object-cover" />
+                      {book.hasAudio && (
+                        <div className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur-md">
+                          <span className="material-symbols-outlined text-[18px]">headphones</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                        <span className="rounded-full bg-primary p-3 text-white shadow-lg">
+                          <span className="material-symbols-outlined">visibility</span>
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button className="rounded-full bg-primary p-3 text-white shadow-lg">
-                      <span className="material-symbols-outlined">visibility</span>
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-900 transition-colors group-hover:text-primary dark:text-white">
-                    {book.titulo}
-                  </h3>
-                  {book.subtitulo ? (
-                    <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{book.subtitulo}</p>
-                  ) : null}
-                  <p className="mt-1 text-xs font-normal text-slate-500 dark:text-slate-400">{book.autorNombre}</p>
-                  <div className="mt-1.5 flex items-center gap-1">
-                    <span className="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">
-                      {book.readOnline ? "Online" : "Ficha"}
-                    </span>
-                    {book.hasAudio && (
-                      <span className="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/20">
-                        Audio
+                  </Link>
+                  <div>
+                    <Link to={`/book/${book.uri}`}>
+                      <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-900 transition-colors hover:text-primary dark:text-white">
+                        {book.titulo}
+                      </h3>
+                    </Link>
+                    {book.subtitulo ? (
+                      <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{book.subtitulo}</p>
+                    ) : null}
+                    <AuthorLink className="mt-1 block text-xs font-normal text-slate-500 dark:text-slate-400" name={author.name} uri={author.uri} />
+                    <div className="mt-1.5 flex items-center gap-1">
+                      <span className="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">
+                        {book.readOnline ? "Online" : "Ficha"}
                       </span>
-                    )}
+                      {book.hasAudio && (
+                        <span className="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/20">
+                          Audio
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
