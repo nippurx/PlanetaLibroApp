@@ -1,11 +1,11 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { type Book, getBookByUri } from "../api/books";
 import { ApiError } from "../api/client";
-import { AudiobookPlayer } from "../components/AudiobookPlayer";
+import { AudiobookPlayer, type AudiobookPlayerHandle } from "../components/AudiobookPlayer";
 import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
-import { loadAudiobookProgress } from "../features/listen/storage";
+import { loadAudiobookProgress, saveAudiobookProgress } from "../features/listen/storage";
 import { AppShell } from "../layout/AppShell";
 
 export function AudiobookPlayerPage() {
@@ -13,6 +13,9 @@ export function AudiobookPlayerPage() {
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const playerRef = useRef<AudiobookPlayerHandle | null>(null);
   const bookAuthor = book ? resolveAuthor(book) : null;
 
   useEffect(() => {
@@ -21,6 +24,8 @@ export function AudiobookPlayerPage() {
     async function loadBook() {
       setLoading(true);
       setError(null);
+      setIsReady(false);
+      setIsPlaying(false);
 
       try {
         const nextBook = await getBookByUri(libro_uri);
@@ -50,6 +55,39 @@ export function AudiobookPlayerPage() {
 
   const videoId = book?.recursos?.video_audiolibro?.trim() || "";
   const savedProgressSeconds = book ? loadAudiobookProgress(book.uri) : 0;
+  const isPlayerAvailable = Boolean(videoId);
+  const controlsDisabled = !isReady || !isPlayerAvailable;
+
+  function persistProgressSnapshot() {
+    if (!book) {
+      return;
+    }
+
+    saveAudiobookProgress(book.uri, Math.floor(playerRef.current?.getCurrentTime() || 0));
+  }
+
+  function handlePlay() {
+    playerRef.current?.play();
+  }
+
+  function handlePause() {
+    persistProgressSnapshot();
+    playerRef.current?.pause();
+  }
+
+  function handleTogglePlay() {
+    if (isPlaying) {
+      handlePause();
+      return;
+    }
+
+    handlePlay();
+  }
+
+  function handleSeekBy(seconds: number) {
+    playerRef.current?.seekBy(seconds);
+    persistProgressSnapshot();
+  }
 
   return (
     <AppShell mode="immersive">
@@ -66,7 +104,11 @@ export function AudiobookPlayerPage() {
             </div>
             <nav className="hidden items-center gap-9 md:flex">
               {["Discover", "My Library", "Challenges", "Community"].map((item) => (
-                <a key={item} className={`text-sm font-medium leading-normal transition-colors ${item === "My Library" ? "text-slate-900 dark:text-slate-100" : "text-slate-600 hover:text-primary dark:text-slate-400 dark:hover:text-primary"}`} href="#">
+                <a
+                  key={item}
+                  className={`text-sm font-medium leading-normal transition-colors ${item === "My Library" ? "text-slate-900 dark:text-slate-100" : "text-slate-600 hover:text-primary dark:text-slate-400 dark:hover:text-primary"}`}
+                  href="#"
+                >
                   {item}
                 </a>
               ))}
@@ -78,7 +120,11 @@ export function AudiobookPlayerPage() {
                 <div className="flex items-center justify-center pl-4 text-slate-400">
                   <span className="material-symbols-outlined text-[20px]">search</span>
                 </div>
-                <input className="form-input flex h-full w-full flex-1 resize-none overflow-hidden rounded-lg rounded-l-none border-none bg-transparent px-4 pl-2 text-base font-normal leading-normal text-slate-900 placeholder:text-slate-400 focus:outline-0 focus:ring-0 dark:text-white" defaultValue="" placeholder="Search" />
+                <input
+                  className="form-input flex h-full w-full flex-1 resize-none overflow-hidden rounded-lg rounded-l-none border-none bg-transparent px-4 pl-2 text-base font-normal leading-normal text-slate-900 placeholder:text-slate-400 focus:outline-0 focus:ring-0 dark:text-white"
+                  defaultValue=""
+                  placeholder="Search"
+                />
               </div>
             </label>
             {book ? (
@@ -97,7 +143,7 @@ export function AudiobookPlayerPage() {
             </div>
           ) : error || !book ? (
             <div className="w-full max-w-[1200px] rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-              {error ?? "No se encontrÃ³ el audiolibro solicitado."}
+              {error ?? "No se encontró el audiolibro solicitado."}
             </div>
           ) : (
             <>
@@ -141,7 +187,10 @@ export function AudiobookPlayerPage() {
                       </span>
                     ))}
                   </div>
-                  <Link className="group mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-200 px-6 py-3 font-semibold text-slate-900 transition-all hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 sm:w-auto" to={`/read/${book.uri}/${book.currentPage}`}>
+                  <Link
+                    className="group mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-200 px-6 py-3 font-semibold text-slate-900 transition-all hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 sm:w-auto"
+                    to={`/read/${book.uri}/${book.currentPage}`}
+                  >
                     <span className="material-symbols-outlined text-[20px] transition-transform group-hover:scale-110">menu_book</span>
                     Cambiar a lectura
                   </Link>
@@ -150,42 +199,78 @@ export function AudiobookPlayerPage() {
                   <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-10">
                     <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
                     <div className="relative z-10 mb-8">
-                      <AudiobookPlayer videoId={videoId} title={book.titulo} />
+                      <AudiobookPlayer
+                        ref={playerRef}
+                        videoId={videoId}
+                        title={book.titulo}
+                        onReady={() => setIsReady(true)}
+                        onPlayStateChange={setIsPlaying}
+                      />
                     </div>
                     <div className="relative z-10 flex flex-col gap-6">
                       <div className="group w-full space-y-2">
                         <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
                           <span>0:00</span>
-                          <span>{videoId ? `YouTube ID: ${videoId}` : "Sin audio"}</span>
+                          <span>
+                            {videoId
+                              ? isReady
+                                ? `YouTube ID: ${videoId}`
+                                : "Inicializando reproductor"
+                              : "Sin audio"}
+                          </span>
                         </div>
                         <div className="relative h-2 cursor-pointer overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                           <div className="absolute left-0 top-0 h-full w-0 rounded-full bg-primary" />
                         </div>
                       </div>
                       <div className="flex items-center justify-between sm:relative sm:justify-center sm:gap-12">
-                        <button className="flex items-center gap-1 text-xs font-bold text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary sm:absolute sm:left-0">
+                        <button
+                          className="flex items-center gap-1 text-xs font-bold text-slate-500 transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-400 dark:hover:text-primary sm:absolute sm:left-0"
+                          disabled
+                          type="button"
+                        >
                           <span className="material-symbols-outlined text-[20px]">speed</span>1.0x
                         </button>
                         <div className="flex items-center gap-6">
-                          {["replay_10", "skip_previous"].map((icon) => (
-                            <button key={icon} className="text-slate-400 transition-colors hover:text-slate-900 dark:hover:text-white">
-                              <span className="material-symbols-outlined text-[32px]">{icon}</span>
-                            </button>
-                          ))}
-                          <button className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-all hover:scale-105 active:scale-95 dark:bg-white dark:text-slate-900">
-                            <span className="material-symbols-outlined fill-1 text-[40px]">pause</span>
+                          <button
+                            className="text-slate-400 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-white"
+                            disabled={controlsDisabled}
+                            onClick={() => handleSeekBy(-10)}
+                            type="button"
+                          >
+                            <span className="material-symbols-outlined text-[32px]">replay_10</span>
                           </button>
-                          {["skip_next", "forward_30"].map((icon) => (
-                            <button key={icon} className="text-slate-400 transition-colors hover:text-slate-900 dark:hover:text-white">
-                              <span className="material-symbols-outlined text-[32px]">{icon}</span>
-                            </button>
-                          ))}
+                          <button
+                            className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-slate-900"
+                            disabled={controlsDisabled}
+                            onClick={handleTogglePlay}
+                            type="button"
+                            aria-label={isPlaying ? "Pausar audiolibro" : "Reproducir audiolibro"}
+                          >
+                            <span className="material-symbols-outlined fill-1 text-[40px]">{isPlaying ? "pause" : "play_arrow"}</span>
+                          </button>
+                          <button
+                            className="text-slate-400 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-white"
+                            disabled={controlsDisabled}
+                            onClick={() => handleSeekBy(30)}
+                            type="button"
+                          >
+                            <span className="material-symbols-outlined text-[32px]">forward_30</span>
+                          </button>
                         </div>
                         <div className="flex items-center gap-4 sm:absolute sm:right-0">
-                          <button className="text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary">
+                          <button
+                            className="text-slate-500 transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-400 dark:hover:text-primary"
+                            disabled
+                            type="button"
+                          >
                             <span className="material-symbols-outlined text-[24px]">volume_up</span>
                           </button>
-                          <button className="hidden text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary sm:block">
+                          <button
+                            className="hidden text-slate-500 transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-400 dark:hover:text-primary sm:block"
+                            disabled
+                            type="button"
+                          >
                             <span className="material-symbols-outlined text-[24px]">bookmark_add</span>
                           </button>
                         </div>
@@ -201,8 +286,8 @@ export function AudiobookPlayerPage() {
                       </div>
                     </div>
                     <div className="mt-8 border-t border-slate-200 pt-6 dark:border-slate-800">
-                      {/* FUTURO: reemplazar iframe simple por YouTube Player API para capturar currentTime, pause, resume y persistir progreso por usuario */}
-                      {/* FUTURO BACKEND: persistir progreso en endpoint propio asociado al usuario y libro */}
+                      {/* FUTURO: guardar progreso real del audiolibro con currentTime */}
+                      {/* FUTURO BACKEND: persistir progreso por usuario/libro */}
                       <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-500">Up Next in Queue</h3>
                       <div className="group flex cursor-pointer items-center gap-4 rounded-lg p-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
                         <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded">
@@ -213,7 +298,7 @@ export function AudiobookPlayerPage() {
                           <AuthorLink
                             className="text-sm text-slate-500 dark:text-slate-400"
                             name={bookAuthor?.name ?? "Autor desconocido"}
-                          uri={bookAuthor?.uri ?? null}
+                            uri={bookAuthor?.uri ?? null}
                           />
                         </div>
                         <button className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-500 transition-all hover:border-primary hover:bg-primary hover:text-white dark:border-slate-600">
@@ -231,5 +316,3 @@ export function AudiobookPlayerPage() {
     </AppShell>
   );
 }
-
-
