@@ -68,6 +68,10 @@ export type Book = {
   cover_url: string | null;
   hasCover: boolean;
   readOnline: boolean;
+  recursos?: {
+    read_online?: boolean;
+    video_audiolibro?: string | null;
+  };
   hasAudio: boolean;
   youtubeVideoId: string | null;
   formatos: {
@@ -130,6 +134,10 @@ function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
     cover_url: coverUrl,
     hasCover: Boolean(coverUrl),
     readOnline: apiBook.recursos.read_online,
+    recursos: {
+      read_online: apiBook.recursos.read_online,
+      video_audiolibro: apiBook.recursos.video_audiolibro,
+    },
     hasAudio: Boolean(audioId),
     youtubeVideoId: audioId,
     formatos,

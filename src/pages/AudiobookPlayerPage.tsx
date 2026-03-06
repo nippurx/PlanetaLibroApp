@@ -2,8 +2,10 @@
 import { Link, useParams } from "react-router-dom";
 import { type Book, getBookByUri } from "../api/books";
 import { ApiError } from "../api/client";
+import { AudiobookPlayer } from "../components/AudiobookPlayer";
 import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
+import { loadAudiobookProgress } from "../features/listen/storage";
 import { AppShell } from "../layout/AppShell";
 
 export function AudiobookPlayerPage() {
@@ -23,6 +25,9 @@ export function AudiobookPlayerPage() {
       try {
         const nextBook = await getBookByUri(libro_uri);
         if (!cancelled) {
+          if (import.meta.env.DEV) {
+            console.log("listen book recursos.video_audiolibro", nextBook.recursos?.video_audiolibro);
+          }
           setBook(nextBook);
         }
       } catch (err) {
@@ -42,6 +47,9 @@ export function AudiobookPlayerPage() {
       cancelled = true;
     };
   }, [libro_uri]);
+
+  const videoId = book?.recursos?.video_audiolibro?.trim() || "";
+  const savedProgressSeconds = book ? loadAudiobookProgress(book.uri) : 0;
 
   return (
     <AppShell mode="immersive">
@@ -122,7 +130,7 @@ export function AudiobookPlayerPage() {
                         />
                       </p>
                       <p className="text-sm text-slate-400 dark:text-slate-500">
-                        {book.hasAudio ? `Audiolibro disponible en YouTube (${book.youtubeVideoId})` : "Sin audiolibro vinculado"}
+                        {videoId ? `Audiolibro disponible en YouTube (${videoId})` : "Sin audiolibro vinculado"}
                       </p>
                     </div>
                   </div>
@@ -141,29 +149,17 @@ export function AudiobookPlayerPage() {
                 <div className="flex flex-col justify-center lg:col-span-7">
                   <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-10">
                     <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-                    <div className="group relative mb-8 aspect-video w-full overflow-hidden rounded-xl bg-slate-900">
-                      <div className="absolute inset-0 opacity-60">
-                        <BookCover alt={`Backdrop de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-40" />
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <button className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all hover:scale-105 hover:bg-blue-600">
-                          <span className="material-symbols-outlined ml-1 text-[48px]">play_arrow</span>
-                        </button>
-                      </div>
-                      <div className="absolute bottom-4 right-4 flex gap-2">
-                        <div className="rounded bg-black/60 px-2 py-1 font-mono text-xs text-white backdrop-blur-sm">
-                          {book.hasAudio ? "audio" : "preview"}
-                        </div>
-                      </div>
+                    <div className="relative z-10 mb-8">
+                      <AudiobookPlayer videoId={videoId} title={book.titulo} />
                     </div>
                     <div className="relative z-10 flex flex-col gap-6">
                       <div className="group w-full space-y-2">
                         <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
                           <span>0:00</span>
-                          <span>{book.hasAudio ? "YouTube ID" : "Sin audio"}</span>
+                          <span>{videoId ? `YouTube ID: ${videoId}` : "Sin audio"}</span>
                         </div>
                         <div className="relative h-2 cursor-pointer overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                          <div className="absolute left-0 top-0 h-full w-[35%] rounded-full bg-primary" />
+                          <div className="absolute left-0 top-0 h-full w-0 rounded-full bg-primary" />
                         </div>
                       </div>
                       <div className="flex items-center justify-between sm:relative sm:justify-center sm:gap-12">
@@ -197,12 +193,16 @@ export function AudiobookPlayerPage() {
                       <div className="mt-2 flex items-center justify-center">
                         <div className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-4 py-2 dark:border-slate-800 dark:bg-slate-800/50">
                           <span className="material-symbols-outlined text-[18px] text-slate-400">list</span>
-                          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{book.currentChapter}</span>
+                          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                            {savedProgressSeconds > 0 ? `Progreso local: ${savedProgressSeconds}s` : book.currentChapter}
+                          </span>
                           <span className="material-symbols-outlined cursor-pointer text-[18px] text-slate-400 hover:text-primary">expand_more</span>
                         </div>
                       </div>
                     </div>
                     <div className="mt-8 border-t border-slate-200 pt-6 dark:border-slate-800">
+                      {/* FUTURO: reemplazar iframe simple por YouTube Player API para capturar currentTime, pause, resume y persistir progreso por usuario */}
+                      {/* FUTURO BACKEND: persistir progreso en endpoint propio asociado al usuario y libro */}
                       <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-500">Up Next in Queue</h3>
                       <div className="group flex cursor-pointer items-center gap-4 rounded-lg p-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
                         <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded">
