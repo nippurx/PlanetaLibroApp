@@ -51,6 +51,46 @@ declare global {
 
 let youtubeApiPromise: Promise<YTNamespace> | null = null;
 
+function normalizeYouTubeVideoId(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const directIdMatch = trimmed.match(/^[a-zA-Z0-9_-]{11}$/);
+  if (directIdMatch) {
+    return directIdMatch[0];
+  }
+
+  const urlPatterns = [
+    /[?&]v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+  ];
+
+  for (const pattern of urlPatterns) {
+    const match = trimmed.match(pattern);
+    if (match?.[1]) {
+      return match[1];
+    }
+  }
+
+  return "";
+}
+
+function destroyPlayerSafely(player: YTPlayer | null) {
+  if (!player) {
+    return;
+  }
+
+  try {
+    player.destroy();
+  } catch {
+    // Ignorar errores de cleanup del player para no romper la pantalla.
+  }
+}
+
 function loadYouTubeIframeApi(): Promise<YTNamespace> {
   if (window.YT?.Player) {
     return Promise.resolve(window.YT);
@@ -109,7 +149,7 @@ export const AudiobookPlayer = forwardRef<AudiobookPlayerHandle, AudiobookPlayer
   { videoId, title, onReady, onPlayStateChange },
   ref,
 ) {
-  const cleanId = videoId?.trim() || "";
+  const cleanId = normalizeYouTubeVideoId(videoId || "");
   const playerId = useId().replace(/:/g, "");
   const playerRef = useRef<YTPlayer | null>(null);
   const onReadyRef = useRef(onReady);
@@ -153,7 +193,7 @@ export const AudiobookPlayer = forwardRef<AudiobookPlayerHandle, AudiobookPlayer
       setIsPlayerLoading(false);
       setPlayerError(null);
       onPlayStateChangeRef.current?.(false);
-      playerRef.current?.destroy();
+      destroyPlayerSafely(playerRef.current);
       playerRef.current = null;
       return;
     }
@@ -168,41 +208,47 @@ export const AudiobookPlayer = forwardRef<AudiobookPlayerHandle, AudiobookPlayer
           return;
         }
 
-        playerRef.current?.destroy();
-        playerRef.current = new YT.Player(playerId, {
-          height: "100%",
-          width: "100%",
-          videoId: cleanId,
-          playerVars: {
-            autoplay: 0,
-            controls: 0,
-            rel: 0,
-            modestbranding: 1,
-          },
-          events: {
-            onReady: () => {
-              if (cancelled) {
-                return;
-              }
-              setIsPlayerLoading(false);
-              onReadyRef.current?.();
+        destroyPlayerSafely(playerRef.current);
+        try {
+          playerRef.current = new YT.Player(playerId, {
+            height: "100%",
+            width: "100%",
+            videoId: cleanId,
+            playerVars: {
+              autoplay: 0,
+              controls: 0,
+              rel: 0,
+              modestbranding: 1,
             },
-            onStateChange: (event) => {
-              if (cancelled) {
-                return;
-              }
+            events: {
+              onReady: () => {
+                if (cancelled) {
+                  return;
+                }
+                setIsPlayerLoading(false);
+                onReadyRef.current?.();
+              },
+              onStateChange: (event) => {
+                if (cancelled) {
+                  return;
+                }
 
-              if (event.data === YT.PlayerState.PLAYING) {
-                onPlayStateChangeRef.current?.(true);
-                return;
-              }
+                if (event.data === YT.PlayerState.PLAYING) {
+                  onPlayStateChangeRef.current?.(true);
+                  return;
+                }
 
-              if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-                onPlayStateChangeRef.current?.(false);
-              }
+                if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                  onPlayStateChangeRef.current?.(false);
+                }
+              },
             },
-          },
-        });
+          });
+        } catch {
+          setIsPlayerLoading(false);
+          setPlayerError("No se pudo inicializar el reproductor para este audiolibro.");
+          onPlayStateChangeRef.current?.(false);
+        }
       })
       .catch(() => {
         if (!cancelled) {
@@ -215,7 +261,7 @@ export const AudiobookPlayer = forwardRef<AudiobookPlayerHandle, AudiobookPlayer
     return () => {
       cancelled = true;
       onPlayStateChangeRef.current?.(false);
-      playerRef.current?.destroy();
+      destroyPlayerSafely(playerRef.current);
       playerRef.current = null;
     };
   }, [cleanId, playerId]);
