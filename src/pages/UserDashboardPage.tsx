@@ -86,10 +86,7 @@ export function UserDashboardPage() {
       return;
     }
 
-    const firstItem = recommendationContainer.firstElementChild as HTMLElement | null;
-    const styles = window.getComputedStyle(recommendationContainer);
-    const gap = Number.parseFloat(styles.columnGap || styles.gap || "0");
-    const scrollAmount = firstItem ? firstItem.getBoundingClientRect().width + gap : recommendationContainer.clientWidth;
+    const scrollAmount = recommendationContainer.clientWidth;
 
     recommendationContainer.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
