@@ -37,6 +37,7 @@ type BookDetailApiItem = Omit<BookListApiItem, "autor"> & {
     uri: string | null;
     nombre: string | null;
   };
+  tags?: unknown;
   descripcion: string | null;
   idioma: string | null;
   updated_at: string | null;
@@ -54,6 +55,19 @@ type BookDetailApiItem = Omit<BookListApiItem, "autor"> & {
 
 type BookListResponse = {
   items: BookListApiItem[];
+  pagination: {
+    limit: number;
+    offset: number;
+  };
+};
+
+export type BookTag = {
+  uri: string;
+  label: string;
+};
+
+export type BookListResult = {
+  items: Book[];
   pagination: {
     limit: number;
     offset: number;
@@ -89,6 +103,7 @@ export type Book = {
   };
   idioma: string | null;
   updatedAt: string | null;
+  tags: BookTag[];
   currentPage: number;
   progressPercent: number;
   currentChapter: string;
@@ -147,6 +162,75 @@ function normalizeCoverUrl(value?: string | null): string | null {
   return `${PLANETA_LIBRO_ORIGIN}/${value}`;
 }
 
+function normalizeTagLabel(value: string | null | undefined): string {
+  return value?.trim() || "Tema";
+}
+
+type ApiTagItem = {
+  uri?: string | null;
+  label?: string | null;
+  nombre_es?: string | null;
+  nombre?: string | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function extractTagItems(value: unknown): Array<string | ApiTagItem> {
+  if (Array.isArray(value)) {
+    return value as Array<string | ApiTagItem>;
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  if (Array.isArray(value.tags)) {
+    return value.tags as Array<string | ApiTagItem>;
+  }
+
+  if (Array.isArray(value.items)) {
+    return value.items as Array<string | ApiTagItem>;
+  }
+
+  if (Array.isArray(value.data)) {
+    return value.data as Array<string | ApiTagItem>;
+  }
+
+  return [];
+}
+
+function normalizeTags(value: BookDetailApiItem["tags"]): BookTag[] {
+  return extractTagItems(value)
+    .map((tag) => {
+      if (typeof tag === "string") {
+        const uri = tag.trim();
+
+        if (!uri) {
+          return null;
+        }
+
+        return {
+          uri,
+          label: normalizeTagLabel(uri.replace(/[-_]+/g, " ")),
+        };
+      }
+
+      const uri = tag.uri?.trim();
+
+      if (!uri) {
+        return null;
+      }
+
+      return {
+        uri,
+        label: normalizeTagLabel(tag.label ?? tag.nombre_es ?? tag.nombre),
+      };
+    })
+    .filter((tag): tag is BookTag => Boolean(tag));
+}
+
 function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
   const author = getAuthorData(apiBook);
   const recursos = getBookResources(apiBook);
@@ -175,6 +259,7 @@ function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
     formatos,
     idioma: "idioma" in apiBook ? apiBook.idioma : null,
     updatedAt: "updated_at" in apiBook ? apiBook.updated_at : null,
+    tags: "tags" in apiBook ? normalizeTags(apiBook.tags) : [],
     currentPage: 1,
     progressPercent: 0,
     currentChapter: "Capitulo inicial",
@@ -189,6 +274,22 @@ export async function getBookByUri(uri: string): Promise<Book> {
 export async function getHomeBooks(limit = 10): Promise<Book[]> {
   const response = await apiClient.get<ApiEnvelope<BookListResponse>>(`/public/libros?limit=${limit}`);
   return response.data.items.map(mapBook);
+}
+
+export async function fetchBooksByTag(tag: string, limit = 10, offset = 0, lang = "es"): Promise<BookListResult> {
+  const searchParams = new URLSearchParams({
+    tag: tag.trim(),
+    limit: String(limit),
+    offset: String(offset),
+    lang,
+  });
+
+  const response = await apiClient.get<ApiEnvelope<BookListResponse>>(`/public/libros/por-tag?${searchParams.toString()}`);
+
+  return {
+    items: response.data.items.map(mapBook),
+    pagination: response.data.pagination,
+  };
 }
 
 export async function fetchTopBooks(lang: string = "es", limit: number = 15): Promise<Book[]> {

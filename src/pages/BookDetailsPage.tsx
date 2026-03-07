@@ -11,6 +11,7 @@ export function BookDetailsPage() {
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const bookTags = book?.tags ?? [];
 
   useEffect(() => {
     let cancelled = false;
@@ -146,6 +147,22 @@ export function BookDetailsPage() {
                   <h3 className="mb-3 font-display text-lg font-bold text-slate-900 dark:text-white">Sinopsis</h3>
                   <p className="whitespace-pre-line leading-relaxed">{book.descripcion || "La API no devolviÃ³ una descripciÃ³n para este libro."}</p>
                 </div>
+                {bookTags.length > 0 ? (
+                  <div className="mb-8">
+                    <h3 className="mb-3 font-display text-lg font-bold text-slate-900 dark:text-white">Temas</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {bookTags.map((tag) => (
+                        <Link
+                          key={tag.uri}
+                          className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium leading-none text-slate-700 shadow-sm transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-slate-700 dark:bg-[#282f39] dark:text-slate-200 dark:hover:border-primary dark:hover:bg-primary/10 dark:hover:text-white"
+                          to={`/tema/${tag.uri}`}
+                        >
+                          {tag.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <div className="mb-8 rounded-xl bg-slate-100 p-6 dark:bg-surface-dark">
                   <div className="mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>

@@ -1,8 +1,8 @@
-﻿import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import { type Author, type AuthorBookItem, fetchAuthorByUri } from "../api/authors";
 import { ApiError } from "../api/client";
-import { BookCover } from "../components/BookCover";
+import { EntityBooksPage } from "../components/EntityBooksPage";
 import { AppShell } from "../layout/AppShell";
 
 type SortMode = "most-viewed" | "a-z";
@@ -136,43 +136,21 @@ export function AuthorPage() {
     };
   }, [pagination.limit, pagination.offset, uri]);
 
-  const visibleBooks = useMemo(() => {
-    if (sortMode === "most-viewed") {
-      return books;
-    }
-
-    return [...books].sort((left, right) => left.titulo.localeCompare(right.titulo, "es-ES"));
-  }, [books, sortMode]);
-
   const bio = getAuthorBio(author);
   const sanitizedBioHtml = useMemo(() => (bio.html ? sanitizeHtml(bio.html) : null), [bio.html]);
-  const hasNextPage = books.length === pagination.limit;
 
   return (
     <AppShell theme="light" title="Autor" contentClassName="bg-background-light dark:bg-background-dark">
       <div className="mx-auto w-full max-w-6xl p-6 pb-20 md:p-8">
-        {loading ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-[#111418] dark:text-slate-400">
-            Cargando autor...
-          </div>
-        ) : error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-            {error}
-          </div>
-        ) : notFound || !author ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-[#111418]">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Autor no encontrado</h2>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No pudimos encontrar la ficha del autor solicitado.</p>
-            <Link className="mt-4 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90" to="/search">
-              Volver a explorar
-            </Link>
-          </div>
-        ) : (
-          <>
+        <EntityBooksPage
+          books={books}
+          emptyMessage="No hay libros para este autor en esta pagina."
+          error={error}
+          header={
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#111418] md:p-8">
               <div className="flex flex-col gap-6 md:flex-row md:items-start">
                 <div className="h-28 w-28 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-                  {author.photo.available && author.photo.url && !imageFailed ? (
+                  {author?.photo.available && author.photo.url && !imageFailed ? (
                     <img
                       alt={`Foto de ${author.nombre}`}
                       className="h-full w-full object-cover"
@@ -181,12 +159,12 @@ export function AuthorPage() {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-slate-500 dark:text-slate-300">
-                      {getInitials(author.nombre)}
+                      {getInitials(author?.nombre ?? "")}
                     </div>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-3xl font-bold leading-tight text-slate-900 dark:text-white md:text-4xl">{author.nombre}</h1>
+                  <h1 className="text-3xl font-bold leading-tight text-slate-900 dark:text-white md:text-4xl">{author?.nombre}</h1>
                   {sanitizedBioHtml ? (
                     <div
                       className="prose prose-slate mt-4 max-w-none text-sm dark:prose-invert"
@@ -200,83 +178,29 @@ export function AuthorPage() {
                 </div>
               </div>
             </section>
-
-            <section className="mt-8">
-              <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Libros</h2>
-                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                  <span>Ordenar</span>
-                  <select
-                    className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 ring-primary/20 focus:outline-none focus:ring-2 dark:border-slate-700 dark:bg-[#282f39] dark:text-white"
-                    onChange={(event) => setSortMode(event.target.value as SortMode)}
-                    value={sortMode}
-                  >
-                    <option value="most-viewed">Mas vistos</option>
-                    <option value="a-z">A-Z</option>
-                  </select>
-                </label>
-              </div>
-
-              {visibleBooks.length === 0 ? (
-                <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-[#111418] dark:text-slate-400">
-                  No hay libros para este autor en esta pagina.
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
-                  {visibleBooks.map((book) => (
-                    <Link key={`${book.id}-${book.uri}`} className="group flex flex-col gap-3" to={`/book/${book.uri}`}>
-                      <div className="relative aspect-[2/3] overflow-hidden rounded-xl shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
-                        <BookCover
-                          alt={`Portada de ${book.titulo}`}
-                          book={{
-                            titulo: book.titulo,
-                            cover_url: book.cover_url ?? null,
-                          }}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-900 transition-colors group-hover:text-primary dark:text-white">
-                          {book.titulo}
-                        </h3>
-                        {book.subtitulo ? <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{book.subtitulo}</p> : null}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-6 flex items-center justify-end gap-3">
-                <button
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]"
-                  disabled={loading || pagination.offset <= 0}
-                  onClick={() =>
-                    setPagination((current) => ({
-                      ...current,
-                      offset: Math.max(current.offset - current.limit, 0),
-                    }))
-                  }
-                  type="button"
-                >
-                  Anterior
-                </button>
-                <button
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={loading || !hasNextPage}
-                  onClick={() =>
-                    setPagination((current) => ({
-                      ...current,
-                      offset: current.offset + current.limit,
-                    }))
-                  }
-                  type="button"
-                >
-                  Siguiente
-                </button>
-              </div>
-            </section>
-          </>
-        )}
+          }
+          loading={loading}
+          loadingLabel="Cargando autor..."
+          notFound={notFound || !author}
+          notFoundDescription="No pudimos encontrar la ficha del autor solicitado."
+          notFoundTitle="Autor no encontrado"
+          onNextPage={() =>
+            setPagination((current) => ({
+              ...current,
+              offset: current.offset + current.limit,
+            }))
+          }
+          onPreviousPage={() =>
+            setPagination((current) => ({
+              ...current,
+              offset: Math.max(current.offset - current.limit, 0),
+            }))
+          }
+          onSortModeChange={setSortMode}
+          pagination={pagination}
+          sortMode={sortMode}
+          title="Libros"
+        />
       </div>
     </AppShell>
   );

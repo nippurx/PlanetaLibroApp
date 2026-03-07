@@ -9,6 +9,7 @@ import { OnboardingPage } from "./pages/OnboardingPage";
 import { PersonalLibraryPage } from "./pages/PersonalLibraryPage";
 import { ProfileSettingsPage } from "./pages/ProfileSettingsPage";
 import { ReadingStatsPage } from "./pages/ReadingStatsPage";
+import { TopicPage } from "./pages/TopicPage";
 import { UserDashboardPage } from "./pages/UserDashboardPage";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/library" element={<PersonalLibraryPage />} />
         <Route path="/search" element={<BookDiscoverySearchPage />} />
         <Route path="/autor/:uri" element={<AuthorPage />} />
+        <Route path="/tema/:tag" element={<TopicPage />} />
         <Route path="/book/:libro_uri" element={<BookDetailsPage />} />
         <Route path="/listen/:libro_uri" element={<AudiobookPlayerPage />} />
         <Route path="/read/:libro_uri/:page" element={<ImmersiveReaderPage />} />
