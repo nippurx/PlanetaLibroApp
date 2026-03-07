@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { type Book, getHomeBooks } from "../api/books";
 import { ApiError } from "../api/client";
@@ -10,6 +10,10 @@ export function UserDashboardPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const recommendationScrollRef = useRef<HTMLDivElement | null>(null);
+  const [hasRecommendationOverflow, setHasRecommendationOverflow] = useState(false);
+  const [canScrollRecommendationsLeft, setCanScrollRecommendationsLeft] = useState(false);
+  const [canScrollRecommendationsRight, setCanScrollRecommendationsRight] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -19,7 +23,7 @@ export function UserDashboardPage() {
       setError(null);
 
       try {
-        const nextBooks = await getHomeBooks(8);
+        const nextBooks = await getHomeBooks(15);
         if (!cancelled) {
           setBooks(nextBooks);
         }
@@ -42,8 +46,56 @@ export function UserDashboardPage() {
   }, []);
 
   const currentBook = books[0] ?? null;
-  const recommendationBooks = books.slice(1, 6);
+  const recommendationBooks = books.slice(1);
   const currentBookAuthor = currentBook ? resolveAuthor(currentBook) : null;
+
+  useEffect(() => {
+    const recommendationContainer = recommendationScrollRef.current;
+
+    if (!recommendationContainer) {
+      setHasRecommendationOverflow(false);
+      setCanScrollRecommendationsLeft(false);
+      setCanScrollRecommendationsRight(false);
+      return;
+    }
+
+    const updateRecommendationControls = () => {
+      const { clientWidth, scrollLeft, scrollWidth } = recommendationContainer;
+      const nextHasOverflow = scrollWidth > clientWidth + 1;
+      setHasRecommendationOverflow(nextHasOverflow);
+      setCanScrollRecommendationsLeft(scrollLeft > 1);
+      setCanScrollRecommendationsRight(nextHasOverflow && scrollLeft + clientWidth < scrollWidth - 1);
+    };
+
+    const animationFrame = window.requestAnimationFrame(updateRecommendationControls);
+
+    recommendationContainer.addEventListener("scroll", updateRecommendationControls, { passive: true });
+    window.addEventListener("resize", updateRecommendationControls);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      recommendationContainer.removeEventListener("scroll", updateRecommendationControls);
+      window.removeEventListener("resize", updateRecommendationControls);
+    };
+  }, [recommendationBooks.length]);
+
+  const scrollRecommendations = (direction: "left" | "right") => {
+    const recommendationContainer = recommendationScrollRef.current;
+
+    if (!recommendationContainer) {
+      return;
+    }
+
+    const firstItem = recommendationContainer.firstElementChild as HTMLElement | null;
+    const styles = window.getComputedStyle(recommendationContainer);
+    const gap = Number.parseFloat(styles.columnGap || styles.gap || "0");
+    const scrollAmount = firstItem ? firstItem.getBoundingClientRect().width + gap : recommendationContainer.clientWidth;
+
+    recommendationContainer.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <AppShell
@@ -146,20 +198,34 @@ export function UserDashboardPage() {
             <section>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-white">Para vos hoy</h2>
-                <div className="flex gap-2">
-                  {["arrow_back", "arrow_forward"].map((icon) => (
-                    <button key={icon} className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-800 text-white transition-colors hover:bg-[#161d31]">
-                      <span className="material-symbols-outlined text-sm">{icon}</span>
-                    </button>
-                  ))}
-                </div>
+                {hasRecommendationOverflow ? (
+                  <div className="flex gap-2">
+                    {[
+                      { icon: "arrow_back", direction: "left" as const, hidden: !canScrollRecommendationsLeft, label: "Ver recomendacion anterior" },
+                      { icon: "arrow_forward", direction: "right" as const, hidden: !canScrollRecommendationsRight, label: "Ver recomendacion siguiente" },
+                    ].map(({ icon, direction, hidden, label }) => (
+                      <button
+                        key={icon}
+                        aria-label={label}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full border border-slate-800 text-white transition-colors hover:bg-[#161d31] ${hidden ? "pointer-events-none opacity-0" : ""}`}
+                        onClick={() => scrollRecommendations(direction)}
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined text-sm">{icon}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+              <div
+                ref={recommendationScrollRef}
+                className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scroll-smooth"
+              >
                 {recommendationBooks.map((book) => {
                   const author = resolveAuthor(book);
 
                   return (
-                    <div key={book.uri} className="group">
+                    <div key={book.uri} className="group basis-[calc(50%-0.5rem)] shrink-0 snap-start md:basis-[calc(25%-0.75rem)] lg:basis-[calc(20%-0.8rem)]">
                       <Link className="block cursor-pointer" to={`/book/${book.uri}`}>
                         <div className="relative mb-3 aspect-[2/3] overflow-hidden rounded-xl">
                           <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
