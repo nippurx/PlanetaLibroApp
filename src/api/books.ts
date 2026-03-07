@@ -12,15 +12,19 @@ type BookListApiItem = {
   author_uri?: string | null;
   titulo: string;
   subtitulo: string | null;
-  autor: {
-    uri: string | null;
-    nombre: string | null;
-  };
+  autor:
+    | {
+        uri: string | null;
+        nombre: string | null;
+      }
+    | string;
   cover_url?: string | null;
-  recursos: {
+  recursos?: {
     read_online: boolean;
     video_audiolibro: string | null;
   };
+  read_online?: boolean;
+  video_audiolibro?: string | null;
   formatos?: {
     pdf: boolean;
     epub: boolean;
@@ -28,7 +32,11 @@ type BookListApiItem = {
   };
 };
 
-type BookDetailApiItem = BookListApiItem & {
+type BookDetailApiItem = Omit<BookListApiItem, "autor"> & {
+  autor: {
+    uri: string | null;
+    nombre: string | null;
+  };
   descripcion: string | null;
   idioma: string | null;
   updated_at: string | null;
@@ -98,6 +106,31 @@ function normalizeAuthorName(value: string | null): string {
   return value?.trim() || "Autor desconocido";
 }
 
+function getAuthorData(apiBook: BookListApiItem | BookDetailApiItem): { name: string; uri: string | null } {
+  if (typeof apiBook.autor === "string") {
+    return {
+      name: normalizeAuthorName(apiBook.autor),
+      uri: apiBook.author_uri ?? null,
+    };
+  }
+
+  return {
+    name: normalizeAuthorName(apiBook.autor.nombre),
+    uri: apiBook.autor.uri ?? apiBook.author_uri ?? null,
+  };
+}
+
+function getBookResources(apiBook: BookListApiItem | BookDetailApiItem): { read_online: boolean; video_audiolibro: string | null } {
+  if (apiBook.recursos) {
+    return apiBook.recursos;
+  }
+
+  return {
+    read_online: apiBook.read_online ?? false,
+    video_audiolibro: apiBook.video_audiolibro ?? null,
+  };
+}
+
 function normalizeCoverUrl(value?: string | null): string | null {
   if (!value) {
     return null;
@@ -115,7 +148,9 @@ function normalizeCoverUrl(value?: string | null): string | null {
 }
 
 function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
-  const audioId = normalizeAudioId(apiBook.recursos.video_audiolibro);
+  const author = getAuthorData(apiBook);
+  const recursos = getBookResources(apiBook);
+  const audioId = normalizeAudioId(recursos.video_audiolibro);
   const coverUrl = normalizeCoverUrl(apiBook.cover_url);
   const formatos = apiBook.formatos ?? {
     pdf: false,
@@ -129,15 +164,12 @@ function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
     titulo: apiBook.titulo,
     subtitulo: apiBook.subtitulo ?? "",
     descripcion: "descripcion" in apiBook && apiBook.descripcion ? apiBook.descripcion : "",
-    autorNombre: normalizeAuthorName(apiBook.autor.nombre),
-    autorUri: apiBook.autor.uri ?? apiBook.author_uri ?? null,
+    autorNombre: author.name,
+    autorUri: author.uri,
     cover_url: coverUrl,
     hasCover: Boolean(coverUrl),
-    readOnline: apiBook.recursos.read_online,
-    recursos: {
-      read_online: apiBook.recursos.read_online,
-      video_audiolibro: apiBook.recursos.video_audiolibro,
-    },
+    readOnline: recursos.read_online,
+    recursos,
     hasAudio: Boolean(audioId),
     youtubeVideoId: audioId,
     formatos,
@@ -156,6 +188,11 @@ export async function getBookByUri(uri: string): Promise<Book> {
 
 export async function getHomeBooks(limit = 10): Promise<Book[]> {
   const response = await apiClient.get<ApiEnvelope<BookListResponse>>(`/public/libros?limit=${limit}`);
+  return response.data.items.map(mapBook);
+}
+
+export async function fetchTopBooks(lang: string = "es", limit: number = 15): Promise<Book[]> {
+  const response = await apiClient.get<ApiEnvelope<BookListResponse>>(`/public/libros/top?limit=${limit}&lang=${lang}`);
   return response.data.items.map(mapBook);
 }
 

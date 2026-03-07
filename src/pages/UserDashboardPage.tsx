@@ -1,19 +1,19 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { type Book, getHomeBooks } from "../api/books";
+import { type Book, fetchTopBooks, getHomeBooks } from "../api/books";
 import { ApiError } from "../api/client";
 import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
+import { HorizontalBookList } from "../components/HorizontalBookList";
 import { AppShell } from "../layout/AppShell";
 
 export function UserDashboardPage() {
   const [books, setBooks] = useState<Book[]>([]);
+  const [topBooks, setTopBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingTop, setLoadingTop] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const recommendationScrollRef = useRef<HTMLDivElement | null>(null);
-  const [hasRecommendationOverflow, setHasRecommendationOverflow] = useState(false);
-  const [canScrollRecommendationsLeft, setCanScrollRecommendationsLeft] = useState(false);
-  const [canScrollRecommendationsRight, setCanScrollRecommendationsRight] = useState(false);
+  const [topError, setTopError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,59 +45,44 @@ export function UserDashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    const lang = document.documentElement.lang?.trim() || "es";
+
+    setLoadingTop(true);
+    setTopError(null);
+
+    fetchTopBooks(lang, 15)
+      .then((items) => {
+        if (!cancelled) {
+          setTopBooks(items);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setTopError(err instanceof ApiError ? err.message : "No se pudieron cargar los libros mas buscados.");
+        }
+        console.error(err);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingTop(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const currentBook = books[0] ?? null;
   const recommendationBooks = books.slice(1);
   const currentBookAuthor = currentBook ? resolveAuthor(currentBook) : null;
 
-  useEffect(() => {
-    const recommendationContainer = recommendationScrollRef.current;
-
-    if (!recommendationContainer) {
-      setHasRecommendationOverflow(false);
-      setCanScrollRecommendationsLeft(false);
-      setCanScrollRecommendationsRight(false);
-      return;
-    }
-
-    const updateRecommendationControls = () => {
-      const { clientWidth, scrollLeft, scrollWidth } = recommendationContainer;
-      const nextHasOverflow = scrollWidth > clientWidth + 1;
-      setHasRecommendationOverflow(nextHasOverflow);
-      setCanScrollRecommendationsLeft(scrollLeft > 1);
-      setCanScrollRecommendationsRight(nextHasOverflow && scrollLeft + clientWidth < scrollWidth - 1);
-    };
-
-    const animationFrame = window.requestAnimationFrame(updateRecommendationControls);
-
-    recommendationContainer.addEventListener("scroll", updateRecommendationControls, { passive: true });
-    window.addEventListener("resize", updateRecommendationControls);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-      recommendationContainer.removeEventListener("scroll", updateRecommendationControls);
-      window.removeEventListener("resize", updateRecommendationControls);
-    };
-  }, [recommendationBooks.length]);
-
-  const scrollRecommendations = (direction: "left" | "right") => {
-    const recommendationContainer = recommendationScrollRef.current;
-
-    if (!recommendationContainer) {
-      return;
-    }
-
-    const scrollAmount = recommendationContainer.clientWidth;
-
-    recommendationContainer.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
-  };
-
   return (
     <AppShell
       theme="dark"
-      title="Buenos dÃ­as, Sofia"
+      title="Buenos dias, Sofia"
       contentClassName="bg-background-dark"
       headerRight={
         <button className="relative text-slate-400 transition-colors hover:text-white">
@@ -112,9 +97,7 @@ export function UserDashboardPage() {
             Cargando dashboard...
           </div>
         ) : error ? (
-          <div className="rounded-xl border border-red-900/50 bg-red-950/30 p-6 text-sm text-red-300">
-            {error}
-          </div>
+          <div className="rounded-xl border border-red-900/50 bg-red-950/30 p-6 text-sm text-red-300">{error}</div>
         ) : currentBook ? (
           <>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -122,13 +105,17 @@ export function UserDashboardPage() {
                 <div className="absolute right-0 top-0 h-64 w-64 translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" />
                 <div className="relative z-10 flex flex-col gap-6 sm:flex-row">
                   <div className="w-32 shrink-0 sm:w-40">
-                    <BookCover alt={`Portada de ${currentBook.titulo}`} book={currentBook} className="aspect-[2/3] w-full rounded-xl object-cover shadow-2xl shadow-black/50" />
+                    <BookCover
+                      alt={`Portada de ${currentBook.titulo}`}
+                      book={currentBook}
+                      className="aspect-[2/3] w-full rounded-xl object-cover shadow-2xl shadow-black/50"
+                    />
                   </div>
                   <div className="flex flex-1 flex-col justify-between">
                     <div>
                       <div className="mb-2 flex items-center gap-2">
                         <span className="rounded bg-primary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">En progreso</span>
-                        <span className="text-xs text-slate-500">Â· Fuente API real</span>
+                        <span className="text-xs text-slate-500">Fuente API real</span>
                       </div>
                       <h1 className="mb-1 font-display text-4xl font-bold text-white">{currentBook.titulo}</h1>
                       <AuthorLink
@@ -146,14 +133,22 @@ export function UserDashboardPage() {
                         <div className="h-2 overflow-hidden rounded-full border border-slate-800 bg-[#0d1220]">
                           <div className="h-full rounded-full bg-primary" style={{ width: `${currentBook.progressPercent}%` }} />
                         </div>
-                        <p className="mt-2 text-xs text-slate-500">{currentBook.readOnline ? "Disponible para lectura online" : "Ficha disponible"}</p>
+                        <p className="mt-2 text-xs text-slate-500">
+                          {currentBook.readOnline ? "Disponible para lectura online" : "Ficha disponible"}
+                        </p>
                       </div>
                       <div className="flex gap-3">
-                        <Link className="flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-background-dark transition-colors hover:bg-slate-100" to={`/listen/${currentBook.uri}`}>
+                        <Link
+                          className="flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-background-dark transition-colors hover:bg-slate-100"
+                          to={`/listen/${currentBook.uri}`}
+                        >
                           <span className="material-symbols-outlined text-[20px]">play_circle</span>
                           Escuchar
                         </Link>
-                        <Link className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-[#161d31] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:border-primary hover:bg-primary/10" to={`/read/${currentBook.uri}/${currentBook.currentPage}`}>
+                        <Link
+                          className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-[#161d31] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:border-primary hover:bg-primary/10"
+                          to={`/read/${currentBook.uri}/${currentBook.currentPage}`}
+                        >
                           <span className="material-symbols-outlined text-[20px]">menu_book</span>
                           Leer
                         </Link>
@@ -164,7 +159,7 @@ export function UserDashboardPage() {
               </section>
               <section className="relative overflow-hidden rounded-[2rem] border border-slate-800 bg-[#12172b] p-6">
                 <div className="flex items-start justify-between">
-                  <h3 className="text-lg font-bold text-white">Meta Diaria</h3>
+                  <h3 className="text-lg font-bold text-white">Meta diaria</h3>
                   <div className="rounded-lg bg-primary/10 p-2 text-primary">
                     <span className="material-symbols-outlined">flag</span>
                   </div>
@@ -185,7 +180,10 @@ export function UserDashboardPage() {
                 </div>
                 <div className="grid grid-cols-7 gap-1">
                   {["L", "M", "X", "J", "V", "S", "D"].map((day, index) => (
-                    <div key={day} className={`flex h-8 items-center justify-center rounded text-[10px] font-bold ${index < 4 ? "bg-primary text-white" : "border border-slate-800 bg-[#090d19] text-slate-500"}`}>
+                    <div
+                      key={day}
+                      className={`flex h-8 items-center justify-center rounded text-[10px] font-bold ${index < 4 ? "bg-primary text-white" : "border border-slate-800 bg-[#090d19] text-slate-500"}`}
+                    >
                       {day}
                     </div>
                   ))}
@@ -193,51 +191,22 @@ export function UserDashboardPage() {
               </section>
             </div>
             <section>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-white">Para vos hoy</h2>
-                {hasRecommendationOverflow ? (
-                  <div className="flex gap-2">
-                    {[
-                      { icon: "arrow_back", direction: "left" as const, hidden: !canScrollRecommendationsLeft, label: "Ver recomendacion anterior" },
-                      { icon: "arrow_forward", direction: "right" as const, hidden: !canScrollRecommendationsRight, label: "Ver recomendacion siguiente" },
-                    ].map(({ icon, direction, hidden, label }) => (
-                      <button
-                        key={icon}
-                        aria-label={label}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full border border-slate-800 text-white transition-colors hover:bg-[#161d31] ${hidden ? "pointer-events-none opacity-0" : ""}`}
-                        onClick={() => scrollRecommendations(direction)}
-                        type="button"
-                      >
-                        <span className="material-symbols-outlined text-sm">{icon}</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-              <div
-                ref={recommendationScrollRef}
-                className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scroll-smooth"
-              >
-                {recommendationBooks.map((book) => {
-                  const author = resolveAuthor(book);
-
-                  return (
-                    <div key={book.uri} className="group basis-[calc(50%-0.5rem)] shrink-0 snap-start md:basis-[calc(25%-0.75rem)] lg:basis-[calc(20%-0.8rem)]">
-                      <Link className="block cursor-pointer" to={`/book/${book.uri}`}>
-                        <div className="relative mb-3 aspect-[2/3] overflow-hidden rounded-xl">
-                          <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                          <div className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 backdrop-blur-sm">
-                            <span className="material-symbols-outlined fill-1 text-[14px] text-yellow-400">star</span>
-                            <span className="text-xs font-bold text-white">{book.hasAudio ? "Audio" : "Book"}</span>
-                          </div>
-                        </div>
-                        <h4 className="truncate font-semibold text-white transition-colors group-hover:text-primary">{book.titulo}</h4>
-                      </Link>
-                      <AuthorLink className="mt-0.5 block truncate text-sm text-slate-400" name={author.name} uri={author.uri} />
-                    </div>
-                  );
-                })}
-              </div>
+              <h2 className="mb-4 text-3xl font-bold text-white">Para vos hoy</h2>
+              <HorizontalBookList ariaLabel="Para vos hoy" books={recommendationBooks} />
+            </section>
+            <section className="mt-10">
+              <h2 className="mb-4 text-3xl font-bold text-white">Mas buscados</h2>
+              {loadingTop ? (
+                <HorizontalBookList ariaLabel="Mas buscados" books={topBooks} loading />
+              ) : topError ? (
+                <div className="rounded-xl border border-red-900/50 bg-red-950/30 p-4 text-sm text-red-300">{topError}</div>
+              ) : topBooks.length > 0 ? (
+                <HorizontalBookList ariaLabel="Mas buscados" books={topBooks} />
+              ) : (
+                <div className="rounded-xl border border-slate-800 bg-[#12172b] p-4 text-sm text-slate-400">
+                  No hay libros en mas buscados por ahora.
+                </div>
+              )}
             </section>
           </>
         ) : (
@@ -249,5 +218,3 @@ export function UserDashboardPage() {
     </AppShell>
   );
 }
-
-

@@ -80,13 +80,15 @@ export function BookDetailsPage() {
                   <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 </div>
                 <div className="flex flex-col gap-3">
-                  <Link className="flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-3.5 font-bold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary/90" to={`/listen/${book.uri}`}>
-                    <span className="material-symbols-outlined">headphones</span>
-                    <span>{book.hasAudio ? "Escuchar Audiolibro" : "Ver recurso de audio"}</span>
-                  </Link>
+                  {book.hasAudio ? (
+                    <Link className="flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-3.5 font-bold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary/90" to={`/listen/${book.uri}`}>
+                      <span className="material-symbols-outlined">headphones</span>
+                      <span>Escuchar ahora</span>
+                    </Link>
+                  ) : null}
                   <Link className="flex w-full items-center justify-center gap-3 rounded-xl bg-slate-200 px-6 py-3.5 font-bold text-slate-900 transition-colors hover:bg-slate-300 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]" to={`/read/${book.uri}/${book.currentPage}`}>
                     <span className="material-symbols-outlined">menu_book</span>
-                    <span>{book.readOnline ? "Leer Libro" : "Ver ficha del libro"}</span>
+                    <span>Leer ahora</span>
                   </Link>
                 </div>
                 <div className="flex items-center justify-between gap-2">
