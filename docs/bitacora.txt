@@ -94,13 +94,14 @@ Rutas absolutas en tu entorno:
 https://chatgpt.com/g/g-p-69864a26ef5c8191938e158674235645-planetalibroapp/c/69a8d14c-3004-832e-abb9-be6ec1d8d2a1?tab=chats
 * subir api
 
+* audio solo los libros que tienen videos
+
++ evitar duplicacion de nombre de autor (esta usando name + surname
++ mostrar video correctamente
+
+
 * APP - agregar pagina autor / con foto y libros
 * git release "pagina autor-links"
 * git release "home-carrousel-pagina"
 * git release "home-carrousel-mas-buscados"
-
-
-+ evitar duplicacion de nombre de autor (esta usando name + surname
-
-* audio solo los libros que tienen videos
-+ mostrar video correctamente
+* git release tags-correctos

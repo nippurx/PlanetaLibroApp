@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { type Book, getBookByUri } from "../api/books";
 import { ApiError } from "../api/client";
 import { AudiobookPlayer, type AudiobookPlayerHandle } from "../components/AudiobookPlayer";
@@ -10,13 +10,21 @@ import { AppShell } from "../layout/AppShell";
 
 export function AudiobookPlayerPage() {
   const { libro_uri = "" } = useParams();
+  const { search } = useLocation();
+  const navigate = useNavigate();
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState("");
   const playerRef = useRef<AudiobookPlayerHandle | null>(null);
   const bookAuthor = book ? resolveAuthor(book) : null;
+
+  useEffect(() => {
+    const nextQuery = new URLSearchParams(search).get("q") ?? "";
+    setHeaderSearch(nextQuery);
+  }, [search]);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,6 +97,17 @@ export function AudiobookPlayerPage() {
     persistProgressSnapshot();
   }
 
+  function submitHeaderSearch() {
+    const normalizedQuery = headerSearch.trim();
+    const params = new URLSearchParams();
+
+    if (normalizedQuery) {
+      params.set("q", normalizedQuery);
+    }
+
+    navigate(params.toString() ? `/search?${params.toString()}` : "/search");
+  }
+
   return (
     <AppShell mode="immersive">
       <div className="flex min-h-screen flex-col overflow-x-hidden bg-background-light font-sans text-slate-900 dark:bg-background-dark dark:text-slate-100">
@@ -115,18 +134,26 @@ export function AudiobookPlayerPage() {
             </nav>
           </div>
           <div className="flex flex-1 items-center justify-end gap-8">
-            <label className="hidden h-10 min-w-40 max-w-64 flex-col sm:flex">
+            <form
+              className="hidden h-10 min-w-40 max-w-64 flex-col sm:flex"
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitHeaderSearch();
+              }}
+            >
               <div className="flex h-full w-full flex-1 items-stretch overflow-hidden rounded-lg bg-white ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-                <div className="flex items-center justify-center pl-4 text-slate-400">
+                <button className="flex items-center justify-center pl-4 text-slate-400 transition-colors hover:text-primary" type="submit">
                   <span className="material-symbols-outlined text-[20px]">search</span>
-                </div>
+                </button>
                 <input
                   className="form-input flex h-full w-full flex-1 resize-none overflow-hidden rounded-lg rounded-l-none border-none bg-transparent px-4 pl-2 text-base font-normal leading-normal text-slate-900 placeholder:text-slate-400 focus:outline-0 focus:ring-0 dark:text-white"
-                  defaultValue=""
-                  placeholder="Search"
+                  onChange={(event) => setHeaderSearch(event.target.value)}
+                  placeholder="Buscar libros o autores"
+                  type="text"
+                  value={headerSearch}
                 />
               </div>
-            </label>
+            </form>
             {book ? (
               <div className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-slate-100 dark:ring-slate-800">
                 <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover" />

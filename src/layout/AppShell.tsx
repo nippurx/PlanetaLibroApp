@@ -172,7 +172,9 @@ export function AppShell({
                 submitHeaderSearch();
               }}
             >
-              <span className="material-symbols-outlined text-[20px] text-slate-400">search</span>
+              <button className="flex items-center text-slate-400 transition-colors hover:text-primary" type="submit">
+                <span className="material-symbols-outlined text-[20px]">search</span>
+              </button>
               <input
                 className="w-64 border-none bg-transparent px-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 dark:text-white"
                 onChange={(event) => setHeaderSearch(event.target.value)}
