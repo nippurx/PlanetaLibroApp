@@ -4,6 +4,7 @@ import { type Book, getBookByUri } from "../api/books";
 import { ApiError } from "../api/client";
 import { AuthorLink } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
+import { RichText } from "../components/RichText";
 import { AppShell } from "../layout/AppShell";
 
 export function BookDetailsPage() {
@@ -87,10 +88,12 @@ export function BookDetailsPage() {
                       <span>Escuchar ahora</span>
                     </Link>
                   ) : null}
-                  <Link className="flex w-full items-center justify-center gap-3 rounded-xl bg-slate-200 px-6 py-3.5 font-bold text-slate-900 transition-colors hover:bg-slate-300 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]" to={`/read/${book.uri}/${book.currentPage}`}>
-                    <span className="material-symbols-outlined">menu_book</span>
-                    <span>Leer ahora</span>
-                  </Link>
+                  {book.readOnline ? (
+                    <Link className="flex w-full items-center justify-center gap-3 rounded-xl bg-slate-200 px-6 py-3.5 font-bold text-slate-900 transition-colors hover:bg-slate-300 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]" to={`/read/${book.uri}/${book.currentPage}`}>
+                      <span className="material-symbols-outlined">menu_book</span>
+                      <span>Leer ahora</span>
+                    </Link>
+                  ) : null}
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   {[
@@ -145,7 +148,10 @@ export function BookDetailsPage() {
                 </div>
                 <div className="mb-8 max-w-none text-slate-600 dark:text-slate-400">
                   <h3 className="mb-3 font-display text-lg font-bold text-slate-900 dark:text-white">Sinopsis</h3>
-                  <p className="whitespace-pre-line leading-relaxed">{book.descripcion || "La API no devolviÃ³ una descripciÃ³n para este libro."}</p>
+                  <RichText
+                    className="max-w-none leading-relaxed [&_a]:font-medium [&_a]:text-primary [&_a]:underline [&_blockquote]:my-4 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 dark:[&_code]:bg-slate-800 [&_h1]:mb-4 [&_h1]:mt-6 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-bold [&_h4]:mb-2 [&_h4]:mt-4 [&_h4]:text-lg [&_h4]:font-bold [&_img]:my-4 [&_img]:max-w-full [&_img]:rounded-lg [&_li]:my-1 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-3 [&_strong]:font-bold [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-6"
+                    content={book.descripcion || "La API no devolviÃ³ una descripciÃ³n para este libro."}
+                  />
                 </div>
                 {bookTags.length > 0 ? (
                   <div className="mb-8">
