@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type RichTextProps = {
   content: string;
   className?: string;
+  collapsibleOnMobile?: boolean;
 };
 
 function renderInlineMarkdown(value: string): string {
@@ -18,6 +19,10 @@ function renderInlineMarkdown(value: string): string {
 
 function markdownToHtml(markdown: string): string {
   const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
+  const firstContentLine = lines.findIndex((line) => line.trim());
+  if (firstContentLine >= 0 && /^#{1,6}\s+sinopsis\s*$/i.test(lines[firstContentLine].trim())) {
+    lines.splice(firstContentLine, 1);
+  }
   const output: string[] = [];
   let paragraph: string[] = [];
 
@@ -92,7 +97,49 @@ function sanitizeHtml(html: string): string {
   return doc.body.innerHTML;
 }
 
-export function RichText({ content, className }: RichTextProps) {
+export function RichText({ content, className, collapsibleOnMobile = false }: RichTextProps) {
   const html = useMemo(() => sanitizeHtml(markdownToHtml(content)), [content]);
-  return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [canExpand, setCanExpand] = useState(false);
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [content]);
+
+  useEffect(() => {
+    const element = contentRef.current;
+    if (!element || !collapsibleOnMobile || expanded) return;
+
+    const updateOverflow = () => setCanExpand(element.scrollHeight > element.clientHeight + 1);
+    updateOverflow();
+    const observer = new ResizeObserver(updateOverflow);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [collapsibleOnMobile, expanded, html]);
+
+  return (
+    <div>
+      <div className="relative">
+        <div
+          ref={contentRef}
+          className={`${className ?? ""} ${collapsibleOnMobile && !expanded ? "line-clamp-6 md:line-clamp-none" : ""}`}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+        {collapsibleOnMobile && canExpand && !expanded ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-background-light to-transparent dark:from-background-dark md:hidden" />
+        ) : null}
+      </div>
+      {collapsibleOnMobile && canExpand ? (
+        <button
+          type="button"
+          className="mt-2 font-bold text-primary transition-colors hover:text-primary/80 md:hidden"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((current) => !current)}
+        >
+          {expanded ? "Mostrar menos" : "Leer sinopsis completa"}
+        </button>
+      ) : null}
+    </div>
+  );
 }

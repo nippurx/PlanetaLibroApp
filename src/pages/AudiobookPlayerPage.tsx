@@ -163,7 +163,7 @@ export function AudiobookPlayerPage() {
             )}
           </div>
         </header>
-        <main className="flex flex-grow flex-col items-center justify-center p-4 sm:p-8">
+        <main className="flex flex-grow flex-col items-center justify-start p-4 sm:p-8 lg:justify-center">
           {loading ? (
             <div className="w-full max-w-[1200px] rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
               Cargando audiolibro...
@@ -174,7 +174,7 @@ export function AudiobookPlayerPage() {
             </div>
           ) : (
             <>
-              <div className="mb-8 flex w-full max-w-[1200px] flex-wrap gap-2 px-4">
+              <div className="mb-4 flex w-full max-w-[1200px] flex-wrap gap-2 px-1 sm:px-4 lg:mb-8">
                 <Link className="text-sm font-medium leading-normal text-slate-500 transition-colors hover:text-primary" to="/home">
                   Home
                 </Link>
@@ -185,8 +185,8 @@ export function AudiobookPlayerPage() {
                 <span className="text-sm font-medium leading-normal text-slate-500">/</span>
                 <span className="text-sm font-medium leading-normal text-slate-900 dark:text-white">{book.titulo}</span>
               </div>
-              <div className="grid w-full max-w-[1200px] grid-cols-1 gap-10 lg:grid-cols-12">
-                <div className="flex flex-col items-center gap-6 lg:col-span-5 lg:items-start">
+              <div className="grid w-full max-w-[1200px] grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
+                <div className="order-2 flex flex-col items-center gap-6 lg:order-1 lg:col-span-5 lg:items-start">
                   <div className="group relative aspect-[2/3] w-[280px] overflow-hidden rounded-xl shadow-2xl transition-transform hover:scale-[1.02] sm:w-[360px]">
                     <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
@@ -222,8 +222,8 @@ export function AudiobookPlayerPage() {
                     Cambiar a lectura
                   </Link>
                 </div>
-                <div className="flex flex-col justify-center lg:col-span-7">
-                  <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-10">
+                <div className="order-1 flex flex-col justify-center lg:order-2 lg:col-span-7">
+                  <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-10">
                     <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
                     <div className="relative z-10 mb-8">
                       <AudiobookPlayer

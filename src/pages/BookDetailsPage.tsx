@@ -56,7 +56,7 @@ export function BookDetailsPage() {
         </button>
       }
     >
-      <div className="mx-auto max-w-5xl px-6 py-8 pb-20">
+      <div className="mx-auto max-w-5xl px-4 py-4 pb-16 sm:px-6 md:py-8 md:pb-20">
         {loading ? (
           <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-[#111418] dark:text-slate-400">
             Cargando libro...
@@ -67,7 +67,7 @@ export function BookDetailsPage() {
           </div>
         ) : (
           <>
-            <div className="mb-8 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="mb-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 md:mb-8">
               <Link className="hover:text-primary" to="/library">
                 Biblioteca
               </Link>
@@ -76,8 +76,8 @@ export function BookDetailsPage() {
               <span className="material-symbols-outlined text-[12px]">chevron_right</span>
               <span className="font-medium text-slate-900 dark:text-white">{book.titulo}</span>
             </div>
-            <div className="flex flex-col gap-8 md:flex-row lg:gap-12">
-              <div className="flex w-full flex-shrink-0 flex-col gap-6 md:w-[300px]">
+            <div className="flex flex-col gap-6 md:flex-row md:gap-8 lg:gap-12">
+              <div className="flex w-full flex-shrink-0 flex-col gap-4 md:w-[300px] md:gap-6">
                 <div className="group relative aspect-[2/3] overflow-hidden rounded-xl shadow-2xl shadow-primary/10">
                   <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 </div>
@@ -109,7 +109,7 @@ export function BookDetailsPage() {
                 </div>
               </div>
               <div className="flex-1">
-                <div className="mb-6">
+                <div className="mb-4 md:mb-6">
                   <div className="mb-3 flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
                       {book.idioma ?? "sin idioma"}
@@ -129,33 +129,34 @@ export function BookDetailsPage() {
                   <AuthorLink className="font-display text-xl font-medium text-primary transition-colors hover:text-primary/80" name={book.autorNombre} uri={book.autorUri} />
                   {book.subtitulo && <p className="mt-3 text-base text-slate-500 dark:text-slate-400">{book.subtitulo}</p>}
                 </div>
-                <div className="mb-8 flex items-center gap-6 border-b border-slate-200 pb-8 dark:border-slate-800/50">
+                <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-200 pb-5 dark:border-slate-800/50 md:mb-8 md:flex-nowrap md:gap-6 md:pb-8">
                   <div className="flex items-center gap-1 text-yellow-500">
                     <span className="material-symbols-outlined fill-1 text-[20px]">star</span>
                     <span className="ml-1 text-lg font-bold text-slate-900 dark:text-white">{book.hasAudio ? "Audio" : "Libro"}</span>
                     <span className="text-sm font-normal text-slate-500 dark:text-slate-400">({book.id})</span>
                   </div>
-                  <div className="h-4 w-px bg-slate-300 dark:bg-slate-700" />
+                  <div className="hidden h-4 w-px bg-slate-300 dark:bg-slate-700 sm:block" />
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                     <span className="material-symbols-outlined text-[20px]">schedule</span>
                     <span className="text-sm font-medium">{book.updatedAt ? "Actualizado" : "Sin fecha"}</span>
                   </div>
-                  <div className="h-4 w-px bg-slate-300 dark:bg-slate-700" />
+                  <div className="hidden h-4 w-px bg-slate-300 dark:bg-slate-700 sm:block" />
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                     <span className="material-symbols-outlined text-[20px]">auto_stories</span>
                     <span className="text-sm font-medium">{book.readOnline ? "Lectura online" : "Ficha disponible"}</span>
                   </div>
                 </div>
-                <div className="mb-8 max-w-none text-slate-600 dark:text-slate-400">
-                  <h3 className="mb-3 font-display text-lg font-bold text-slate-900 dark:text-white">Sinopsis</h3>
+                <div className="mb-6 max-w-none text-slate-600 dark:text-slate-400 md:mb-8">
+                  <h3 className="mb-2 font-display text-lg font-bold text-slate-900 dark:text-white md:mb-3">Sinopsis</h3>
                   <RichText
-                    className="max-w-none leading-relaxed [&_a]:font-medium [&_a]:text-primary [&_a]:underline [&_blockquote]:my-4 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 dark:[&_code]:bg-slate-800 [&_h1]:mb-4 [&_h1]:mt-6 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-bold [&_h4]:mb-2 [&_h4]:mt-4 [&_h4]:text-lg [&_h4]:font-bold [&_img]:my-4 [&_img]:max-w-full [&_img]:rounded-lg [&_li]:my-1 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-3 [&_strong]:font-bold [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-6"
+                    className="max-w-none text-base leading-7 [&_a]:font-medium [&_a]:text-primary [&_a]:underline [&_blockquote]:my-3 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 dark:[&_code]:bg-slate-800 [&_h1]:mb-3 [&_h1]:mt-5 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:text-xl [&_h3]:font-bold [&_h4]:mb-2 [&_h4]:mt-3 [&_h4]:text-lg [&_h4]:font-bold [&_img]:my-3 [&_img]:max-w-full [&_img]:rounded-lg [&_li]:my-0.5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-2 [&_strong]:font-bold [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 md:[&_blockquote]:my-4 md:[&_img]:my-4 md:[&_ol]:my-4 md:[&_p]:my-3 md:[&_ul]:my-4"
+                    collapsibleOnMobile
                     content={book.descripcion || "La API no devolviÃ³ una descripciÃ³n para este libro."}
                   />
                 </div>
                 {bookTags.length > 0 ? (
-                  <div className="mb-8">
-                    <h3 className="mb-3 font-display text-lg font-bold text-slate-900 dark:text-white">Temas</h3>
+                  <div className="mb-6 md:mb-8">
+                    <h3 className="mb-2 font-display text-lg font-bold text-slate-900 dark:text-white md:mb-3">Temas</h3>
                     <div className="flex flex-wrap gap-2">
                       {bookTags.map((tag) => (
                         <Link
@@ -169,7 +170,7 @@ export function BookDetailsPage() {
                     </div>
                   </div>
                 ) : null}
-                <div className="mb-8 rounded-xl bg-slate-100 p-6 dark:bg-surface-dark">
+                <div className="mb-6 rounded-xl bg-slate-100 p-4 dark:bg-surface-dark md:mb-8 md:p-6">
                   <div className="mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
                       <h4 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">Tu progreso</h4>
