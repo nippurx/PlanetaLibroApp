@@ -172,9 +172,7 @@ export function AuthorPage() {
                     />
                   ) : bio.text ? (
                     <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-slate-600 dark:text-slate-400">{bio.text}</p>
-                  ) : (
-                    <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Este autor no tiene biografia disponible.</p>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </section>

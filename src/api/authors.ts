@@ -1,5 +1,7 @@
 ﻿import { apiClient } from "./client";
 
+import { decodeHtmlEntities, normalizePersonName } from "../utils/text";
+
 export type AuthorPhoto = {
   available: boolean;
   url: string | null;
@@ -40,6 +42,8 @@ type ApiEnvelope<T> = {
   data: T;
 };
 
+const AUTHOR_IMAGES_BASE_URL = "https://planetalibro.net/ebooks/images/authors";
+
 export async function fetchAuthorByUri(uri: string, params: { limit?: number; offset?: number } = {}): Promise<AuthorResponse> {
   const searchParams = new URLSearchParams();
 
@@ -55,5 +59,33 @@ export async function fetchAuthorByUri(uri: string, params: { limit?: number; of
   const suffix = query ? `?${query}` : "";
 
   const response = await apiClient.get<ApiEnvelope<AuthorResponse>>(`/public/autor/${encodeURIComponent(uri)}${suffix}`);
-  return response.data;
+  const data = response.data;
+
+  return {
+    ...data,
+    author: {
+      ...data.author,
+      nombre: normalizePersonName(data.author.nombre),
+      bio: data.author.bio ? decodeHtmlEntities(data.author.bio) : data.author.bio,
+      bio_html: data.author.bio_html ? decodeHtmlEntities(data.author.bio_html) : data.author.bio_html,
+      htm: data.author.htm ? decodeHtmlEntities(data.author.htm) : data.author.htm,
+      photo: data.author.photo?.url
+        ? data.author.photo
+        : {
+            available: true,
+            url: `${AUTHOR_IMAGES_BASE_URL}/${encodeURIComponent(data.author.uri)}.jpg`,
+          },
+    },
+    books: data.books.map((book) => ({
+      ...book,
+      titulo: decodeHtmlEntities(book.titulo),
+      subtitulo: book.subtitulo ? decodeHtmlEntities(book.subtitulo) : book.subtitulo,
+      autor: book.autor
+        ? {
+            ...book.autor,
+            nombre: book.autor.nombre ? normalizePersonName(book.autor.nombre) : book.autor.nombre,
+          }
+        : book.autor,
+    })),
+  };
 }

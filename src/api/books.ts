@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { decodeHtmlEntities, normalizePersonName } from "../utils/text";
 
 type ApiEnvelope<T> = {
   data: T;
@@ -118,7 +119,7 @@ function normalizeAudioId(value: string | null): string | null {
 }
 
 function normalizeAuthorName(value: string | null): string {
-  return value?.trim() || "Autor desconocido";
+  return value ? normalizePersonName(value) : "Autor desconocido";
 }
 
 function getAuthorData(apiBook: BookListApiItem | BookDetailApiItem): { name: string; uri: string | null } {
@@ -245,9 +246,9 @@ function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
   return {
     id: apiBook.id,
     uri: apiBook.uri,
-    titulo: apiBook.titulo,
-    subtitulo: apiBook.subtitulo ?? "",
-    descripcion: "descripcion" in apiBook && apiBook.descripcion ? apiBook.descripcion : "",
+    titulo: decodeHtmlEntities(apiBook.titulo),
+    subtitulo: apiBook.subtitulo ? decodeHtmlEntities(apiBook.subtitulo) : "",
+    descripcion: "descripcion" in apiBook && apiBook.descripcion ? decodeHtmlEntities(apiBook.descripcion) : "",
     autorNombre: author.name,
     autorUri: author.uri,
     cover_url: coverUrl,
