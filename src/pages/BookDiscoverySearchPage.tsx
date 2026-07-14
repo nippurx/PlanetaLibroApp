@@ -87,7 +87,7 @@ export function BookDiscoverySearchPage() {
   }, [audioOnly, debouncedQuery]);
 
   return (
-    <AppShell theme="light" title="Search" contentClassName="bg-background-light dark:bg-background-dark">
+    <AppShell theme="light" title="Buscar" contentClassName="bg-background-light dark:bg-background-dark">
       <header className="sticky top-0 z-20 flex flex-col gap-4 border-b border-slate-200 bg-background-light/95 px-6 py-4 backdrop-blur-sm dark:border-slate-800 dark:bg-background-dark/95">
         <div className="mx-auto w-full max-w-4xl">
           <form
@@ -99,14 +99,15 @@ export function BookDiscoverySearchPage() {
             }}
           >
             <label className="flex h-12 w-full flex-col">
-              <div className="flex h-full w-full flex-1 items-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all focus-within:ring-2 focus-within:ring-primary dark:bg-[#282f39] dark:ring-transparent">
+              <div className="flex h-full w-full flex-1 items-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 dark:bg-[#282f39] dark:ring-transparent">
                 <button className="flex items-center justify-center pl-4 text-slate-400 transition-colors hover:text-primary dark:text-slate-400" type="submit">
                   <span className="material-symbols-outlined">search</span>
                 </button>
                 <input
-                  className="flex w-full flex-1 border-none bg-transparent px-4 text-base font-normal leading-normal text-slate-900 placeholder:text-slate-400 focus:ring-0 dark:text-white"
+                  autoFocus
+                  className="flex w-full flex-1 border-none bg-transparent px-4 text-base font-normal leading-normal text-slate-900 outline-none placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-0 dark:text-white"
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search by title, author, or ISBN"
+                  placeholder="Buscar por título, autor o ISBN"
                   type="text"
                   value={query}
                 />
@@ -116,7 +117,7 @@ export function BookDiscoverySearchPage() {
         </div>
         <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-between gap-4 md:flex-row">
           <div className="scrollbar-hide flex w-full gap-2 overflow-x-auto pb-2 md:w-auto md:pb-0">
-            {["Genre", "Length", "Mood"].map((label) => (
+            {["Género", "Extensión", "Tema"].map((label) => (
               <button key={label} className="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg border border-slate-200 bg-white px-4 transition-colors hover:border-primary dark:border-slate-700 dark:bg-[#282f39]">
                 <span className="text-sm font-medium text-slate-700 dark:text-white">{label}</span>
                 <span className="material-symbols-outlined text-lg text-slate-500">expand_more</span>

@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:reader": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "build:preview": "tsc -b && vite build --mode preview",
+    "preview": "vite preview --mode preview --host 0.0.0.0",
+    "preview:reader": "npm run build:preview && vite preview --mode preview --host 0.0.0.0"
   },
   "dependencies": {
     "react": "^18.3.1",

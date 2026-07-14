@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "uri": "autor-libro-corto",
+  "generated_at": "2026-07-14T00:00:00-03:00",
+  "pages": 3,
+  "paginicio": 1,
+  "index": [
+    { "titulo": "Tapa", "pag": 1, "nivel": 1 },
+    { "titulo": "Capítulo uno", "pag": 2, "nivel": 1 },
+    { "titulo": "Una sección", "pag": 3, "nivel": 2 }
+  ],
+  "chapters": [{ "href": "chapter.xhtml", "page": 2, "title": "Capítulo uno" }],
+  "assets": ["Images/cover.jpg"],
+  "warnings": []
+}

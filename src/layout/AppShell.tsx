@@ -17,9 +17,15 @@ type AppShellProps = {
 const navItems = [
   { href: "/home", label: "Inicio", icon: "home" },
   { href: "/library", label: "Mi Biblioteca", icon: "library_books" },
-  { href: "/search", label: "Explorar", icon: "explore" },
+  { href: "/search", label: "Buscar", icon: "search" },
   { href: "/stats", label: "Estadisticas", icon: "bar_chart" },
   { href: "/settings", label: "Configuracion", icon: "settings" },
+];
+
+const mobileNavItems = [
+  { href: "/home", label: "Inicio", icon: "home" },
+  { href: "/search", label: "Buscar", icon: "search" },
+  { href: "/library", label: "Usuario", icon: "person" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -65,11 +71,7 @@ export function AppShell({
   }
 
   if (mode === "immersive") {
-    return (
-      <div className="min-h-screen bg-background-light dark:bg-background-dark">
-        {children}
-      </div>
-    );
+    return <div className="h-[100dvh] overflow-hidden bg-background-light dark:bg-background-dark">{children}</div>;
   }
 
   const dark = theme === "dark";
@@ -138,7 +140,7 @@ export function AppShell({
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header
-          className={`sticky top-0 z-30 flex items-center justify-between border-b px-4 py-4 md:px-6 ${
+          className={`sticky top-0 z-30 flex h-12 items-center justify-between border-b px-4 md:h-14 md:px-6 ${
             dark
               ? "border-slate-800 bg-background-dark/90 backdrop-blur-md"
               : "border-slate-200 bg-white/95 backdrop-blur-sm dark:border-slate-800 dark:bg-[#111418]/95"
@@ -146,7 +148,8 @@ export function AppShell({
         >
           <div className="flex min-w-0 items-center gap-4">
             <button
-              className={`rounded-lg p-2 md:hidden ${dark ? "text-white hover:bg-[#161d31]" : "text-slate-600 hover:bg-slate-100 dark:text-white dark:hover:bg-[#282f39]"}`}
+              aria-label="Abrir menu"
+              className={`-ml-2 rounded-lg p-2 md:hidden ${dark ? "text-white hover:bg-[#161d31]" : "text-slate-600 hover:bg-slate-100 dark:text-white dark:hover:bg-[#282f39]"}`}
               onClick={() => setOpen(true)}
               type="button"
             >
@@ -154,7 +157,7 @@ export function AppShell({
             </button>
             <div className="min-w-0">
               {typeof title === "string" ? (
-                <h2 className={`truncate text-xl font-bold tracking-tight ${dark ? "text-white" : "text-slate-900 dark:text-white"}`}>{title}</h2>
+                <h2 className={`truncate text-lg font-bold tracking-tight md:text-xl ${dark ? "text-white" : "text-slate-900 dark:text-white"}`}>{title}</h2>
               ) : (
                 title
               )}
@@ -186,7 +189,36 @@ export function AppShell({
             {headerRight}
           </div>
         </header>
-        <main className={`min-h-0 flex-1 overflow-y-auto ${contentClassName}`}>{children}</main>
+        <main className={`min-h-0 flex-1 overflow-y-auto pb-[calc(2.25rem+env(safe-area-inset-bottom))] md:pb-0 ${contentClassName}`}>{children}</main>
+        <nav
+          aria-label="Navegacion principal"
+          className={`fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t pb-[env(safe-area-inset-bottom)] md:hidden ${
+            dark
+              ? "border-slate-800 bg-[#0d0f14]/95"
+              : "border-slate-200 bg-white/95 dark:border-slate-800 dark:bg-[#111418]/95"
+          } backdrop-blur-md`}
+        >
+          {mobileNavItems.map((item) => {
+            const active = isActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                aria-current={active ? "page" : undefined}
+                aria-label={item.label}
+                className={`flex h-9 items-center justify-center leading-none transition-colors ${
+                  active
+                    ? dark
+                      ? "text-white"
+                      : "text-primary dark:text-white"
+                    : "text-slate-500 hover:text-primary dark:text-slate-500 dark:hover:text-white"
+                }`}
+                to={item.href}
+              >
+                <span className={`material-symbols-outlined block text-[22px] leading-none ${active ? "fill-1" : ""}`}>{item.icon}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

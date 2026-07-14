@@ -85,7 +85,7 @@ export function HorizontalBookList({ books, loading = false, ariaLabel = "Lista 
   return (
     <>
       {hasOverflow ? (
-        <div className="mb-4 flex justify-end gap-2">
+        <div className="relative z-10 hidden h-0 -translate-y-11 justify-end gap-2 md:flex">
           {[
             { icon: "arrow_back", direction: "left" as const, hidden: !canScrollLeft, label: "Ver libro anterior" },
             { icon: "arrow_forward", direction: "right" as const, hidden: !canScrollRight, label: "Ver libro siguiente" },

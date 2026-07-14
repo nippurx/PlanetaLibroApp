@@ -1,107 +1,405 @@
-import { Link } from "react-router-dom";
+import { CSSProperties, PointerEvent as ReactPointerEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { createAnchor, resolveAnchor } from "../features/reader/anchors";
+import { sanitizeFragment } from "../features/reader/sanitize";
+import { getLegacyReaderUrl, getReaderRoot, loadFragment, loadManifest } from "../features/reader/source";
+import { loadPreferences, loadProgress, savePreferences, saveProgress } from "../features/reader/storage";
+import { ReaderAnchor, ReaderManifest, ReaderPreferences } from "../features/reader/types";
 import { AppShell } from "../layout/AppShell";
 
+const LOAD_BATCH = 8;
+
+function readableTitle(uri: string): string {
+  return uri.split("-").slice(2).join(" ").replace(/\b\w/g, (letter) => letter.toUpperCase()) || uri;
+}
+
+function themeColors(theme: ReaderPreferences["theme"]): { background: string; foreground: string; muted: string; panel: string } {
+  if (theme === "dark") return { background: "#111418", foreground: "#e8e2d5", muted: "#a7a29a", panel: "#191d22" };
+  if (theme === "light") return { background: "#fbfaf7", foreground: "#25221e", muted: "#746f67", panel: "#ffffff" };
+  return { background: "#f4ecd8", foreground: "#3f3528", muted: "#74634e", panel: "#fff8e8" };
+}
+
 export function ImmersiveReaderPage() {
+  const { libro_uri = "", page = "1" } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const requestedPage = Math.max(1, Number.parseInt(page, 10) || 1);
+  const [manifest, setManifest] = useState<ReaderManifest | null>(null);
+  const [fragments, setFragments] = useState<Map<number, string>>(new Map());
+  const [preferences, setPreferences] = useState<ReaderPreferences>(() => loadPreferences());
+  const [visualPage, setVisualPage] = useState(0);
+  const [visualPages, setVisualPages] = useState(1);
+  const [visualPageWidth, setVisualPageWidth] = useState(1);
+  const [columnGeometry, setColumnGeometry] = useState<{ width: number; gap: number } | null>(null);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [panel, setPanel] = useState<"index" | "preferences" | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [repaginating, setRepaginating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [restoredAnchor, setRestoredAnchor] = useState<ReaderAnchor | null>(null);
+  const [layoutReady, setLayoutReady] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelButtonRef = useRef<HTMLButtonElement>(null);
+  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const hideTimer = useRef<number | null>(null);
+  const pendingAnchor = useRef<ReaderAnchor | null>(null);
+  const advanceAfterLayout = useRef(false);
+  const colors = themeColors(preferences.theme);
+  const loadedPages = useMemo(() => [...fragments.keys()].sort((a, b) => a - b), [fragments]);
+  const lastLoadedPage = loadedPages[loadedPages.length - 1];
+
+  const captureAnchor = useCallback((): ReaderAnchor | null => {
+    const root = contentRef.current;
+    if (!root) return null;
+    const viewport = viewportRef.current;
+    let target: Element | null = null;
+    if (viewport) {
+      const rect = viewport.getBoundingClientRect();
+      target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + Math.min(96, rect.height / 3));
+    }
+    return createAnchor(root, target);
+  }, []);
+
+  const persistProgress = useCallback(() => {
+    if (!manifest) return;
+    const anchor = captureAnchor();
+    if (!anchor) return;
+    saveProgress({ version: 1, uri: libro_uri, manifestVersion: manifest.generated_at, anchor, updatedAt: new Date().toISOString() });
+  }, [captureAnchor, libro_uri, manifest]);
+
+  const loadRange = useCallback(async (start: number, end: number, signal?: AbortSignal) => {
+    if (!manifest) return;
+    const missing: number[] = [];
+    for (let value = Math.max(1, start); value <= Math.min(manifest.pages, end); value += 1) if (!fragments.has(value)) missing.push(value);
+    if (!missing.length) return;
+    const anchor = captureAnchor();
+    if (anchor) {
+      pendingAnchor.current = anchor;
+      setRepaginating(true);
+    }
+    setLoadingMore(true);
+    try {
+      const values = await Promise.all(missing.map(async (number) => [number, await loadFragment(libro_uri, number, manifest.pages, signal)] as const));
+      setFragments((current) => {
+        const next = new Map(current);
+        values.forEach(([number, html]) => next.set(number, html));
+        return next;
+      });
+    } catch (reason) {
+      pendingAnchor.current = null;
+      advanceAfterLayout.current = false;
+      setRepaginating(false);
+      throw reason;
+    } finally { setLoadingMore(false); }
+  }, [captureAnchor, fragments, libro_uri, manifest]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true); setError(null); setManifest(null); setFragments(new Map()); setLayoutReady(false);
+    loadManifest(libro_uri, controller.signal)
+      .then(async (nextManifest) => {
+        setManifest(nextManifest);
+        const local = loadProgress(libro_uri);
+        setRestoredAnchor(local?.anchor ?? null);
+        const start = Math.min(nextManifest.pages, requestedPage || nextManifest.paginicio);
+        const from = Math.max(1, start - 1);
+        const to = Math.min(nextManifest.pages, start + LOAD_BATCH - 1);
+        const values = await Promise.all(Array.from({ length: to - from + 1 }, (_, offset) => from + offset).map(async (number) => [number, await loadFragment(libro_uri, number, nextManifest.pages, controller.signal)] as const));
+        setFragments(new Map(values));
+      })
+      .catch((reason: unknown) => {
+        if (!controller.signal.aborted) {
+          const message = reason instanceof Error ? reason.message : "No se pudo abrir este libro.";
+          setError(message);
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [libro_uri, requestedPage]);
+
+  const sanitizedHtml = useMemo(() => {
+    let blockIndex = 0;
+    return loadedPages.map((number) => {
+      const result = sanitizeFragment(fragments.get(number) ?? "", getReaderRoot(libro_uri), blockIndex);
+      blockIndex += result.blockCount;
+      return result.html;
+    }).join("");
+  }, [fragments, libro_uri, loadedPages]);
+
+  const recalculate = useCallback((anchor?: ReaderAnchor | null, advance = 0) => {
+    const viewport = viewportRef.current;
+    const content = contentRef.current;
+    if (!viewport || !content) return;
+    const width = Math.max(1, viewport.clientWidth);
+    const viewportStyle = getComputedStyle(viewport);
+    const horizontalPadding = (Number.parseFloat(viewportStyle.paddingLeft) || 0) + (Number.parseFloat(viewportStyle.paddingRight) || 0);
+    const columnWidth = Math.max(1, width - horizontalPadding);
+    const columnGap = Math.max(0, width - columnWidth);
+    setColumnGeometry((current) => current && Math.abs(current.width - columnWidth) < 0.1 && Math.abs(current.gap - columnGap) < 0.1
+      ? current
+      : { width: columnWidth, gap: columnGap });
+    const pages = preferences.mode === "paged" ? Math.max(1, Math.ceil(content.scrollWidth / width)) : 1;
+    setVisualPageWidth(width);
+    setLayoutReady(true);
+    setVisualPages(pages);
+    if (anchor) {
+      const target = resolveAnchor(content, anchor);
+      if (target) {
+        if (preferences.mode === "paged") {
+          const targetRect = (target as HTMLElement).getClientRects()[0] ?? target.getBoundingClientRect();
+          const contentRect = content.getBoundingClientRect();
+          const targetOffset = Math.max(0, targetRect.left - contentRect.left);
+          const next = Math.min(pages - 1, Math.max(0, Math.floor(targetOffset / width) + advance));
+          setVisualPage(next);
+        } else target.scrollIntoView({ block: "start" });
+      }
+    }
+  }, [preferences.mode]);
+
+  useLayoutEffect(() => {
+    if (!sanitizedHtml || !contentRef.current) return;
+    let cancelled = false;
+    const settleLayout = async () => {
+      const content = contentRef.current;
+      if (!content) return;
+      const fonts = document.fonts?.ready ?? Promise.resolve();
+      const images = [...content.querySelectorAll("img")].map((image) => image.complete
+        ? Promise.resolve()
+        : new Promise<void>((resolve) => {
+            image.addEventListener("load", () => resolve(), { once: true });
+            image.addEventListener("error", () => resolve(), { once: true });
+          }));
+      await Promise.race([
+        Promise.all([fonts, ...images]),
+        new Promise((resolve) => window.setTimeout(resolve, 2500)),
+      ]);
+      await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      if (cancelled) return;
+      const anchor = restoredAnchor ?? pendingAnchor.current;
+      recalculate(anchor, advanceAfterLayout.current ? 1 : 0);
+      setRestoredAnchor(null);
+      pendingAnchor.current = null;
+      advanceAfterLayout.current = false;
+      setRepaginating(false);
+    };
+    void settleLayout();
+    return () => { cancelled = true; };
+  }, [columnGeometry?.gap, columnGeometry?.width, recalculate, restoredAnchor, sanitizedHtml, visualPageWidth]);
+
+  useEffect(() => {
+    if (
+      !manifest
+      || !layoutReady
+      || loadingMore
+      || repaginating
+      || !lastLoadedPage
+      || lastLoadedPage >= manifest.pages
+    ) return;
+
+    const nearPagedEnd = preferences.mode === "paged" && visualPage >= Math.max(0, visualPages - 2);
+    const nearScrollEnd = preferences.mode === "scroll" && scrollProgress >= 0.8;
+    if (!nearPagedEnd && !nearScrollEnd) return;
+
+    if (nearScrollEnd) setScrollProgress(0);
+
+    void loadRange(lastLoadedPage + 1, lastLoadedPage + LOAD_BATCH)
+      .catch(() => setAnnouncement("No se pudo precargar el siguiente tramo. Intenta avanzar nuevamente."));
+  }, [lastLoadedPage, layoutReady, loadRange, loadingMore, manifest, preferences.mode, repaginating, scrollProgress, visualPage, visualPages]);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    let previousWidth = viewport.clientWidth;
+    let previousHeight = viewport.clientHeight;
+    const observer = new ResizeObserver(() => {
+      const width = viewport.clientWidth;
+      const height = viewport.clientHeight;
+      if (width === previousWidth && height === previousHeight) return;
+      previousWidth = width;
+      previousHeight = height;
+      if (pendingAnchor.current) return;
+      const anchor = captureAnchor();
+      requestAnimationFrame(() => recalculate(anchor));
+    });
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, [captureAnchor, recalculate]);
+
+  useEffect(() => {
+    savePreferences(preferences);
+  }, [preferences]);
+
+  useEffect(() => {
+    const interval = window.setInterval(persistProgress, 1500);
+    const onVisibility = () => { if (document.visibilityState === "hidden") persistProgress(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => { window.clearInterval(interval); document.removeEventListener("visibilitychange", onVisibility); persistProgress(); };
+  }, [persistProgress]);
+
+  const scheduleHide = useCallback(() => {
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    if (panel) return;
+    hideTimer.current = window.setTimeout(() => setControlsVisible(false), 3500);
+  }, [panel]);
+
+  const goToVisualPage = useCallback(async (next: number) => {
+    const viewport = viewportRef.current;
+    if (!viewport || preferences.mode !== "paged") return;
+    if (next >= visualPages && manifest && lastLoadedPage < manifest.pages) {
+      advanceAfterLayout.current = true;
+      await loadRange(lastLoadedPage + 1, lastLoadedPage + LOAD_BATCH);
+      return;
+    }
+    const clamped = Math.min(visualPages - 1, Math.max(0, next));
+    setVisualPage(clamped);
+    setAnnouncement(`Página visual ${clamped + 1} de ${visualPages}`);
+    scheduleHide();
+  }, [captureAnchor, lastLoadedPage, loadRange, manifest, preferences.mode, scheduleHide, visualPages]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { if (panel) setPanel(null); else setControlsVisible(true); return; }
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input,select,button,a,textarea")) return;
+      if (preferences.mode === "paged" && ["ArrowRight", "PageDown", " "].includes(event.key)) { event.preventDefault(); void goToVisualPage(visualPage + 1); }
+      if (preferences.mode === "paged" && ["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); void goToVisualPage(visualPage - 1); }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [goToVisualPage, panel, preferences.mode, visualPage]);
+
+  useEffect(() => {
+    if (panel) { panelRef.current?.focus(); setControlsVisible(true); }
+    else panelButtonRef.current?.focus();
+  }, [panel]);
+
+  const chapter = useMemo(() => {
+    if (!manifest || !loadedPages.length) return "Inicio";
+    const ratio = preferences.mode === "paged" ? visualPage / Math.max(1, visualPages - 1) : 0;
+    const approximate = loadedPages[0] + Math.round((lastLoadedPage - loadedPages[0]) * ratio);
+    return [...manifest.index].reverse().find((item) => item.pag <= approximate)?.titulo || "Inicio";
+  }, [lastLoadedPage, loadedPages, manifest, preferences.mode, visualPage, visualPages]);
+  const flowComplete = Boolean(manifest && fragments.size === manifest.pages);
+  const progress = flowComplete
+    ? Math.min(100, Math.max(0, Math.round(preferences.mode === "paged" ? (visualPage / Math.max(1, visualPages - 1)) * 100 : scrollProgress * 100)))
+    : null;
+
+  function updatePreferences(patch: Partial<ReaderPreferences>) {
+    const anchor = captureAnchor();
+    setRestoredAnchor(anchor);
+    setPreferences((current) => ({ ...current, ...patch }));
+  }
+
+  function leaveReader() {
+    persistProgress();
+    if (location.key !== "default") navigate(-1);
+    else navigate(`/book/${libro_uri}`);
+  }
+
+  async function goToIndexItem(item: ReaderManifest["index"][number]) {
+    if (!manifest) return;
+    const from = Math.max(1, item.pag - 1);
+    const to = Math.min(manifest.pages, from + LOAD_BATCH - 1);
+    const destination: ReaderAnchor = { version: 1, quote: item.titulo, prefix: "", suffix: "", blockIndex: 0, offset: 0 };
+    pendingAnchor.current = destination;
+    advanceAfterLayout.current = false;
+    setPanel(null);
+    setRepaginating(true);
+    setLoadingMore(true);
+    setLayoutReady(false);
+    setVisualPage(0);
+    try {
+      const values = await Promise.all(Array.from({ length: to - from + 1 }, (_, offset) => from + offset).map(async (number) => (
+        [number, fragments.get(number) ?? await loadFragment(libro_uri, number, manifest.pages)] as const
+      )));
+      setFragments(new Map(values));
+      setAnnouncement(`Capítulo: ${item.titulo}`);
+    } catch (reason) {
+      pendingAnchor.current = null;
+      setRepaginating(false);
+      setAnnouncement(reason instanceof Error ? `No se pudo abrir el capítulo: ${reason.message}` : "No se pudo abrir el capítulo.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  function onPointerDown(event: ReactPointerEvent) { pointerStart.current = { x: event.clientX, y: event.clientY }; }
+  function onPointerUp(event: ReactPointerEvent) {
+    const start = pointerStart.current; pointerStart.current = null;
+    if (!start || preferences.mode !== "paged") return;
+    const dx = event.clientX - start.x; const dy = event.clientY - start.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { void goToVisualPage(visualPage + (dx < 0 ? 1 : -1)); return; }
+    const target = event.target as HTMLElement;
+    if (target.closest("a,button,input,select")) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const relativeX = event.clientX - rect.left;
+    if (relativeX < rect.width * 0.28) void goToVisualPage(visualPage - 1);
+    else if (relativeX > rect.width * 0.72) void goToVisualPage(visualPage + 1);
+    else { setControlsVisible((value) => !value); scheduleHide(); }
+  }
+
+  const readerStyle = {
+    "--reader-bg": colors.background, "--reader-fg": colors.foreground, "--reader-muted": colors.muted, "--reader-panel": colors.panel,
+    "--reader-font-size": `${preferences.fontSize}px`, "--reader-line-height": String(preferences.lineHeight), "--reader-measure": `${preferences.measure}px`,
+    "--reader-page-offset": `${visualPage * visualPageWidth}px`,
+    "--reader-column-width": columnGeometry ? `${columnGeometry.width}px` : undefined,
+    "--reader-column-gap": columnGeometry ? `${columnGeometry.gap}px` : undefined,
+  } as CSSProperties;
+
+  if (loading) return <AppShell mode="immersive"><div className="reader-state" role="status">Preparando el libro…</div></AppShell>;
+  if (error || !manifest) return (
+    <AppShell mode="immersive"><div className="reader-state"><h1>No pudimos abrir el libro</h1><p>{error}</p><div><Link to={`/book/${libro_uri}`}>Volver a la ficha</Link><a href={getLegacyReaderUrl(libro_uri, requestedPage)}>Abrir lector clásico</a></div></div></AppShell>
+  );
+
   return (
     <AppShell mode="immersive">
-      <div className="flex min-h-screen flex-col bg-background-light font-display text-slate-900 antialiased transition-colors duration-300 dark:bg-background-dark dark:text-slate-100">
-        <header className="fixed top-0 z-50 w-full border-b border-slate-200 bg-background-light/95 backdrop-blur-sm transition-colors duration-300 dark:border-slate-800 dark:bg-background-dark/95">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-4">
-              <Link className="text-slate-500 transition-colors hover:text-primary" to="/book/el-nombre-del-viento"><span className="material-symbols-outlined">arrow_back</span></Link>
-              <div className="flex flex-col">
-                <h1 className="text-sm font-bold leading-tight text-slate-900 dark:text-slate-100">The Sustainable Future</h1>
-                <span className="text-xs text-slate-500 dark:text-slate-400">Chapter 4: Biophilic Cities</span>
-              </div>
-            </div>
-            <div className="mx-8 hidden max-w-md flex-1 items-center gap-3 sm:flex">
-              <span className="w-8 text-right text-xs font-medium text-slate-500">32%</span>
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"><div className="h-full w-[32%] rounded-full bg-primary" /></div>
-              <span className="w-12 text-xs font-medium text-slate-500">15 min left</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {["bookmark_border", "headphones"].map((icon) => <button key={icon} className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-primary dark:hover:bg-slate-800"><span className="material-symbols-outlined text-xl">{icon}</span></button>)}
-            </div>
-          </div>
+      <div className={`reader-shell reader-theme-${preferences.theme} reader-font-${preferences.font} ${repaginating ? "is-repaginating" : ""}`} style={readerStyle} onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerMove={() => { setControlsVisible(true); scheduleHide(); }}>
+        <header className={`reader-toolbar reader-toolbar-top ${controlsVisible ? "is-visible" : ""}`}>
+          <button aria-label="Volver a la pantalla anterior" onClick={leaveReader}><span className="material-symbols-outlined">arrow_back</span></button>
+          <div className="reader-title"><strong>{readableTitle(libro_uri)}</strong><span>{chapter}</span></div>
+          <button ref={panelButtonRef} aria-expanded={panel === "index"} aria-label="Abrir índice" onClick={() => setPanel(panel === "index" ? null : "index")}><span className="material-symbols-outlined">toc</span></button>
+          <button aria-expanded={panel === "preferences"} aria-label="Abrir preferencias" onClick={() => setPanel(panel === "preferences" ? null : "preferences")}><span className="material-symbols-outlined">text_fields</span></button>
         </header>
-        <main className="flex flex-1 pt-20">
-          <article className="mx-auto flex-1 max-w-3xl px-6 py-12 text-lg leading-relaxed text-slate-800 dark:text-slate-200 sm:px-12 sm:text-xl md:px-16 lg:px-20">
-            <span className="mb-2 block text-sm font-semibold uppercase tracking-wider text-primary">Part II: The Urban Shift</span>
-            <h2 className="mb-10 text-4xl font-medium text-slate-900 dark:text-slate-100 sm:text-5xl">Biophilic Cities</h2>
-            <div className="max-w-none">
-              <p className="mb-6 indent-8 first-letter:float-left first-letter:mr-2 first-letter:text-5xl first-letter:font-bold first-letter:text-primary">The concept of the biophilic city is not merely an aesthetic choice, but a fundamental necessity for the psychological well-being of future generations.</p>
-              <p className="mb-6">Imagine a city where the walls breathe. Not metaphorically, but literally. Vertical gardens scaling skyscrapers, filtering particulate matter and cooling the ambient temperature by several degrees.</p>
-              <figure className="my-10 overflow-hidden rounded-xl border border-slate-200 shadow-lg dark:border-slate-800">
-                <img alt="Green vertical garden on modern building facade" className="h-64 w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpDyjaPTdOwkbTYElpjjqvr8WTOv5oNZeB0ChZcI9vo85y6w-tmeg9tuHmiZKtTvcit69g-JJ3k_x7p8eo7H6ohUpyJv5jsqZQtxdCXEBYn3aCeTORqF9Dc32SNLdAIpT3zbzraukUkubakPJOiymeE8ESwD_hgGuj_FOwhCW8MTy_wXvKXOHzpDaW6kK7Evt4QTS_K_sXBcxoB28mKh58zqFXVv9bcQuT0-XhO3xO4neiIPqt1x_JI1IOl0h47-TkWb495Ud1wopn" />
-                <figcaption className="bg-slate-50 p-3 text-center text-sm italic text-slate-500 dark:bg-slate-800/50">Fig 4.1: The Bosco Verticale in Milan, a prototype for biodiversity.</figcaption>
-              </figure>
-              <p className="mb-6">Professor E.O. Wilson popularized the term "biophilia" to describe the innate tendency of humans to seek connections with nature and other forms of life.</p>
-              <div className="my-8 border-l-4 border-primary pl-6 text-2xl font-light italic text-slate-600 dark:text-slate-400">"We cannot win this battle to save species and environments without forging an emotional bond between ourselves and nature as well."</div>
-              <p className="mb-6">The integration involves three key pillars:</p>
-              <ul className="mb-8 list-none space-y-4 pl-4">
-                {[
-                  "Physical Access: Every citizen should be within a 5-minute walk of a green space.",
-                  "Visual Connection: Sightlines should prioritize trees and sky over advertisements and concrete.",
-                  "Ecological Mimicry: Buildings should function like trees, harvesting water and energy.",
-                ].map((item) => <li key={item} className="flex items-start gap-3"><span className="material-symbols-outlined mt-1 text-sm text-primary">circle</span><span>{item}</span></li>)}
-              </ul>
-            </div>
-            <div className="mt-20 flex items-center justify-between border-t border-slate-200 pt-10 dark:border-slate-800">
-              <a className="group flex flex-col items-start gap-1 text-slate-500 transition-colors hover:text-primary" href="#"><div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide"><span className="material-symbols-outlined text-lg transition-transform group-hover:-translate-x-1">arrow_back</span>Previous</div><span className="text-lg font-medium text-slate-800 group-hover:text-primary dark:text-slate-200">Chapter 3: The Carbon Cost</span></a>
-              <a className="group flex flex-col items-end gap-1 text-slate-500 transition-colors hover:text-primary" href="#"><div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide">Next<span className="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">arrow_forward</span></div><span className="text-lg font-medium text-slate-800 group-hover:text-primary dark:text-slate-200">Chapter 5: Renewable Minds</span></a>
-            </div>
-          </article>
-          <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-72 flex-col overflow-y-auto border-l border-slate-200 bg-background-light/50 p-6 backdrop-blur-sm dark:border-slate-800 dark:bg-background-dark/50 xl:flex">
-            <h3 className="mb-6 text-xs font-bold uppercase tracking-widest text-slate-400">Display Settings</h3>
-            <div className="mb-8">
-              <label className="mb-3 block text-sm font-medium text-slate-700 dark:text-slate-300">Theme</label>
-              <div className="grid grid-cols-3 gap-2">
-                <button className="rounded-lg border-2 border-primary bg-background-light p-3 text-slate-900 shadow-sm"><span className="material-symbols-outlined mb-1 text-xl">light_mode</span><span className="block text-xs font-medium">Light</span></button>
-                <button className="rounded-lg border border-slate-200 bg-[#f4ecd8] p-3 text-[#433422] transition-colors hover:border-primary/50 dark:border-slate-700"><span className="material-symbols-outlined mb-1 text-xl">menu_book</span><span className="block text-xs font-medium">Sepia</span></button>
-                <button className="rounded-lg border border-slate-200 bg-slate-900 p-3 text-white transition-colors hover:border-primary/50 dark:border-slate-700"><span className="material-symbols-outlined mb-1 text-xl">dark_mode</span><span className="block text-xs font-medium">Dark</span></button>
-              </div>
-            </div>
-            <div className="mb-8">
-              <div className="mb-3 flex items-center justify-between"><label className="text-sm font-medium text-slate-700 dark:text-slate-300">Font Size</label><span className="text-xs text-slate-500">20px</span></div>
-              <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-800">
-                <span className="material-symbols-outlined text-sm text-slate-400">format_size</span>
-                <input className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-primary dark:bg-slate-700" defaultValue="20" max="32" min="14" type="range" />
-                <span className="material-symbols-outlined text-xl text-slate-400">format_size</span>
-              </div>
-            </div>
-            <div className="mb-8">
-              <label className="mb-3 block text-sm font-medium text-slate-700 dark:text-slate-300">Line Height</label>
-              <div className="flex rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
-                <button className="flex-1 rounded py-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-primary dark:hover:bg-slate-700"><span className="material-symbols-outlined rotate-90 text-lg">density_small</span></button>
-                <button className="flex-1 rounded bg-primary/10 py-1.5 font-medium text-primary"><span className="material-symbols-outlined rotate-90 text-lg">density_medium</span></button>
-                <button className="flex-1 rounded py-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-primary dark:hover:bg-slate-700"><span className="material-symbols-outlined rotate-90 text-lg">density_large</span></button>
-              </div>
-            </div>
-            <div className="mb-8">
-              <label className="mb-3 block text-sm font-medium text-slate-700 dark:text-slate-300">Font Family</label>
-              <select className="block w-full rounded-lg border border-slate-200 bg-white p-2.5 text-sm text-slate-700 focus:border-primary focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300" defaultValue="Newsreader (Serif)">
-                <option>Newsreader (Serif)</option>
-                <option>Inter (Sans)</option>
-                <option>Merriweather (Serif)</option>
-              </select>
-            </div>
-            <div className="mt-auto rounded-xl border border-primary/20 bg-primary/5 p-4">
-              <div className="mb-2 flex items-start justify-between"><span className="text-xs font-bold uppercase text-primary">Now Playing</span><span className="material-symbols-outlined text-sm text-primary">graphic_eq</span></div>
-              <div className="mb-3 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-cover bg-center shadow-sm" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAeZ0vxUabDAOSb75DvrdReCMZdScMU8klqUkokSf7m1NESJJ4kpAP-jKAWp-jhHuj_lsazWkxguJQP-4TKq4y9AxhZncsoYHrMF7kuYcUkpbcIYNIiocZt33T2ZlDWnf7huCU6Q9w_fqV5dKTs-w5U9Xn1Cq0Ofuyo1qWjgOnX5cdhuw-SHeVb6vZECp-pk3stba1iD_O7UuYgSCoLJtsbMuxaOwgosrkzuDQplqw_SUwmtj2lw1RlPjyA1IwyfAVPOUyrFuuxEyQS")' }} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">Biophilic Cities</p>
-                  <p className="truncate text-xs text-slate-500">Narrated by A. Smith</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-center gap-4">
-                {["replay_10", "play_arrow", "forward_10"].map((icon) => <button key={icon} className={`${icon === "play_arrow" ? "flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-md transition-colors hover:bg-blue-600" : "text-slate-400 transition-colors hover:text-primary"}`}><span className="material-symbols-outlined">{icon}</span></button>)}
-              </div>
-            </div>
-          </aside>
+
+        <main ref={viewportRef} className={`reader-viewport is-${preferences.mode}`} aria-label="Contenido del libro" onScroll={(event) => { if (preferences.mode === "scroll") { const element = event.currentTarget; setScrollProgress(element.scrollTop / Math.max(1, element.scrollHeight - element.clientHeight)); } }}>
+          <article ref={contentRef} className="reader-content" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
         </main>
-        <button className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/30 transition-transform hover:scale-105 xl:hidden"><span className="material-symbols-outlined text-2xl">text_fields</span></button>
+
+        {preferences.mode === "paged" && <>
+          <button className="reader-page-button reader-page-previous" disabled={visualPage === 0} aria-label="Página visual anterior" onClick={(event) => { event.stopPropagation(); void goToVisualPage(visualPage - 1); }}><span className="material-symbols-outlined">chevron_left</span></button>
+          <button className="reader-page-button reader-page-next" disabled={visualPage >= visualPages - 1 && lastLoadedPage === manifest.pages} aria-label="Página visual siguiente" onClick={(event) => { event.stopPropagation(); void goToVisualPage(visualPage + 1); }}><span className="material-symbols-outlined">chevron_right</span></button>
+        </>}
+
+        <footer className={`reader-toolbar reader-toolbar-bottom ${controlsVisible ? "is-visible" : ""}`}>
+          <span>{chapter}</span><div className="reader-progress" aria-label={progress === null ? "Calculando progreso" : `${progress}% leído`}><i style={{ width: `${progress ?? 0}%` }} /></div><span>{progress === null ? "—" : `${progress}%`}</span>
+        </footer>
+
+        {panel && <div className="reader-backdrop" onPointerDown={(event) => event.stopPropagation()} onClick={() => setPanel(null)}>
+          <div ref={panelRef} className="reader-panel" role="dialog" aria-modal="true" aria-label={panel === "index" ? "Índice del libro" : "Preferencias de lectura"} tabIndex={-1} onClick={(event) => event.stopPropagation()}>
+            <div className="reader-panel-heading"><h2>{panel === "index" ? "Índice" : "Preferencias"}</h2><button aria-label="Cerrar panel" onClick={() => setPanel(null)}><span className="material-symbols-outlined">close</span></button></div>
+            {panel === "index" ? <nav aria-label="Capítulos" className="reader-index">{manifest.index.map((item, index) => <button key={`${item.pag}-${index}`} style={{ paddingLeft: `${Math.min(3, item.nivel - 1) * 1.1 + .75}rem` }} onClick={() => { void goToIndexItem(item); }}>{item.titulo}</button>)}</nav> : <Preferences value={preferences} onChange={updatePreferences} />}
+          </div>
+        </div>}
+        {loadingMore && <div className="reader-loading" role="status">Cargando…</div>}
+        {repaginating && <div className="reader-layout-placeholder" role="status" aria-live="polite"><span>Ajustando la página…</span><i /><i /><i /><i /></div>}
+        <div className="sr-only" aria-live="polite">{announcement}</div>
       </div>
     </AppShell>
   );
+}
+
+function Preferences({ value, onChange }: { value: ReaderPreferences; onChange: (patch: Partial<ReaderPreferences>) => void }) {
+  return <div className="reader-settings">
+    <fieldset><legend>Modo de lectura</legend><div className="reader-segmented"><button aria-pressed={value.mode === "paged"} onClick={() => onChange({ mode: "paged" })}>Paginado</button><button aria-pressed={value.mode === "scroll"} onClick={() => onChange({ mode: "scroll" })}>Continuo</button></div></fieldset>
+    <fieldset><legend>Tema</legend><div className="reader-segmented"><button aria-pressed={value.theme === "light"} onClick={() => onChange({ theme: "light" })}>Claro</button><button aria-pressed={value.theme === "sepia"} onClick={() => onChange({ theme: "sepia" })}>Sepia</button><button aria-pressed={value.theme === "dark"} onClick={() => onChange({ theme: "dark" })}>Oscuro</button></div></fieldset>
+    <label>Fuente<select value={value.font} onChange={(event) => onChange({ font: event.target.value as ReaderPreferences["font"] })}><option value="serif">Serif</option><option value="sans">Sans</option><option value="accessible">Accesible</option></select></label>
+    <label>Tamaño <output>{value.fontSize}px</output><input type="range" min="14" max="32" value={value.fontSize} onChange={(event) => onChange({ fontSize: Number(event.target.value) })} /></label>
+    <label>Interlineado <output>{value.lineHeight.toFixed(2)}</output><input type="range" min="1.35" max="2.2" step="0.05" value={value.lineHeight} onChange={(event) => onChange({ lineHeight: Number(event.target.value) })} /></label>
+    <label>Ancho <output>{value.measure}px</output><input type="range" min="480" max="960" step="40" value={value.measure} onChange={(event) => onChange({ measure: Number(event.target.value) })} /></label>
+  </div>;
 }

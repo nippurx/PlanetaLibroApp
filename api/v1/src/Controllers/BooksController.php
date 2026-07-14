@@ -1,0 +1,151 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PlanetaLibro\Api\V1\Controllers;
+
+use PlanetaLibro\Api\V1\Repositories\BooksRepo;
+use PlanetaLibro\Api\V1\Request;
+use PlanetaLibro\Api\V1\Response;
+
+final class BooksController
+{
+    private BooksRepo $booksRepo;
+
+    public function __construct(BooksRepo $booksRepo)
+    {
+        $this->booksRepo = $booksRepo;
+    }
+
+    /**
+     * @param array<string, string> $params
+     */
+    public function show(Request $request, array $params): void
+    {
+        $uri = $request->routeParamUri($params);
+        if ($uri === null) {
+            Response::badRequest('Invalid book uri.');
+            return;
+        }
+
+        $book = $this->booksRepo->findBookByUri($uri);
+        if ($book === null) {
+            Response::notFound('Book not found.');
+            return;
+        }
+
+        Response::ok($book);
+    }
+
+    /**
+     * @param array<string, string> $params
+     */
+    public function index(Request $request, array $params): void
+    {
+        $limit = $request->queryInt('limit', 20, 1, 100);
+        $offset = $request->queryInt('offset', 0, 0, 100000);
+
+        if ($limit === null || $offset === null) {
+            Response::badRequest('Invalid limit or offset.');
+            return;
+        }
+
+        Response::ok([
+            'items' => $this->booksRepo->listBooks($limit, $offset),
+            'pagination' => [
+                'limit' => $limit,
+                'offset' => $offset,
+            ],
+        ]);
+    }
+
+    /**
+     * @param array<string, string> $params
+     */
+    public function top(Request $request, array $params): void
+    {
+        $limit = $request->queryInt('limit', 10, 1, 100);
+        if ($limit === null) {
+            Response::badRequest('Invalid limit.');
+            return;
+        }
+
+        $lang = strtolower($request->queryString('lang', 'es'));
+        if (!preg_match('/^[a-z]{2}$/', $lang)) {
+            Response::badRequest('Invalid lang.');
+            return;
+        }
+
+        Response::ok([
+            'items' => $this->booksRepo->getTopSearchedBooks($limit, $lang),
+        ]);
+    }
+
+    /**
+     * @param array<string, string> $params
+     */
+    public function topRead(Request $request, array $params): void
+    {
+        $limit = $request->queryInt('limit', 10, 1, 100);
+        if ($limit === null) {
+            Response::badRequest('Invalid limit.');
+            return;
+        }
+
+        $lang = strtolower($request->queryString('lang', 'es'));
+        if (!preg_match('/^[a-z]{2}$/', $lang)) {
+            Response::badRequest('Invalid lang.');
+            return;
+        }
+
+        Response::ok([
+            'items' => $this->booksRepo->getTopReadBooks($limit, $lang),
+        ]);
+    }
+    /**
+     * @param array<string, string> $params
+     */
+    public function byTag(Request $request, array $params): void
+    {
+        $tag = strtolower($request->queryString('tag'));
+        if ($tag === '') {
+            Response::badRequest('Missing required tag parameter.');
+            return;
+        }
+
+        if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $tag)) {
+            Response::badRequest('Invalid tag.');
+            return;
+        }
+
+        $limit = $request->queryInt('limit', 20, 1, 100);
+        $offset = $request->queryInt('offset', 0, 0, 100000);
+        if ($limit === null || $offset === null) {
+            Response::badRequest('Invalid limit or offset.');
+            return;
+        }
+
+        $lang = strtolower($request->queryString('lang', ''));
+        if ($lang !== '' && !preg_match('/^[a-z]{2}$/', $lang)) {
+            Response::badRequest('Invalid lang.');
+            return;
+        }
+
+        Response::ok([
+            'items' => $this->booksRepo->getBooksByTagUri(
+                $tag,
+                $limit,
+                $offset,
+                $lang !== '' ? $lang : null
+            ),
+            'pagination' => [
+                'limit' => $limit,
+                'offset' => $offset,
+            ],
+            'filters' => [
+                'tag' => $tag,
+                'lang' => $lang !== '' ? $lang : null,
+            ],
+        ]);
+    }
+}

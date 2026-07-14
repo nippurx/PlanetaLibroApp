@@ -60,3 +60,8 @@ coverage/
 
 *.log
 .cache/
+docs/varios/
+
+# API local: configuracion sensible y archivos de ejecucion
+api/v1/config/
+api/v1/storage/

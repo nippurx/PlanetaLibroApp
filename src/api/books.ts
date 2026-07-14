@@ -298,6 +298,13 @@ export async function fetchTopBooks(lang: string = "es", limit: number = 15): Pr
   return response.data.items.map(mapBook);
 }
 
+export async function fetchTopReadBooks(lang: string = "es", limit: number = 15): Promise<Book[]> {
+  const response = await apiClient.get<ApiEnvelope<BookListResponse>>(
+    `/public/libros/top-leidos?limit=${limit}&lang=${lang}`,
+  );
+  return response.data.items.map(mapBook);
+}
+
 export async function searchBooks(q: string, limit = 20, offset = 0): Promise<Book[]> {
   const normalizedQuery = q.trim();
   if (!normalizedQuery) {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { type Book, fetchTopBooks, getHomeBooks } from "../api/books";
+import { type Book, fetchTopBooks, fetchTopReadBooks, getHomeBooks } from "../api/books";
 import { ApiError } from "../api/client";
 import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
@@ -10,10 +10,13 @@ import { AppShell } from "../layout/AppShell";
 export function UserDashboardPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [topBooks, setTopBooks] = useState<Book[]>([]);
+  const [topReadBooks, setTopReadBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingTop, setLoadingTop] = useState(true);
+  const [loadingTopRead, setLoadingTopRead] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [topError, setTopError] = useState<string | null>(null);
+  const [topReadError, setTopReadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +42,36 @@ export function UserDashboardPage() {
     }
 
     void loadBooks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const lang = document.documentElement.lang?.trim() || "es";
+
+    setLoadingTopRead(true);
+    setTopReadError(null);
+
+    fetchTopReadBooks(lang, 15)
+      .then((items) => {
+        if (!cancelled) {
+          setTopReadBooks(items);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setTopReadError(err instanceof ApiError ? err.message : "No se pudieron cargar los libros más leídos.");
+        }
+        console.error(err);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingTopRead(false);
+        }
+      });
 
     return () => {
       cancelled = true;
@@ -138,20 +171,24 @@ export function UserDashboardPage() {
                         </p>
                       </div>
                       <div className="flex gap-3">
-                        <Link
-                          className="flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-background-dark transition-colors hover:bg-slate-100"
-                          to={`/listen/${currentBook.uri}`}
-                        >
-                          <span className="material-symbols-outlined text-[20px]">play_circle</span>
-                          Escuchar
-                        </Link>
-                        <Link
-                          className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-[#161d31] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:border-primary hover:bg-primary/10"
-                          to={`/read/${currentBook.uri}/${currentBook.currentPage}`}
-                        >
-                          <span className="material-symbols-outlined text-[20px]">menu_book</span>
-                          Leer
-                        </Link>
+                        {currentBook.hasAudio ? (
+                          <Link
+                            className="flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-background-dark transition-colors hover:bg-slate-100"
+                            to={`/listen/${currentBook.uri}`}
+                          >
+                            <span className="material-symbols-outlined text-[20px]">play_circle</span>
+                            Escuchar
+                          </Link>
+                        ) : null}
+                        {currentBook.readOnline ? (
+                          <Link
+                            className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-[#161d31] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:border-primary hover:bg-primary/10"
+                            to={`/read/${currentBook.uri}/${currentBook.currentPage}`}
+                          >
+                            <span className="material-symbols-outlined text-[20px]">menu_book</span>
+                            Leer
+                          </Link>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -191,11 +228,11 @@ export function UserDashboardPage() {
               </section>
             </div>
             <section>
-              <h2 className="mb-4 text-3xl font-bold text-white">Para vos hoy</h2>
+              <h2 className="mb-3 text-xl font-bold text-white md:text-2xl">Para vos hoy</h2>
               <HorizontalBookList ariaLabel="Para vos hoy" books={recommendationBooks} />
             </section>
             <section className="mt-10">
-              <h2 className="mb-4 text-3xl font-bold text-white">Mas buscados</h2>
+              <h2 className="mb-3 text-xl font-bold text-white md:text-2xl">Mas buscados</h2>
               {loadingTop ? (
                 <HorizontalBookList ariaLabel="Mas buscados" books={topBooks} loading />
               ) : topError ? (
@@ -205,6 +242,20 @@ export function UserDashboardPage() {
               ) : (
                 <div className="rounded-xl border border-slate-800 bg-[#12172b] p-4 text-sm text-slate-400">
                   No hay libros en mas buscados por ahora.
+                </div>
+              )}
+            </section>
+            <section className="mt-10">
+              <h2 className="mb-3 text-xl font-bold text-white md:text-2xl">Más leídos</h2>
+              {loadingTopRead ? (
+                <HorizontalBookList ariaLabel="Más leídos" books={topReadBooks} loading />
+              ) : topReadError ? (
+                <div className="rounded-xl border border-red-900/50 bg-red-950/30 p-4 text-sm text-red-300">{topReadError}</div>
+              ) : topReadBooks.length > 0 ? (
+                <HorizontalBookList ariaLabel="Más leídos" books={topReadBooks} />
+              ) : (
+                <div className="rounded-xl border border-slate-800 bg-[#12172b] p-4 text-sm text-slate-400">
+                  No hay libros entre los más leídos por ahora.
                 </div>
               )}
             </section>

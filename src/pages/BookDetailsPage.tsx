@@ -125,7 +125,7 @@ export function BookDetailsPage() {
                       </span>
                     )}
                   </div>
-                  <h1 className="mb-2 font-display text-4xl font-bold leading-tight text-slate-900 dark:text-white md:text-5xl">{book.titulo}</h1>
+                  <h1 className="mb-2 font-display text-3xl font-bold leading-tight text-slate-900 dark:text-white md:text-4xl">{book.titulo}</h1>
                   <AuthorLink className="font-display text-xl font-medium text-primary transition-colors hover:text-primary/80" name={book.autorNombre} uri={book.autorUri} />
                   {book.subtitulo && <p className="mt-3 text-base text-slate-500 dark:text-slate-400">{book.subtitulo}</p>}
                 </div>
@@ -147,7 +147,7 @@ export function BookDetailsPage() {
                   </div>
                 </div>
                 <div className="mb-6 max-w-none text-slate-600 dark:text-slate-400 md:mb-8">
-                  <h3 className="mb-2 font-display text-lg font-bold text-slate-900 dark:text-white md:mb-3">Sinopsis</h3>
+                  <h3 className="mb-2 font-display text-base font-bold text-slate-900 dark:text-white md:mb-3 md:text-lg">Sinopsis</h3>
                   <RichText
                     className="max-w-none text-base leading-7 [&_a]:font-medium [&_a]:text-primary [&_a]:underline [&_blockquote]:my-3 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 dark:[&_code]:bg-slate-800 [&_h1]:mb-3 [&_h1]:mt-5 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:text-xl [&_h3]:font-bold [&_h4]:mb-2 [&_h4]:mt-3 [&_h4]:text-lg [&_h4]:font-bold [&_img]:my-3 [&_img]:max-w-full [&_img]:rounded-lg [&_li]:my-0.5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-2 [&_strong]:font-bold [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 md:[&_blockquote]:my-4 md:[&_img]:my-4 md:[&_ol]:my-4 md:[&_p]:my-3 md:[&_ul]:my-4"
                     collapsibleOnMobile
