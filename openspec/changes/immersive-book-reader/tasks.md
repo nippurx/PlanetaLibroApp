@@ -51,6 +51,8 @@
 - [x] 5.7 Implementar porcentaje normalizado desde el flujo/ancla, independiente de `pag-N` y sin regresiones bruscas por precarga.
 - [x] 5.8 Implementar regreso a la ficha u origen y conservación del ancla al abrir/cerrar paneles.
 - [ ] 5.9 Añadir pruebas automatizadas de toque lateral, swipe, teclado, límites, cambio de modo, índice multinivel, capítulo y porcentaje.
+- [x] 5.10 Implementar URL raíz estable, apertura explícita que comience exactamente en el fragmento solicitado y Compartir basado en el primer fragmento visible, con fallback de copiado cuando Web Share no esté disponible.
+- [x] 5.11 Implementar shell HTML y rewrite desplegables con la app para metadata Open Graph de URLs compartibles, resolviendo la tapa desde assets confinados del manifest sin ejecutar PHP legacy.
 
 ## 6. MVP — Preferencias
 
@@ -90,6 +92,12 @@
 - [ ] 9.5 Confirmar mediante inspección visual y de accesibilidad que ninguna superficie presenta `pag-N` como página visible.
 - [x] 9.6 Verificar que `/leerlibro/...`, los manifests v2 existentes, `pag-N.html`, `libroinfo.php` y el publicador EPUB permanecen sin modificaciones; la compatibilidad sólo crea manifests ausentes.
 - [x] 9.7 Habilitar el reader nuevo de forma reversible y documentar rollback hacia la ficha o lector legacy.
+- [x] 9.8 Verificar manualmente en paginado y scroll que Compartir elige el primer fragmento visible y que el enlace abre ese destino en PC y celular.
+- [x] 9.9 Desplegar el shell social y verificar con una URL nueva que WhatsApp muestra tapa, título y enlace correcto sin impedir la apertura del reader.
+- [x] 9.10 Crear una barra de marca persistente, semántica y no interactiva con logo PlanetaLibro y dominio centrado exactamente respecto del viewport.
+- [x] 9.11 Integrar una variable de altura de marca con safe area, viewport, columnas CSS, overlays y restauración de ancla sin duplicar compensaciones.
+- [x] 9.12 Validar mediante build y revisión de código el contrato visual/semántico de la barra, incluida la independencia ante fallo de carga del logo.
+- [ ] 9.13 Probar manualmente la barra en móvil y escritorio, cambios de fuente, reflujo, rotación y recarga conservando el pasaje anclado.
 
 ## 10. Mejoras posteriores — Robustez avanzada de layout
 

@@ -11,7 +11,7 @@ El reader legacy resuelve `/leerlibro/{book-uri}/{page}`, carga `libroinfo.php` 
 **Goals:**
 
 - Producir una experiencia de lectura rápida, bella, refluible y sin distracciones sobre el formato publicado actual.
-- Mantener `pag-N` como detalle interno de carga, nunca como identidad de progreso ni como página visible; la interfaz habla de capítulo, porcentaje y páginas visuales efímeras.
+- Mantener `pag-N` como detalle interno de carga y nunca como identidad persistida; la barra inferior puede mostrar de forma compacta el primer fragmento visible como `Pág. N de total` junto a un porcentaje aproximado.
 - Cubrir paginación visual predeterminada, scroll continuo alternativo, índice, preferencias, progreso recuperable y accesibilidad desde el MVP.
 - Definir límites de seguridad, rendimiento y compatibilidad suficientes para implementar después sin tocar el publicador.
 
@@ -42,7 +42,7 @@ Al detectar el legacy, la API registra mediante `UPSERT` el `ebooks_books_id` en
 
 ### 2. Paginación visual predeterminada y scroll continuo alternativo
 
-El MVP presenta por defecto una página visual refluible por viewport, con avance horizontal discreto de una pantalla completa. Los límites visuales se calculan después de aplicar viewport, fuente, tamaño, interlineado, márgenes e imágenes; nunca se toman de los límites de `pag-N`. Los fragmentos se concatenan internamente en orden dentro de un flujo lógico, sin títulos “Página N”, separadores, numeración técnica ni URLs de fragmento visibles.
+El MVP presenta por defecto una página visual refluible por viewport, con avance horizontal discreto de una pantalla completa. Los límites visuales se calculan después de aplicar viewport, fuente, tamaño, interlineado, márgenes e imágenes; nunca se toman de los límites de `pag-N`. Los fragmentos se concatenan internamente en orden dentro de un flujo lógico, sin títulos, separadores ni URLs de fragmento en el contenido. La barra inferior puede exponer `Pág. N de total` como referencia compacta de navegación.
 
 El motor de layout medirá el flujo ya estilizado y construirá límites visuales reproducibles mediante columnas CSS del ancho útil del viewport. Columnas CSS es el motor definitivo del MVP después de las pruebas con contenido real. El MVP no incorpora medición explícita de rangos DOM ni introduce saltos artificiales para fijar una línea concreta en la parte superior.
 
@@ -65,12 +65,18 @@ No se añade el ancla a ninguna API hasta validar el contrato remoto. Si sólo e
 - Índice: se construye de `manifest.index`, respeta `nivel`, salta al fragmento indicado y enfoca/anuncia el destino.
 - Anterior/siguiente en modo paginado: toque o clic en zona lateral, swipe horizontal, flechas, Page Up/Down, Space y controles visibles avanzan o retroceden exactamente una página visual. El centro revela controles y los elementos interactivos del libro no disparan navegación lateral.
 - Modo scroll: conserva scroll táctil, rueda y teclado como alternativas naturales, sin modificar el ancla canónica.
-- Progreso: se calcula desde la posición del ancla dentro del flujo lógico y se expresa como porcentaje y capítulo actual. La UI puede indicar una página visual efímera dentro de la sesión, pero nunca equipara `pag-N` con esa página ni la persiste como ubicación.
+- Progreso: la barra inferior muestra el primer fragmento visible como `Pág. N de total` y un porcentaje aproximado `N / total`; usa el mismo selector visual que Compartir. Es una referencia de interfaz, no una página visual ni identidad persistida del progreso.
 - Historial: abrir/cerrar índice o preferencias no cambia la ubicación. Volver desde la ruta del reader lleva a la ficha del libro o al origen de navegación disponible.
+- URL compartible: los accesos normales usan `/read/{libro_uri}/` y la URL no cambia durante el avance. La acción Compartir inspecciona el flujo renderizado y construye `/read/{libro_uri}/{pag-N}` con el primer fragmento que tenga contenido visible, aunque su porción visible sea mínima. Ese número es una pista de carga aproximada y no reemplaza el ancla canónica ni se persiste como progreso. Al abrir el enlace explícito, su destino tiene prioridad sobre el progreso local y el flujo renderizado comienza exactamente en ese fragmento; el fragmento anterior no se incorpora a esa apertura, aunque sí se conserva como contexto en los saltos internos de índice.
+- Vista previa social: WhatsApp no depende de la ejecución de React. Apache evalúa primero y reescribe únicamente `/app/read/{libro_uri}/{N}` hacia un shell PHP incluido en `public/`; el shell valida URI y página, deriva confinadamente la carpeta `/lector`, lee sólo `manifest.json`, selecciona un asset local `cover.jpg|jpeg|png|webp`, inyecta `og:title`, `og:description`, `og:url`, `og:image`, tipo y dimensiones de imagen y canonical en el `index.html` construido, expone una cabecera de diagnóstico y entrega el mismo bundle sin redirección. Si manifest o tapa no están disponibles, conserva la SPA con metadata genérica y sin ejecutar `libroinfo.php` ni consultar base de datos.
 
 ### 5. Controles inmersivos
 
-El lienzo ocupa el viewport y no incluye la navegación global móvil del `AppShell`. Una acción central/toggle revela barra superior (volver, título, índice, preferencias) y barra inferior (capítulo, porcentaje y control de progreso); los controles se ocultan tras inactividad sólo si el foco no está dentro de ellos y no hay panel abierto. La lectura y los controles usan safe areas.
+El lienzo ocupa el viewport y no incluye la navegación global móvil del `AppShell`. Una acción central/toggle revela barra superior (volver, título, índice, preferencias) y una barra inferior de altura mínima con `Pág. N de total`, porcentaje y línea de progreso; los controles se ocultan tras inactividad sólo si el foco no está dentro de ellos y no hay panel abierto. La lectura y los controles usan safe areas.
+
+La barra de marca es una estructura persistente e independiente de los controles: fondo negro, 44 px de altura visual, logo de 32 px a la izquierda con 6 px de aire arriba y abajo, y `PlanetaLibro.com` blanco centrado respecto del viewport completo. No es navegación ni admite foco, enlaces o acciones. El logo usa la URL absoluta solicitada `https://planetalibro.net/img/icono40.png`; es una excepción acotada a la regla general de no hardcodear dominios porque se trata del asset de marca indicado explícitamente por el propietario.
+
+La barra define `--reader-brand-bar-height: 44px` y una altura total que suma `safe-area-inset-top`. El viewport reserva esa altura antes de su padding de controles, por lo que las columnas CSS conservan una altura real de lectura y el reflujo/restauración de ancla se calcula sobre el área disponible. La marca usa posicionamiento relativo: logo anclado a la izquierda y texto absoluto a `left: 50%` con `translateX(-50%)`, evitando que el ancho del logo desplace el centro. Los paneles también reservan la barra y la marca queda sobre overlays para permanecer visible.
 
 No habrá animación de hoja. Las transiciones serán discretas y se desactivarán con `prefers-reduced-motion`. Los controles esenciales nunca dependerán sólo de hover.
 
@@ -121,6 +127,8 @@ Los cambios de capítulo/ubicación solicitados se anuncian de forma no intrusiv
 - **[Cambio de fuente/viewport invalida páginas visuales]** → repaginar y resolver el ancla del pasaje, nunca persistir el número visual ni píxeles.
 - **[Progreso local y legacy divergen]** → desacoplar sincronización, no sobrescribir sin política y resolver el contrato antes de activar writes.
 - **[Auto-ocultamiento perjudica teclado o lector de pantalla]** → mantener controles visibles con foco/panel abierto y ofrecer toggle explícito.
+- **[WhatsApp cachea una vista previa anterior]** → validar primero con una URL de fragmento aún no compartida y usar el depurador/caché de la plataforma sólo durante despliegue; el HTML mantiene una caché corta aunque el cliente social pueda imponer la propia.
+- **[La barra reduce el área vertical o tapa un panel]** → una única variable de altura se reserva en viewport, toolbar, imágenes y paneles; verificar reflujo y orientación antes de liberar. Rollback: retirar `ReaderBrandBar` y las compensaciones CSS asociadas, sin afectar contenido, URLs ni progreso.
 
 ## Migration Plan
 
@@ -138,7 +146,7 @@ Rollback: retirar los enlaces al reader nuevo o redirigir la ruta de app al lect
 1. Resuelta: la app vive en `https://planetalibro.net/app/` y `/lector/...` comparte origen. Queda por medir la caché efectiva, no CORS.
 2. ¿La app recibirá `path_prefix` desde catálogo o derivará la convención de URI? La documentación exige no inventar rutas, aunque el publicador describe una derivación estable; debe elegirse una fuente contractual.
 3. ¿Qué autenticación utilizará la app y qué contrato autorizado sincronizará progreso/preferencias? API v1 hoy es read-only.
-4. ¿Debe mantenerse `:page` en la URL pública del reader React o migrarse a `/read/:libro_uri` conservando compatibilidad mediante redirect?
+4. Resuelta: `/read/:libro_uri/` es la URL normal y permanece estable durante la lectura; `:page` se conserva como pista explícita aproximada para enlaces generados por Compartir.
 5. ¿Qué tamaño y diversidad tiene el corpus (libros muy largos, tablas, notas, idiomas RTL, imágenes internas) para fijar límites de ventana y soporte del MVP?
 6. ¿El porcentaje debe ponderar caracteres/palabras del flujo normalizado o una métrica futura generada fuera del publicador? Para el MVP debe ser independiente de `pag-N`.
 7. Resuelta: columnas CSS es el motor definitivo del MVP. La estabilidad exige visibilidad inmediata del pasaje anclado y prioriza la mitad superior, pero no una línea superior exacta; no se implementan rangos DOM ni saltos artificiales.

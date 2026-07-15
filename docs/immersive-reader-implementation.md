@@ -2,8 +2,8 @@
 
 ## Contratos del MVP
 
-- La ruta de la app conserva `/read/:libro_uri/:page` y también admite `/read/:libro_uri`.
-- El número de la ruta sólo es una pista de arranque compatible con enlaces legacy; no es la posición persistida.
+- La ruta normal es `/read/:libro_uri/`; la variante `/read/:libro_uri/:page` se reserva para enlaces compartidos y compatibilidad.
+- El número de la ruta sólo es una pista explícita de arranque, tiene prioridad sobre el progreso local y no es la posición persistida.
 - Ante un error se ofrecen la ficha `/book/:libro_uri` y el lector clásico `/leerlibro/:libro_uri/:page`.
 - La flecha superior vuelve al origen real del historial (ficha, dashboard o audiolibro) y usa `/book/:libro_uri` como fallback cuando el reader se abrió directamente.
 - La API v1 sigue siendo read-only. El MVP guarda progreso y preferencias localmente; no sincroniza ni escribe en el backend.
@@ -37,8 +37,9 @@ npm run preview:reader
 
 Rutas de prueba:
 
-- desarrollo: `http://localhost:5173/app/read/arlt-roberto-el-criador-de-gorilas/1`;
-- preview: `http://localhost:4173/app/read/arlt-roberto-el-criador-de-gorilas/1`;
+- desarrollo: `http://localhost:5173/app/read/arlt-roberto-el-criador-de-gorilas/`;
+- preview: `http://localhost:4173/app/read/arlt-roberto-el-criador-de-gorilas/`;
+- destino compartido: agregar un fragmento, por ejemplo `/app/read/arlt-roberto-el-criador-de-gorilas/17`;
 - Balzac: sustituir la URI por `balzac-honorato-de-un-asunto-tenebroso`.
 
 Para probar desde un celular en la misma red, se reemplaza `localhost` por la IP LAN que muestra Vite. El equipo debe poder acceder por HTTPS a `planetalibro.net` y permitir el puerto local en el firewall.
@@ -71,6 +72,20 @@ La posición se guarda como ancla versionada con:
 La restauración intenta coincidencia textual exacta, luego contextual y finalmente el bloque estructural más cercano. No persiste `pag-N`, número de columna, página visual ni píxeles como identidad.
 
 La captura prioriza el bloque bajo el punto de lectura y, si el panel o un espacio de columna impiden obtenerlo, sólo considera bloques cuyos rectángulos fragmentados intersectan el viewport. La restauración obtiene la columna desde el primer rectángulo CSS del bloque respecto del flujo transformado; no usa `offsetLeft`, porque ese valor puede apuntar al inicio del elemento original aunque su contenido esté fragmentado en otra columna.
+
+## Compartir ubicación
+
+La URL visible no se actualiza al avanzar. El botón Compartir inspecciona los fragmentos renderizados en orden y crea `/app/read/{libro_uri}/{fragmento}` con el primero que intersecta la pantalla, aunque sólo aparezca una porción mínima. En dispositivos compatibles usa Web Share; en los demás copia el enlace al portapapeles.
+
+El enlace es deliberadamente aproximado: identifica una unidad `pag-N.html`, no una página visual ni el pasaje textual exacto. Al abrirlo se prioriza el destino sobre el progreso local y el flujo visible comienza exactamente en el fragmento solicitado, sin incorporar `pag-(N-1)`. Los saltos internos desde el índice sí conservan el fragmento anterior como contexto de paginación.
+
+La barra inferior no muestra capítulo. Muestra `Pág. N de total`, una línea de avance y porcentaje; `N` se toma del mismo primer fragmento visible usado al compartir y `total` es `manifest.pages`. Es una referencia compacta de navegación, no el progreso persistido ni una página visual calculada.
+
+## Barra de marca persistente
+
+`ReaderBrandBar` forma parte del shell del reader y no contiene acciones. Su altura visual es `44px`, definida una sola vez en `--reader-brand-bar-height`; la altura total agrega `env(safe-area-inset-top)`. El viewport reserva ese total antes de su espacio de controles, de modo que la altura disponible de las columnas CSS y la restauración del ancla se recalculan sin contenido debajo de la barra. El logo remoto solicitado mide `32px` de alto y deja `6px` arriba y abajo; el dominio se centra de manera absoluta respecto del viewport y no respecto del logo. La barra queda por encima de paneles y controles, mientras que los paneles reservan su altura para no ocultar su contenido inicial.
+
+Las URLs numeradas pasan en producción por `public/reader-share.php`, mediante la primera regla de `public/.htaccess`, antes de los fallbacks estáticos y de la SPA. El shell conserva la URL y el bundle React, pero agrega en el HTML inicial la metadata Open Graph que los crawlers sociales pueden leer sin ejecutar JavaScript. La tapa se selecciona desde `manifest.assets`, se verifica como archivo local dentro de la carpeta derivada del libro y se publica como URL absoluta junto con su tipo y dimensiones. La cabecera de diagnóstico `X-PlanetaLibro-Share-Metadata` informa `cover` o `generic`. Ante manifest o tapa ausentes, el reader sigue abriendo con metadata genérica.
 
 ## Rollback
 

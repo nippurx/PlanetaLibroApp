@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /app/
+
+    # This rule must run before the static-file/SPA fallbacks so social crawlers
+    # receive the server-rendered Open Graph document.
+    RewriteRule ^read/([A-Za-z0-9][A-Za-z0-9._-]*)/([1-9][0-9]*)/?$ /app/reader-share.php?uri=$1&page=$2 [END,QSA]
+
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # All other application routes remain handled by React Router.
+    RewriteRule ^ index.html [L]
+</IfModule>

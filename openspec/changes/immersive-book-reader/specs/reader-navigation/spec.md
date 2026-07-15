@@ -45,12 +45,12 @@ El sistema SHALL construir el índice desde `manifest.index`, respetar `titulo`,
 - **THEN** esa entrada no permite navegar fuera del libro y el resto del índice válido continúa disponible
 
 ### Requirement: Progreso comprensible
-El sistema SHALL mostrar capítulo actual y porcentaje de avance normalizado y MUST NOT describir los fragmentos como “página X de Y”.
+El sistema SHALL mostrar en la barra inferior compacta `Pág. N de total` y porcentaje, donde `N` es el primer fragmento con contenido visible y `total` es `manifest.pages`. Esa referencia MUST NOT convertirse en identidad persistida ni afirmar que es una página visual.
 
 #### Scenario: Actualización al leer
 - **GIVEN** el usuario avanzando por páginas visuales o desplazándose en modo continuo
 - **WHEN** cambia su ubicación lógica
-- **THEN** el porcentaje y el capítulo se actualizan desde el ancla de contenido sin depender de `pag-N`
+- **THEN** la referencia de página y el porcentaje se actualizan desde el primer fragmento visible, usando la misma selección que Compartir
 
 ### Requirement: Navegación no destructiva
 El sistema SHALL conservar la ubicación al abrir y cerrar índice o preferencias y SHALL ofrecer una acción para regresar a la ficha u origen disponible.
@@ -59,3 +59,21 @@ El sistema SHALL conservar la ubicación al abrir y cerrar índice o preferencia
 - **GIVEN** el índice abierto sobre una ubicación de lectura
 - **WHEN** el usuario lo cierra
 - **THEN** el foco y la lectura regresan a esa ubicación
+
+### Requirement: URL de lectura compartible por fragmento
+El sistema SHALL usar `/read/{libro_uri}/` como URL normal sin modificarla durante el avance y SHALL generar, al activar Compartir, `/read/{libro_uri}/{fragmento}` con el primer fragmento HTML que tenga contenido visible. El fragmento explícito SHALL tener prioridad sobre el progreso local al abrirse y MUST actuar sólo como una pista de carga aproximada, no como identidad canónica del progreso.
+
+#### Scenario: Compartir una pantalla que cruza fragmentos
+- **GIVEN** una pantalla visual con contenido de más de un fragmento HTML
+- **WHEN** el usuario activa Compartir
+- **THEN** el enlace contiene el número del primer fragmento con contenido visible, aunque sólo se vea una porción mínima
+
+#### Scenario: Abrir un enlace compartido
+- **GIVEN** una URL `/read/{libro_uri}/17` y progreso local en otra ubicación
+- **WHEN** el reader abre un manifest que contiene el fragmento 17
+- **THEN** carga una ventana cuyo primer contenido pertenece al fragmento 17, sin renderizar texto del fragmento 16, y muestra el inicio del destino
+
+#### Scenario: Vista previa en un cliente que no ejecuta JavaScript
+- **GIVEN** una URL compartible válida y un manifest que declara una tapa publicada
+- **WHEN** WhatsApp u otro crawler solicita la URL sin ejecutar React
+- **THEN** recibe HTML con `og:image` absoluto hacia la tapa, título, descripción y `og:url`, mientras un navegador normal carga el mismo reader en la misma dirección

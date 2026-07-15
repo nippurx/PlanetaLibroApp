@@ -62,42 +62,47 @@
   background: rgba(100, 116, 139, 0.7);
 }
 
-.reader-shell { position: relative; width: 100%; height: 100dvh; overflow: hidden; touch-action: pan-y; background: var(--reader-bg); color: var(--reader-fg); transition: background-color .2s, color .2s; }
+.reader-shell { --reader-brand-bar-height: 44px; --reader-brand-bar-total: calc(var(--reader-brand-bar-height) + env(safe-area-inset-top)); position: relative; width: 100%; height: 100dvh; overflow: hidden; touch-action: pan-y; background: var(--reader-bg); color: var(--reader-fg); transition: background-color .2s, color .2s; }
 .reader-shell button, .reader-shell a, .reader-shell select, .reader-shell input { outline-offset: 3px; }
 .reader-shell :focus-visible { outline: 3px solid #1976d2; }
 .reader-font-serif { font-family: "Newsreader", Georgia, serif; }
 .reader-font-sans { font-family: "Noto Sans", Arial, sans-serif; }
 .reader-font-accessible { font-family: Verdana, "Noto Sans", sans-serif; }
-.reader-viewport { position: absolute; inset: 0; padding: calc(5rem + env(safe-area-inset-top)) max(1.5rem, calc((100vw - var(--reader-measure)) / 2)) calc(4.5rem + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+.reader-viewport { position: absolute; inset: 0; padding: calc(var(--reader-brand-bar-total) + 5rem) max(1.5rem, calc((100vw - var(--reader-measure)) / 2)) calc(2.75rem + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
 .reader-viewport.is-paged { overflow: hidden; scroll-behavior: smooth; }
 .reader-viewport.is-scroll { overflow-x: hidden; overflow-y: auto; }
 .reader-content { font-size: var(--reader-font-size); line-height: var(--reader-line-height); text-align: left; color: var(--reader-fg); }
 .reader-shell.is-repaginating .reader-content { visibility: hidden; }
 .reader-viewport.is-paged .reader-content { min-width: 0; height: 100%; column-width: var(--reader-column-width, calc(100vw - 2 * max(1.5rem, calc((100vw - var(--reader-measure)) / 2)))); column-gap: var(--reader-column-gap, calc(2 * max(1.5rem, calc((100vw - var(--reader-measure)) / 2)))); column-fill: auto; overflow-wrap: anywhere; transform: translate3d(calc(-1 * var(--reader-page-offset)), 0, 0); transition: transform .16s ease-out; will-change: transform; }
-.reader-viewport.is-scroll .reader-content { max-width: var(--reader-measure); margin: 0 auto; padding-bottom: 5rem; }
+.reader-viewport.is-scroll .reader-content { max-width: var(--reader-measure); margin: 0 auto; padding-bottom: 2.75rem; }
 .reader-content p { margin: 0 0 1em; orphans: 3; widows: 3; }
 .reader-content h1, .reader-content h2, .reader-content h3, .reader-content h4 { break-after: avoid; line-height: 1.2; margin: 1.2em 0 .65em; }
 .reader-content blockquote { margin: 1.2em 0; padding-left: 1.2em; border-left: 3px solid color-mix(in srgb, var(--reader-fg) 35%, transparent); font-style: italic; }
-.reader-content img { display: block; max-width: 100%; max-height: calc(100dvh - 11rem); width: auto; height: auto; margin: .5rem auto 1.25rem; break-inside: avoid; }
+.reader-content img { display: block; max-width: 100%; max-height: calc(100dvh - var(--reader-brand-bar-total) - 8rem); width: auto; height: auto; margin: .5rem auto 1.25rem; break-inside: avoid; }
 .reader-content a { color: #1268a8; text-decoration: underline; }
+.reader-brand-bar { position: fixed; z-index: 70; top: 0; left: 0; width: 100%; height: var(--reader-brand-bar-total); padding-top: env(safe-area-inset-top); background: #000; color: #fff; pointer-events: none; user-select: none; }
+.reader-brand-bar-content { position: relative; height: var(--reader-brand-bar-height); }
+.reader-brand-logo { position: absolute; left: max(10px, env(safe-area-inset-left)); top: 6px; width: auto; height: 32px; object-fit: contain; }
+.reader-brand-domain { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font: 600 18px/1 "Noto Sans", Arial, sans-serif; white-space: nowrap; }
 .reader-toolbar { position: fixed; z-index: 30; left: 0; right: 0; display: flex; align-items: center; gap: .7rem; padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); background: color-mix(in srgb, var(--reader-panel) 92%, transparent); color: var(--reader-fg); backdrop-filter: blur(14px); opacity: 0; pointer-events: none; transition: opacity .18s; }
 .reader-toolbar.is-visible, .reader-toolbar:focus-within { opacity: 1; pointer-events: auto; }
 .reader-toolbar button, .reader-toolbar a { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 999px; background: transparent; color: inherit; border: 0; }
 .reader-toolbar button:hover, .reader-toolbar a:hover { background: color-mix(in srgb, var(--reader-fg) 10%, transparent); }
-.reader-toolbar-top { top: 0; min-height: calc(4.25rem + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); border-bottom: 1px solid color-mix(in srgb, var(--reader-fg) 12%, transparent); }
-.reader-toolbar-bottom { bottom: 0; min-height: calc(3.5rem + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid color-mix(in srgb, var(--reader-fg) 12%, transparent); font: 500 .78rem/1.2 "Noto Sans", sans-serif; }
+.reader-toolbar-top { top: var(--reader-brand-bar-total); min-height: 4.25rem; border-bottom: 1px solid color-mix(in srgb, var(--reader-fg) 12%, transparent); }
+.reader-toolbar-bottom { bottom: 0; min-height: calc(2.25rem + env(safe-area-inset-bottom)); gap: .45rem; padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid color-mix(in srgb, var(--reader-fg) 12%, transparent); font: 500 .72rem/1.1 "Noto Sans", sans-serif; }
 .reader-title { min-width: 0; flex: 1; display: flex; flex-direction: column; font: 500 .8rem/1.3 "Noto Sans", sans-serif; }
 .reader-title strong, .reader-title span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .reader-title span { color: var(--reader-muted); }
 .reader-progress { flex: 1; height: 4px; border-radius: 99px; overflow: hidden; background: color-mix(in srgb, var(--reader-fg) 18%, transparent); }
 .reader-progress i { display: block; height: 100%; background: #1976d2; }
+.reader-position { white-space: nowrap; }
 .reader-page-button { position: fixed; z-index: 15; top: 44%; width: 3rem; height: 4.5rem; border: 0; border-radius: 999px; color: var(--reader-muted); background: color-mix(in srgb, var(--reader-panel) 72%, transparent); opacity: .25; }
 .reader-page-button:hover, .reader-page-button:focus-visible { opacity: 1; }
 .reader-page-button:disabled { visibility: hidden; }
 .reader-page-previous { left: max(.25rem, env(safe-area-inset-left)); }
 .reader-page-next { right: max(.25rem, env(safe-area-inset-right)); }
 .reader-backdrop { position: fixed; z-index: 50; inset: 0; display: flex; justify-content: flex-end; background: rgba(0,0,0,.42); }
-.reader-panel { width: min(25rem, 92vw); height: 100%; overflow-y: auto; padding: max(1.25rem, env(safe-area-inset-top)) 1.25rem max(1.25rem, env(safe-area-inset-bottom)); background: var(--reader-panel); color: var(--reader-fg); box-shadow: -1rem 0 3rem rgba(0,0,0,.18); font-family: "Noto Sans", sans-serif; }
+.reader-panel { width: min(25rem, 92vw); height: 100%; overflow-y: auto; padding: calc(var(--reader-brand-bar-total) + 1.25rem) 1.25rem max(1.25rem, env(safe-area-inset-bottom)); background: var(--reader-panel); color: var(--reader-fg); box-shadow: -1rem 0 3rem rgba(0,0,0,.18); font-family: "Noto Sans", sans-serif; }
 .reader-panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
 .reader-panel-heading h2 { margin: 0; font-size: 1.25rem; }
 .reader-panel-heading button { border: 0; background: transparent; color: inherit; padding: .5rem; }

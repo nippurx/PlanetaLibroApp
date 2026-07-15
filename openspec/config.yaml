@@ -1,5 +1,9 @@
 schema: spec-driven
 
+context: |
+  Antes de crear, actualizar o implementar cualquier change, leer CONSTITUTION.md en la raíz del repositorio.
+  La decisión explícita y documentada del propietario de PlanetaLibro es la autoridad final.
+
 # Project context (optional)
 # This is shown to AI when creating artifacts.
 # Add your tech stack, conventions, style guides, domain knowledge, etc.

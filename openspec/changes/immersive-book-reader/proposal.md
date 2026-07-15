@@ -13,7 +13,10 @@ El objetivo es incorporar un lector inmersivo en la app que consuma ese formato 
 - Cargar la estructura del libro desde `manifest.json` y el contenido desde `pag-N.html`, tratándolos como recursos internos y no como páginas visibles para el usuario.
 - Cuando un libro legacy carezca de `manifest.json` pero tenga `libroinfo.php` y fragmentos válidos, solicitar a la API un manifest v2 de compatibilidad: la API lo reconstruye sin ejecutar contenido arbitrario, lo publica atómicamente para lecturas posteriores y registra el libro en `ebook_regeneration_queue` para su futura regeneración con `epub2html2`.
 - Avanzar o retroceder una pantalla visual completa mediante toque/clic lateral, swipe horizontal, controles visibles y teclado; ofrecer scroll continuo como modo alternativo.
-- Ofrecer navegación por índice y una representación de progreso basada en porcentaje y capítulo.
+- Mantener como URL normal de lectura `/read/{libro_uri}/` sin sincronizarla con cada avance y generar, sólo al compartir, `/read/{libro_uri}/{fragmento}` usando el primer fragmento HTML con contenido visible.
+- Servir las URLs compartibles con metadata Open Graph generada en el servidor para que WhatsApp y otros clientes puedan mostrar la tapa sin ejecutar React.
+- Mostrar permanentemente una barra de marca negra superior, no interactiva, con el logo de PlanetaLibro y `PlanetaLibro.com` centrado para identificar el producto durante la lectura. La URL absoluta del logo es una excepción explícita solicitada por el propietario para este asset visual; no cambia rutas públicas, API ni SEO/GEO.
+- Ofrecer navegación por índice y una representación de progreso compacta basada en el primer fragmento visible, su total publicado y porcentaje aproximado.
 - Permitir ajustar tema, familia y tamaño tipográfico, interlineado y ancho/márgenes de lectura, conservando las preferencias disponibles entre sesiones.
 - Mantener columnas CSS como motor de paginación del MVP y, tras cualquier reflujo, conservar el pasaje anclado visible inmediatamente y, cuando la distribución natural lo permita, dentro de la mitad superior de la nueva página visual.
 - Guardar una ubicación de lectura estable basada en un ancla interna del contenido, independiente del número `pag-N` y de la página visual calculada, y prever su sincronización remota sin inventar un contrato de API que el proyecto todavía no ofrece.
@@ -44,7 +47,9 @@ No existen capacidades base en `openspec/specs/`; todas las capacidades de este 
 
 ## Impact
 
-- **App React:** ruta existente `/read/:libro_uri/:page`, `ImmersiveReaderPage`, modo inmersivo de `AppShell` y enlaces desde ficha, dashboard y audiolibro.
+- **App React:** ruta normal `/read/:libro_uri/`, ruta compartible compatible `/read/:libro_uri/:page`, `ImmersiveReaderPage`, modo inmersivo de `AppShell` y enlaces desde ficha, dashboard y audiolibro.
+- **Marca y SEO/GEO:** la barra se limita a la SPA del reader y no altera URLs, canonical, metadatos, contenido indexable ni el lector legacy. La única URL absoluta añadida es el asset de marca solicitado explícitamente por el propietario.
+- **Entrega HTML:** las rutas compartibles numeradas pasan por un shell PHP copiado por Vite que inyecta Open Graph desde el manifest y después carga el mismo bundle SPA, conservando la URL.
 - **Carga de contenido:** el cliente mantiene acceso directo al `manifest.json` y los fragmentos. Sólo ante 404 del manifest usa `GET /api/v1/public/reader-manifest/{uri}`, que materializa un manifest v2 faltante desde `libroinfo.php`, registra la regeneración pendiente y devuelve el mismo contrato JSON.
 - **Persistencia operativa:** la API realiza un `UPSERT` idempotente en `ebook_regeneration_queue`; esta escritura no representa progreso del usuario y no modifica `ebooks_books`.
 - **Persistencia:** la API v1 actual es read-only y devuelve progreso simulado (`currentPage: 1`, `progressPercent: 0`). El legacy actualiza `user_books.current_page` al visitar una página; cualquier sincronización nueva deberá conservar compatibilidad y definir autenticación, resolución de conflictos y granularidad antes de implementarse.

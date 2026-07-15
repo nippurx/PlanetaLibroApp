@@ -216,7 +216,7 @@ export function AudiobookPlayerPage() {
                   </div>
                   <Link
                     className="group mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-200 px-6 py-3 font-semibold text-slate-900 transition-all hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 sm:w-auto"
-                    to={`/read/${book.uri}/${book.currentPage}`}
+                    to={`/read/${book.uri}/`}
                   >
                     <span className="material-symbols-outlined text-[20px] transition-transform group-hover:scale-110">menu_book</span>
                     Cambiar a lectura

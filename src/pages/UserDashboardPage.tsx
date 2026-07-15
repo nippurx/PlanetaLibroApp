@@ -183,7 +183,7 @@ export function UserDashboardPage() {
                         {currentBook.readOnline ? (
                           <Link
                             className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-[#161d31] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:border-primary hover:bg-primary/10"
-                            to={`/read/${currentBook.uri}/${currentBook.currentPage}`}
+                            to={`/read/${currentBook.uri}/`}
                           >
                             <span className="material-symbols-outlined text-[20px]">menu_book</span>
                             Leer

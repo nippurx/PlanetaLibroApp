@@ -88,3 +88,16 @@ Registrar dispositivo, sistema, navegador, viewport, conexión y libro. Adjuntar
 - [x] Segunda apertura de ambos libros utilizó el manifest estático y no volvió a llamar al endpoint de materialización.
 - [x] Ambos libros se pueden leer correctamente en el reader, cubriendo un legacy corto y otro excepcionalmente largo.
 - [ ] Estas aperturas fueron sucesivas; todavía falta una primera apertura realmente simultánea sobre el mismo legacy sin manifest.
+
+## Registro 2026-07-15 — URL compartible por fragmento
+
+- [x] Los enlaces normales desde ficha, dashboard y audiolibro abren `/app/read/{libro_uri}/` sin `/1`.
+- [x] La URL no se actualiza al avanzar: el historial permanece estable durante la lectura.
+- [x] La acción Compartir genera `/app/read/{libro_uri}/{fragmento}` y usa Web Share o copia al portapapeles como fallback.
+- [x] En PC, compartir una pantalla que cruce dos fragmentos y confirmar que se utiliza el primero aunque sólo tenga una porción mínima visible.
+- [x] Repetir en celular portrait/landscape y en modo scroll.
+- [x] Abrir el enlace compartido con progreso local en otra posición y confirmar que prevalece el fragmento indicado.
+- [ ] Abrir directamente `/app/read/arlt-roberto-el-criador-de-gorilas/120` y confirmar que el primer texto pertenece a `pag-120.html`, sin contenido de `pag-119.html`.
+- [x] El compartir nativo del celular fue confirmado en producción HTTPS.
+- [x] Tras desplegar el shell Open Graph, compartir una URL numerada nueva y confirmar que WhatsApp muestra la tapa correcta, título y dominio PlanetaLibro.
+- [ ] Abrir la tarjeta desde WhatsApp y confirmar que conserva `/app/read/{libro}/{N}` y carga el reader en el fragmento indicado.

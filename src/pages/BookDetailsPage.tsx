@@ -89,7 +89,7 @@ export function BookDetailsPage() {
                     </Link>
                   ) : null}
                   {book.readOnline ? (
-                    <Link className="flex w-full items-center justify-center gap-3 rounded-xl bg-slate-200 px-6 py-3.5 font-bold text-slate-900 transition-colors hover:bg-slate-300 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]" to={`/read/${book.uri}/${book.currentPage}`}>
+                    <Link className="flex w-full items-center justify-center gap-3 rounded-xl bg-slate-200 px-6 py-3.5 font-bold text-slate-900 transition-colors hover:bg-slate-300 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]" to={`/read/${book.uri}/`}>
                       <span className="material-symbols-outlined">menu_book</span>
                       <span>Leer ahora</span>
                     </Link>

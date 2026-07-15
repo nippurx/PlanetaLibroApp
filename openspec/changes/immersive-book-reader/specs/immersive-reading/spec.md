@@ -13,6 +13,19 @@ El sistema SHALL cargar un libro compatible desde su `manifest.json` y sus fragm
 - **WHEN** el lector intenta mostrar el libro
 - **THEN** muestra un error recuperable con una salida hacia la ficha o lector legacy y no presenta contenido parcial como lectura completa
 
+### Requirement: Barra de marca PlanetaLibro persistente
+El reader SHALL mostrar permanentemente una barra superior negra de 44 px de altura visual, más `safe-area-inset-top` cuando corresponda. La barra SHALL mostrar el logo de 32 px de alto desde `https://planetalibro.net/img/icono40.png` a la izquierda, con 6 px de aire arriba y abajo, y el texto blanco exacto `PlanetaLibro.com` centrado respecto del viewport completo. La barra MUST NOT contener enlaces, botones, foco ni acciones, y el contenido SHALL reservar su altura para no quedar oculto ni alterar la paginación por columnas.
+
+#### Scenario: Apertura y navegación del libro
+- **GIVEN** cualquier libro abierto en modo paginado o continuo
+- **WHEN** el usuario avanza, retrocede, hace scroll o revela/oculta los controles
+- **THEN** la barra negra de marca permanece visible, el logo conserva 32 px de alto y el dominio continúa centrado sin acciones interactivas
+
+#### Scenario: Reflujo y safe area
+- **GIVEN** un reader abierto en un dispositivo con o sin safe area
+- **WHEN** cambia orientación, tamaño de ventana, fuente o tamaño de texto
+- **THEN** la barra conserva 44 px de área visual bajo el safe area, el contenido comienza debajo de ella y el pasaje anclado se repagina sin quedar oculto
+
 ### Requirement: Compatibilidad materializada para libros legacy
 Cuando la solicitud directa de `manifest.json` responda 404 y exista una publicación legacy válida, el sistema SHALL solicitar a la API un manifest v2 de compatibilidad. La API MUST derivar la carpeta desde una URI validada, MUST NOT ejecutar entrada arbitraria ni aceptar rutas físicas, SHALL validar `libroinfo.php` y los fragmentos declarados, SHALL crear el manifest ausente de forma atómica sin sobrescribir uno existente y SHALL devolver el contrato en la misma respuesta.
 
@@ -32,12 +45,12 @@ Cuando la solicitud directa de `manifest.json` responda 404 y exista una publica
 - **THEN** no deja un manifest parcial, devuelve un error tipado y el reader conserva la salida recuperable a ficha o lector clásico
 
 ### Requirement: Fragmentación técnica invisible
-El sistema MUST tratar los números `pag-N` como unidades internas de transporte y MUST NOT utilizarlos como límites de página visual, identidad persistida, cortes editoriales o numeración visible al lector.
+El sistema MUST tratar los números `pag-N` como unidades internas de transporte y MUST NOT utilizarlos como límites de página visual, identidad persistida ni cortes editoriales. La barra inferior MAY mostrar el primer fragmento visible como `Pág. N de total`, junto con un porcentaje aproximado, sin presentarlo como página visual ni ubicación persistida.
 
 #### Scenario: Cruce entre fragmentos
 - **GIVEN** que el final de un fragmento y el inicio del siguiente están disponibles
 - **WHEN** una página visual contiene contenido procedente de ambos fragmentos
-- **THEN** el contenido mantiene el orden de lectura sin un separador ni etiqueta “Página N”
+- **THEN** el contenido mantiene el orden de lectura sin un separador ni etiqueta entre fragmentos; la barra inferior puede indicar el primer fragmento visible como referencia compacta
 
 ### Requirement: Paginación visual predeterminada
 El MVP SHALL usar por defecto paginación visual refluible de una pantalla por viewport y SHALL calcular sus límites desde el contenido ya estilizado, independientemente de los límites `pag-N`.

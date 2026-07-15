@@ -6,6 +6,7 @@ import { getLegacyReaderUrl, getReaderRoot, loadFragment, loadManifest } from ".
 import { loadPreferences, loadProgress, savePreferences, saveProgress } from "../features/reader/storage";
 import { ReaderAnchor, ReaderManifest, ReaderPreferences } from "../features/reader/types";
 import { AppShell } from "../layout/AppShell";
+import { ReaderBrandBar } from "../components/ReaderBrandBar";
 
 const LOAD_BATCH = 8;
 
@@ -20,10 +21,10 @@ function themeColors(theme: ReaderPreferences["theme"]): { background: string; f
 }
 
 export function ImmersiveReaderPage() {
-  const { libro_uri = "", page = "1" } = useParams();
+  const { libro_uri = "", page } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const requestedPage = Math.max(1, Number.parseInt(page, 10) || 1);
+  const requestedPage = Math.max(1, Number.parseInt(page ?? "1", 10) || 1);
   const [manifest, setManifest] = useState<ReaderManifest | null>(null);
   const [fragments, setFragments] = useState<Map<number, string>>(new Map());
   const [preferences, setPreferences] = useState<ReaderPreferences>(() => loadPreferences());
@@ -39,6 +40,7 @@ export function ImmersiveReaderPage() {
   const [error, setError] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [visibleFragmentPage, setVisibleFragmentPage] = useState(1);
   const [restoredAnchor, setRestoredAnchor] = useState<ReaderAnchor | null>(null);
   const [layoutReady, setLayoutReady] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -48,6 +50,7 @@ export function ImmersiveReaderPage() {
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
   const hideTimer = useRef<number | null>(null);
   const pendingAnchor = useRef<ReaderAnchor | null>(null);
+  const pendingFragmentPage = useRef<number | null>(null);
   const pendingIndexPrefetch = useRef<{ start: number; end: number } | null>(null);
   const navigateAfterLayout = useRef(0);
   const colors = themeColors(preferences.theme);
@@ -106,14 +109,15 @@ export function ImmersiveReaderPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true); setError(null); setManifest(null); setFragments(new Map()); setLayoutReady(false);
+    setLoading(true); setError(null); setManifest(null); setFragments(new Map()); setLayoutReady(false); setVisualPage(0); setVisibleFragmentPage(1);
     loadManifest(libro_uri, controller.signal)
       .then(async (nextManifest) => {
         setManifest(nextManifest);
         const local = loadProgress(libro_uri);
-        setRestoredAnchor(local?.anchor ?? null);
+        setRestoredAnchor(page === undefined ? local?.anchor ?? null : null);
         const start = Math.min(nextManifest.pages, requestedPage || nextManifest.paginicio);
-        const from = Math.max(1, start - 1);
+        pendingFragmentPage.current = page === undefined ? null : start;
+        const from = page === undefined ? Math.max(1, start - 1) : start;
         const to = Math.min(nextManifest.pages, start + LOAD_BATCH - 1);
         const values = await Promise.all(Array.from({ length: to - from + 1 }, (_, offset) => from + offset).map(async (number) => [number, await loadFragment(libro_uri, number, nextManifest.pages, controller.signal)] as const));
         setFragments(new Map(values));
@@ -126,18 +130,18 @@ export function ImmersiveReaderPage() {
       })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [libro_uri, requestedPage]);
+  }, [libro_uri, page, requestedPage]);
 
   const sanitizedHtml = useMemo(() => {
     let blockIndex = 0;
     return loadedPages.map((number) => {
       const result = sanitizeFragment(fragments.get(number) ?? "", getReaderRoot(libro_uri), blockIndex);
       blockIndex += result.blockCount;
-      return result.html;
+      return `<div class="reader-fragment" data-reader-fragment="${number}">${result.html}</div>`;
     }).join("");
   }, [fragments, libro_uri, loadedPages]);
 
-  const recalculate = useCallback((anchor?: ReaderAnchor | null, advance = 0) => {
+  const recalculate = useCallback((anchor?: ReaderAnchor | null, advance = 0, fragmentPage?: number | null) => {
     const viewport = viewportRef.current;
     const content = contentRef.current;
     if (!viewport || !content) return;
@@ -153,8 +157,11 @@ export function ImmersiveReaderPage() {
     setVisualPageWidth(width);
     setLayoutReady(true);
     setVisualPages(pages);
-    if (anchor) {
-      const target = resolveAnchor(content, anchor);
+    if (anchor || fragmentPage) {
+      const fragmentTarget = fragmentPage
+        ? content.querySelector(`[data-reader-fragment="${fragmentPage}"]`)
+        : null;
+      const target = fragmentTarget ?? (anchor ? resolveAnchor(content, anchor) : null);
       if (target) {
         if (preferences.mode === "paged") {
           const targetRect = (target as HTMLElement).getClientRects()[0] ?? target.getBoundingClientRect();
@@ -187,9 +194,10 @@ export function ImmersiveReaderPage() {
       await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       if (cancelled) return;
       const anchor = restoredAnchor ?? pendingAnchor.current;
-      recalculate(anchor, navigateAfterLayout.current);
+      recalculate(anchor, navigateAfterLayout.current, pendingFragmentPage.current);
       setRestoredAnchor(null);
       pendingAnchor.current = null;
+      pendingFragmentPage.current = null;
       navigateAfterLayout.current = 0;
       setRepaginating(false);
     };
@@ -304,11 +312,6 @@ export function ImmersiveReaderPage() {
     const approximate = loadedPages[0] + Math.round((lastLoadedPage - loadedPages[0]) * ratio);
     return [...manifest.index].reverse().find((item) => item.pag <= approximate)?.titulo || "Inicio";
   }, [lastLoadedPage, loadedPages, manifest, preferences.mode, visualPage, visualPages]);
-  const flowComplete = Boolean(manifest && fragments.size === manifest.pages);
-  const progress = flowComplete
-    ? Math.min(100, Math.max(0, Math.round(preferences.mode === "paged" ? (visualPage / Math.max(1, visualPages - 1)) * 100 : scrollProgress * 100)))
-    : null;
-
   function updatePreferences(patch: Partial<ReaderPreferences>) {
     const anchor = captureAnchor();
     setRestoredAnchor(anchor);
@@ -319,6 +322,66 @@ export function ImmersiveReaderPage() {
     persistProgress();
     if (location.key !== "default") navigate(-1);
     else navigate(`/book/${libro_uri}`);
+  }
+
+  function firstVisibleFragment(): number {
+    const viewport = viewportRef.current;
+    const content = contentRef.current;
+    if (!viewport || !content) return firstLoadedPage ?? 1;
+    const viewportRect = viewport.getBoundingClientRect();
+    const fragmentElements = content.querySelectorAll<HTMLElement>("[data-reader-fragment]");
+    for (const fragment of fragmentElements) {
+      const visible = [...fragment.getClientRects()].some((rect) => (
+        rect.right > viewportRect.left
+        && rect.left < viewportRect.right
+        && rect.bottom > viewportRect.top
+        && rect.top < viewportRect.bottom
+      ));
+      if (visible) return Number.parseInt(fragment.dataset.readerFragment ?? "", 10) || firstLoadedPage || 1;
+    }
+    return firstLoadedPage ?? 1;
+  }
+
+  useLayoutEffect(() => {
+    if (!layoutReady) return;
+    const nextPage = firstVisibleFragment();
+    setVisibleFragmentPage((current) => current === nextPage ? current : nextPage);
+  }, [firstLoadedPage, layoutReady, preferences.mode, sanitizedHtml, scrollProgress, visualPage]);
+
+  const fragmentProgress = manifest
+    ? Math.min(100, Math.max(0, Math.round((visibleFragmentPage / manifest.pages) * 100)))
+    : 0;
+
+  async function shareLocation() {
+    const fragmentPage = firstVisibleFragment();
+    const appBase = new URL(import.meta.env.BASE_URL, window.location.origin);
+    const shareUrl = new URL(`read/${encodeURIComponent(libro_uri)}/${fragmentPage}`, appBase).toString();
+    const title = readableTitle(libro_uri);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: `Continúa leyendo ${title}`, url: shareUrl });
+        setAnnouncement("Ubicación compartida.");
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        setAnnouncement("Enlace de lectura copiado.");
+        return;
+      }
+      const textArea = document.createElement("textarea");
+      textArea.value = shareUrl;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      const copied = document.execCommand("copy");
+      textArea.remove();
+      if (!copied) throw new Error("No se pudo copiar el enlace.");
+      setAnnouncement("Enlace de lectura copiado.");
+    } catch (reason) {
+      if (reason instanceof DOMException && reason.name === "AbortError") return;
+      setAnnouncement("No se pudo compartir. Intenta nuevamente.");
+    }
   }
 
   async function goToIndexItem(item: ReaderManifest["index"][number]) {
@@ -382,9 +445,11 @@ export function ImmersiveReaderPage() {
   return (
     <AppShell mode="immersive">
       <div className={`reader-shell reader-theme-${preferences.theme} reader-font-${preferences.font} ${repaginating ? "is-repaginating" : ""}`} style={readerStyle} onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerMove={() => { setControlsVisible(true); scheduleHide(); }}>
+        <ReaderBrandBar />
         <header className={`reader-toolbar reader-toolbar-top ${controlsVisible ? "is-visible" : ""}`}>
           <button aria-label="Volver a la pantalla anterior" onClick={leaveReader}><span className="material-symbols-outlined">arrow_back</span></button>
           <div className="reader-title"><strong>{readableTitle(libro_uri)}</strong><span>{chapter}</span></div>
+          <button aria-label="Compartir ubicación de lectura" onClick={() => { void shareLocation(); }}><span className="material-symbols-outlined">share</span></button>
           <button ref={panelButtonRef} aria-expanded={panel === "index"} aria-label="Abrir índice" onClick={() => setPanel(panel === "index" ? null : "index")}><span className="material-symbols-outlined">toc</span></button>
           <button aria-expanded={panel === "preferences"} aria-label="Abrir preferencias" onClick={() => setPanel(panel === "preferences" ? null : "preferences")}><span className="material-symbols-outlined">text_fields</span></button>
         </header>
@@ -399,7 +464,7 @@ export function ImmersiveReaderPage() {
         </>}
 
         <footer className={`reader-toolbar reader-toolbar-bottom ${controlsVisible ? "is-visible" : ""}`}>
-          <span>{chapter}</span><div className="reader-progress" aria-label={progress === null ? "Calculando progreso" : `${progress}% leído`}><i style={{ width: `${progress ?? 0}%` }} /></div><span>{progress === null ? "—" : `${progress}%`}</span>
+          <span className="reader-position">Pág. {visibleFragmentPage} de {manifest.pages}</span><div className="reader-progress" aria-label={`Página ${visibleFragmentPage} de ${manifest.pages}; ${fragmentProgress}% leído`}><i style={{ width: `${fragmentProgress}%` }} /></div><span>{fragmentProgress}%</span>
         </footer>
 
         {panel && <div className="reader-backdrop" onPointerDown={(event) => event.stopPropagation()} onClick={() => setPanel(null)}>

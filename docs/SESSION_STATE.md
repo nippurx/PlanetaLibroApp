@@ -25,7 +25,7 @@ Estas verificaciones son resultados parciales y no completan todavía la checkli
 
 ## Decisiones tomadas
 
-- **Formato publicado sin cambios:** el reader consume `manifest.json` v2, `pag-N.html` y assets existentes. `pag-N` es un detalle interno y nunca una página visible ni la identidad del progreso.
+- **Formato publicado sin cambios:** el reader consume `manifest.json` v2, `pag-N.html` y assets existentes. `pag-N` no es identidad del progreso ni página visual; la barra inferior puede mostrar el primer fragmento visible como `Pág. N de total` junto a porcentaje, igual que Compartir.
 - **Compatibilidad legacy bajo demanda:** ante 404 del manifest directo, la API valida `libroinfo.php`, materializa atómicamente un manifest ausente, devuelve el JSON sin tercera solicitud y registra el libro en `ebook_regeneration_queue` para regeneración posterior con `epub2html2`. No sobrescribe manifests v2.
 - **Mismo origen en producción:** la app vive en `https://planetalibro.net/app/` y los libros en `https://planetalibro.net/lector/...`; CORS no bloquea producción. Desarrollo y preview usan proxy Vite para `/lector`.
 - **Columnas CSS como motor definitivo del MVP:** no se implementarán rangos DOM ni saltos artificiales.
@@ -35,6 +35,12 @@ Estas verificaciones son resultados parciales y no completan todavía la checkli
 - **Ventanas contiguas:** el inicio carga ocho fragmentos. Los saltos de índice revelan primero el fragmento anterior y el destino, y completan hasta ocho en segundo plano sin placeholder; paginado precarga cerca de las dos últimas pantallas y continuo después del 80 % del scroll.
 - **Progreso local:** se persiste un ancla textual/estructural versionada, no números `pag-N`, columnas, píxeles ni páginas visuales. No hay sincronización remota en el MVP.
 - **Regreso contextual:** la flecha vuelve al origen del historial y usa `/book/:libro_uri` sólo como fallback al abrir directamente.
+- **URL compartible aproximada:** los accesos normales usan `/app/read/{libro_uri}/` y no cambian al avanzar. Compartir genera `/app/read/{libro_uri}/{fragmento}` desde el primer fragmento visible; el destino explícito prevalece sobre el progreso local y su flujo comienza exactamente en ese fragmento, sin renderizar `N-1`, pero no reemplaza el ancla persistida.
+- **Vista previa social server-side:** las URLs numeradas se reescriben, antes de los fallbacks de Apache, a un shell PHP desplegado con Vite que inyecta Open Graph desde `manifest.assets`, incluyendo tipo y dimensiones de la tapa, y entrega el mismo bundle React. La cabecera `X-PlanetaLibro-Share-Metadata` permite distinguir `cover` de `generic` y detectar si el rewrite no se ejecutó. Esto permite mostrar la tapa en WhatsApp sin cambiar la URL ni ejecutar PHP legacy.
+- **Vista previa social validada en producción:** tras desplegar la regla corregida y el shell, una URL numerada nueva compartida por WhatsApp mostró correctamente la tapa. La tarea 9.9 queda cerrada.
+- **Compartir validado:** en PC (paginado y scroll) y celular (portrait, landscape y scroll), Compartir tomó el primer fragmento visible incluso cuando sólo aparecían algunos caracteres. El enlace compartido tuvo prioridad sobre un progreso local distinto. La tarea 9.8 queda cerrada.
+- **Barra de marca:** se acordó una barra negra persistente de 44 px con logo y `PlanetaLibro.com` centrado, independiente de controles. La altura se reserva en el viewport y las columnas; la URL absoluta del logo es una excepción explícita solicitada por el propietario para ese asset visual.
+- **Barra de marca implementada:** `ReaderBrandBar` usa logo remoto de 32 px, texto centrado absoluto y fondo negro. `--reader-brand-bar-height` centraliza los 44 px, con 6 px arriba y abajo del logo; viewport, toolbar superior, panel e imágenes compensan su altura total con safe area. Falta la comprobación manual responsive y de reflujo.
 
 ## Archivos modificados
 
@@ -88,10 +94,11 @@ Estas verificaciones son resultados parciales y no completan todavía la checkli
 - Completar pruebas manuales de toda la checklist: Balzac, red lenta, offline, recursos rotos, zoom 200 %, rotación, movimiento reducido y límites de navegación.
 - Verificar orden semántico del modo paginado y probar lector de pantalla en escritorio y móvil.
 - Medir apertura, cambio de página, repaginación, memoria y estabilidad visual con libro largo.
-- Confirmar visualmente que ninguna superficie presenta `pag-N` al usuario.
+- Confirmar visualmente que la barra inferior compacta muestra el primer fragmento visible, su total y porcentaje, sin reducir indebidamente el área de lectura.
 - Verificar Camus por HTTP: no existe en la copia local sincronizada y no se confirmó un manifest v2.
 - Mantener pendientes sincronización remota y todas las mejoras posteriores; no archivarlas ni implementarlas todavía.
 - Completar la validación defensiva del endpoint legacy: concurrencia sobre otro libro sin manifest y fallos controlados de metadata, permisos y cola.
+- Verificar manualmente Compartir en PC y celular, tanto en paginado como en scroll, especialmente una pantalla que cruce dos fragmentos y la prioridad del enlace sobre el progreso local.
 
 ## Problemas conocidos
 
@@ -104,13 +111,13 @@ Estas verificaciones son resultados parciales y no completan todavía la checkli
 
 ## Próximo paso
 
-Probar dos primeras aperturas concurrentes sobre otro libro legacy sin manifest y ejecutar fallos controlados de metadata, permisos de escritura y cola. Confirmar una sola fila/archivo y ausencia de temporales o manifests parciales antes de cerrar 3.10.
+Probar manualmente la barra de marca en móvil y escritorio: primera apertura, avance/retroceso, scroll, fuente/tamaño, rotación, recarga y restauración de ancla; confirmar logo de 32 px, área visual de 44 px, dominio exactamente centrado, ausencia de interacción y contenido debajo de la barra. Después retomar las pruebas legacy pendientes antes de cerrar 3.10.
 
 ## Contexto importante
 
 - Repositorio: `D:\Desarrollo\PlanetaLibroApp`.
 - Cambio activo: `openspec/changes/immersive-book-reader/`; no archivarlo.
-- Preview: `npm run preview:reader`; PC `http://localhost:4173/app/read/arlt-roberto-el-criador-de-gorilas/1`; celular usa la IP LAN del equipo.
+- Preview: `npm run preview:reader`; PC `http://localhost:4173/app/read/arlt-roberto-el-criador-de-gorilas/`; celular usa la IP LAN del equipo.
 - Fixtures principales: `arlt-roberto-el-criador-de-gorilas` y `balzac-honorato-de-un-asunto-tenebroso`.
 - Producción desplegará la app bajo `/app/`; `BrowserRouter` usa `basename="/app"`.
 - No modificar `D:\Desarrollo\MPWebs\www\planetalibro\lector`, `/leerlibro/...`, `manifest.json`, `pag-N.html`, `libroinfo.php` ni el publicador EPUB.
