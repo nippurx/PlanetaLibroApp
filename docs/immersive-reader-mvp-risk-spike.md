@@ -46,7 +46,7 @@ No existe en la copia local sincronizada. La ficha legacy pública usa `/leerlib
 
 Se recorrió todo el HTML real disponible de Arlt y Balzac, no sólo fixtures sintéticos. Su conjunto de elementos es compatible con fragmentación CSS en columnas: texto, headings, énfasis, enlaces, blockquotes e imágenes; no se encontraron scripts, tablas, preformateado ni widgets con tamaño propio. Los párrafos largos de Balzac pueden fragmentarse entre columnas y no justifican por sí solos rangos DOM.
 
-El motor del MVP continúa siendo columnas CSS. El reader ahora espera fuentes e imágenes críticas (con límite de 2,5 s), aguarda dos frames de layout, recalcula desde el ancla interna y revela el contenido sólo después. Al anexar otro lote deja de precargar y repaginar continuamente: muestra un placeholder neutro, restaura el pasaje y entonces avanza una pantalla. Esto reduce cambios visibles de columna.
+El motor del MVP continúa siendo columnas CSS. El reader espera fuentes e imágenes críticas de la zona necesaria para revelar el destino (con límite de 2,5 s), aguarda dos frames de layout, recalcula desde el ancla interna y revela el contenido después. En saltos de índice sólo bloquea por el fragmento anterior y el destino; los siguientes fragmentos se anexan en segundo plano sin placeholder. Cuando una acción del usuario exige cruzar un borde aún no cargado, muestra un placeholder neutro, restaura el pasaje y entonces avanza una pantalla. Esto reduce tanto el tiempo percibido del salto como los cambios visibles de columna.
 
 No se implementan rangos DOM: no apareció una incompatibilidad estructural real que los requiera. Queda pendiente la validación visual en un navegador permitido; por ese motivo la tarea 4.4 no se marca completa todavía.
 

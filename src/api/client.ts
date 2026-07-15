@@ -35,6 +35,7 @@ export class ApiError extends Error {
 type RequestOptions = {
   body?: unknown;
   headers?: HeadersInit;
+  signal?: AbortSignal;
 };
 
 function buildUrl(path: string): string {
@@ -63,6 +64,7 @@ async function request<T>(method: HttpMethod, path: string, options: RequestOpti
       ...options.headers,
     },
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    signal: options.signal,
   });
 
   const payload = await parseResponseBody(response);
@@ -90,8 +92,8 @@ async function request<T>(method: HttpMethod, path: string, options: RequestOpti
 }
 
 export const apiClient = {
-  get<T>(path: string, headers?: HeadersInit) {
-    return request<T>("GET", path, { headers });
+  get<T>(path: string, headers?: HeadersInit, signal?: AbortSignal) {
+    return request<T>("GET", path, { headers, signal });
   },
   post<T>(path: string, body?: unknown, headers?: HeadersInit) {
     return request<T>("POST", path, { body, headers });

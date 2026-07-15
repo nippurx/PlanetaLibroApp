@@ -48,9 +48,11 @@ export function ImmersiveReaderPage() {
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
   const hideTimer = useRef<number | null>(null);
   const pendingAnchor = useRef<ReaderAnchor | null>(null);
-  const advanceAfterLayout = useRef(false);
+  const pendingIndexPrefetch = useRef<{ start: number; end: number } | null>(null);
+  const navigateAfterLayout = useRef(0);
   const colors = themeColors(preferences.theme);
   const loadedPages = useMemo(() => [...fragments.keys()].sort((a, b) => a - b), [fragments]);
+  const firstLoadedPage = loadedPages[0];
   const lastLoadedPage = loadedPages[loadedPages.length - 1];
 
   const captureAnchor = useCallback((): ReaderAnchor | null => {
@@ -72,15 +74,17 @@ export function ImmersiveReaderPage() {
     saveProgress({ version: 1, uri: libro_uri, manifestVersion: manifest.generated_at, anchor, updatedAt: new Date().toISOString() });
   }, [captureAnchor, libro_uri, manifest]);
 
-  const loadRange = useCallback(async (start: number, end: number, signal?: AbortSignal) => {
+  const loadRange = useCallback(async (start: number, end: number, signal?: AbortSignal, blocking = true) => {
     if (!manifest) return;
     const missing: number[] = [];
     for (let value = Math.max(1, start); value <= Math.min(manifest.pages, end); value += 1) if (!fragments.has(value)) missing.push(value);
     if (!missing.length) return;
-    const anchor = captureAnchor();
-    if (anchor) {
-      pendingAnchor.current = anchor;
-      setRepaginating(true);
+    if (blocking) {
+      const anchor = captureAnchor();
+      if (anchor) {
+        pendingAnchor.current = anchor;
+        setRepaginating(true);
+      }
     }
     setLoadingMore(true);
     try {
@@ -91,9 +95,11 @@ export function ImmersiveReaderPage() {
         return next;
       });
     } catch (reason) {
-      pendingAnchor.current = null;
-      advanceAfterLayout.current = false;
-      setRepaginating(false);
+      if (blocking) {
+        pendingAnchor.current = null;
+        navigateAfterLayout.current = 0;
+        setRepaginating(false);
+      }
       throw reason;
     } finally { setLoadingMore(false); }
   }, [captureAnchor, fragments, libro_uri, manifest]);
@@ -181,10 +187,10 @@ export function ImmersiveReaderPage() {
       await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       if (cancelled) return;
       const anchor = restoredAnchor ?? pendingAnchor.current;
-      recalculate(anchor, advanceAfterLayout.current ? 1 : 0);
+      recalculate(anchor, navigateAfterLayout.current);
       setRestoredAnchor(null);
       pendingAnchor.current = null;
-      advanceAfterLayout.current = false;
+      navigateAfterLayout.current = 0;
       setRepaginating(false);
     };
     void settleLayout();
@@ -197,6 +203,7 @@ export function ImmersiveReaderPage() {
       || !layoutReady
       || loadingMore
       || repaginating
+      || pendingIndexPrefetch.current
       || !lastLoadedPage
       || lastLoadedPage >= manifest.pages
     ) return;
@@ -207,9 +214,17 @@ export function ImmersiveReaderPage() {
 
     if (nearScrollEnd) setScrollProgress(0);
 
-    void loadRange(lastLoadedPage + 1, lastLoadedPage + LOAD_BATCH)
+    void loadRange(lastLoadedPage + 1, lastLoadedPage + LOAD_BATCH, undefined, false)
       .catch(() => setAnnouncement("No se pudo precargar el siguiente tramo. Intenta avanzar nuevamente."));
   }, [lastLoadedPage, layoutReady, loadRange, loadingMore, manifest, preferences.mode, repaginating, scrollProgress, visualPage, visualPages]);
+
+  useEffect(() => {
+    const range = pendingIndexPrefetch.current;
+    if (!range || !layoutReady || repaginating || loadingMore) return;
+    pendingIndexPrefetch.current = null;
+    void loadRange(range.start, range.end, undefined, false)
+      .catch(() => setAnnouncement("El capítulo está disponible, pero no se pudo precargar el tramo siguiente."));
+  }, [layoutReady, loadRange, loadingMore, repaginating]);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -250,8 +265,13 @@ export function ImmersiveReaderPage() {
   const goToVisualPage = useCallback(async (next: number) => {
     const viewport = viewportRef.current;
     if (!viewport || preferences.mode !== "paged") return;
+    if (next < 0 && manifest && firstLoadedPage > 1) {
+      navigateAfterLayout.current = -1;
+      await loadRange(firstLoadedPage - LOAD_BATCH, firstLoadedPage - 1);
+      return;
+    }
     if (next >= visualPages && manifest && lastLoadedPage < manifest.pages) {
-      advanceAfterLayout.current = true;
+      navigateAfterLayout.current = 1;
       await loadRange(lastLoadedPage + 1, lastLoadedPage + LOAD_BATCH);
       return;
     }
@@ -259,7 +279,7 @@ export function ImmersiveReaderPage() {
     setVisualPage(clamped);
     setAnnouncement(`Página visual ${clamped + 1} de ${visualPages}`);
     scheduleHide();
-  }, [captureAnchor, lastLoadedPage, loadRange, manifest, preferences.mode, scheduleHide, visualPages]);
+  }, [firstLoadedPage, lastLoadedPage, loadRange, manifest, preferences.mode, scheduleHide, visualPages]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -304,22 +324,25 @@ export function ImmersiveReaderPage() {
   async function goToIndexItem(item: ReaderManifest["index"][number]) {
     if (!manifest) return;
     const from = Math.max(1, item.pag - 1);
-    const to = Math.min(manifest.pages, from + LOAD_BATCH - 1);
+    const criticalTo = item.pag;
+    const prefetchTo = Math.min(manifest.pages, from + LOAD_BATCH - 1);
     const destination: ReaderAnchor = { version: 1, quote: item.titulo, prefix: "", suffix: "", blockIndex: 0, offset: 0 };
     pendingAnchor.current = destination;
-    advanceAfterLayout.current = false;
+    navigateAfterLayout.current = 0;
     setPanel(null);
     setRepaginating(true);
     setLoadingMore(true);
     setLayoutReady(false);
     setVisualPage(0);
+    pendingIndexPrefetch.current = criticalTo < prefetchTo ? { start: criticalTo + 1, end: prefetchTo } : null;
     try {
-      const values = await Promise.all(Array.from({ length: to - from + 1 }, (_, offset) => from + offset).map(async (number) => (
+      const values = await Promise.all(Array.from({ length: criticalTo - from + 1 }, (_, offset) => from + offset).map(async (number) => (
         [number, fragments.get(number) ?? await loadFragment(libro_uri, number, manifest.pages)] as const
       )));
       setFragments(new Map(values));
       setAnnouncement(`Capítulo: ${item.titulo}`);
     } catch (reason) {
+      pendingIndexPrefetch.current = null;
       pendingAnchor.current = null;
       setRepaginating(false);
       setAnnouncement(reason instanceof Error ? `No se pudo abrir el capítulo: ${reason.message}` : "No se pudo abrir el capítulo.");
@@ -371,7 +394,7 @@ export function ImmersiveReaderPage() {
         </main>
 
         {preferences.mode === "paged" && <>
-          <button className="reader-page-button reader-page-previous" disabled={visualPage === 0} aria-label="Página visual anterior" onClick={(event) => { event.stopPropagation(); void goToVisualPage(visualPage - 1); }}><span className="material-symbols-outlined">chevron_left</span></button>
+          <button className="reader-page-button reader-page-previous" disabled={visualPage === 0 && firstLoadedPage === 1} aria-label="Página visual anterior" onClick={(event) => { event.stopPropagation(); void goToVisualPage(visualPage - 1); }}><span className="material-symbols-outlined">chevron_left</span></button>
           <button className="reader-page-button reader-page-next" disabled={visualPage >= visualPages - 1 && lastLoadedPage === manifest.pages} aria-label="Página visual siguiente" onClick={(event) => { event.stopPropagation(); void goToVisualPage(visualPage + 1); }}><span className="material-symbols-outlined">chevron_right</span></button>
         </>}
 
@@ -385,7 +408,7 @@ export function ImmersiveReaderPage() {
             {panel === "index" ? <nav aria-label="Capítulos" className="reader-index">{manifest.index.map((item, index) => <button key={`${item.pag}-${index}`} style={{ paddingLeft: `${Math.min(3, item.nivel - 1) * 1.1 + .75}rem` }} onClick={() => { void goToIndexItem(item); }}>{item.titulo}</button>)}</nav> : <Preferences value={preferences} onChange={updatePreferences} />}
           </div>
         </div>}
-        {loadingMore && <div className="reader-loading" role="status">Cargando…</div>}
+        {loadingMore && repaginating && <div className="reader-loading" role="status">Cargando…</div>}
         {repaginating && <div className="reader-layout-placeholder" role="status" aria-live="polite"><span>Ajustando la página…</span><i /><i /><i /><i /></div>}
         <div className="sr-only" aria-live="polite">{announcement}</div>
       </div>

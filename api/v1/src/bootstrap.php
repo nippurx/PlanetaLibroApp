@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use PlanetaLibro\Api\V1\Db\PdoFactory;
+use PlanetaLibro\Api\V1\Reader\LegacyBookInfoParser;
+use PlanetaLibro\Api\V1\Reader\ReaderManifestService;
 use PlanetaLibro\Api\V1\Repositories\AuthorsRepo;
 use PlanetaLibro\Api\V1\Repositories\BooksRepo;
+use PlanetaLibro\Api\V1\Repositories\ReaderManifestRepo;
 use PlanetaLibro\Api\V1\Repositories\SearchRepo;
 
 function bootstrap(string $root): array
@@ -29,6 +32,11 @@ function bootstrap(string $root): array
     $config = require $root . '/config/config.php';
     $pdo = PdoFactory::create($config['db']);
     $logger = createLogger($root, $config);
+    $readerManifestRepo = new ReaderManifestRepo($pdo);
+    $documentRoot = rtrim((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''), '/\\');
+    $readerRoot = (string) ($config['reader_root'] ?? ($documentRoot !== ''
+        ? $documentRoot . '/lector'
+        : dirname($root, 2) . '/lector'));
 
     return [
         'config' => $config,
@@ -37,6 +45,11 @@ function bootstrap(string $root): array
         'booksRepo' => new BooksRepo($pdo),
         'authorsRepo' => new AuthorsRepo($pdo),
         'searchRepo' => new SearchRepo($pdo),
+        'readerManifestService' => new ReaderManifestService(
+            $readerManifestRepo,
+            new LegacyBookInfoParser(),
+            $readerRoot
+        ),
     ];
 }
 

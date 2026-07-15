@@ -21,6 +21,10 @@
 - [x] 3.4 Implementar sanitización inerte de fragmentos, protocolos permitidos y resolución confinada de recursos relativos.
 - [ ] 3.5 Añadir pruebas unitarias para manifest válido/inválido, path traversal, página fuera de rango, scripts/handlers, enlaces y recursos inseguros.
 - [ ] 3.6 Añadir estados de carga, error recuperable y salida a ficha/lector legacy, con pruebas de componente.
+- [x] 3.7 Implementar `GET /api/v1/public/reader-manifest/{uri}` con resolución confinada, parser legacy limitado, validación de fragmentos y publicación atómica sin sobrescritura.
+- [x] 3.8 Registrar mediante `UPSERT` idempotente cada materialización legacy en `ebook_regeneration_queue` con destino `epub2html2`.
+- [x] 3.9 Implementar en el reader fallback exclusivo ante 404 de `manifest.json`, consumir el contrato devuelto por la API y conservar el error recuperable para los demás fallos.
+- [ ] 3.10 Documentar y verificar manifest existente, legacy válido, URI/traversal, metadata inválida, fragmento faltante, concurrencia y fallo de escritura/cola.
 
 ## 4. MVP — Flujo inmersivo y rendimiento
 
@@ -84,7 +88,7 @@
 - [ ] 9.3 Probar manualmente red lenta, offline posterior a carga, fragmento faltante, manifest inválido, imagen rota y libro largo.
 - [ ] 9.4 Probar manualmente que el pasaje anclado quede visible inmediatamente y, cuando sea posible, en la mitad superior al cambiar orientación, viewport, zoom 200 %, texto, fuente, márgenes, modo y movimiento reducido; aceptar la redistribución vertical natural.
 - [ ] 9.5 Confirmar mediante inspección visual y de accesibilidad que ninguna superficie presenta `pag-N` como página visible.
-- [x] 9.6 Verificar que `/leerlibro/...`, `manifest.json`, `pag-N.html`, `libroinfo.php` y el publicador EPUB permanecen sin modificaciones.
+- [x] 9.6 Verificar que `/leerlibro/...`, los manifests v2 existentes, `pag-N.html`, `libroinfo.php` y el publicador EPUB permanecen sin modificaciones; la compatibilidad sólo crea manifests ausentes.
 - [x] 9.7 Habilitar el reader nuevo de forma reversible y documentar rollback hacia la ficha o lector legacy.
 
 ## 10. Mejoras posteriores — Robustez avanzada de layout

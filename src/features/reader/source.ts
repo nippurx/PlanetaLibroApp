@@ -1,4 +1,5 @@
 import { ReaderError, ReaderManifest } from "./types";
+import { ApiError, apiClient } from "../../api/client";
 
 const SAFE_URI = /^[a-zA-Z0-9._-]+$/;
 
@@ -60,15 +61,31 @@ export function parseManifest(value: unknown, expectedUri?: string): ReaderManif
 
 async function fetchOk(url: string, signal?: AbortSignal): Promise<Response> {
   const response = await fetch(url, { credentials: "include", signal, headers: { Accept: "application/json,text/html;q=0.9" } });
-  if (!response.ok) throw new ReaderError(`No se pudo cargar el recurso (${response.status}).`, "HTTP_ERROR");
+  if (!response.ok) throw new ReaderError(`No se pudo cargar el recurso (${response.status}).`, "HTTP_ERROR", undefined, response.status);
   return response;
 }
 
 export async function loadManifest(uri: string, signal?: AbortSignal): Promise<ReaderManifest> {
-  const response = await fetchOk(`${getReaderRoot(uri)}/manifest.json`, signal);
+  const safeUri = assertBookUri(uri);
   try {
-    return parseManifest(await response.json(), uri);
+    const response = await fetchOk(`${getReaderRoot(safeUri)}/manifest.json`, signal);
+    return parseManifest(await response.json(), safeUri);
   } catch (error) {
+    if (error instanceof ReaderError && error.code === "HTTP_ERROR" && error.status === 404) {
+      try {
+        const response = await apiClient.get<{ data: unknown }>(
+          `/public/reader-manifest/${encodeURIComponent(safeUri)}`,
+          undefined,
+          signal,
+        );
+        return parseManifest(response.data, safeUri);
+      } catch (fallbackError) {
+        if (fallbackError instanceof ApiError) {
+          throw new ReaderError(fallbackError.message, "HTTP_ERROR", fallbackError, fallbackError.status);
+        }
+        throw fallbackError;
+      }
+    }
     if (error instanceof ReaderError) throw error;
     throw new ReaderError("El manifiesto no contiene JSON válido.", "INVALID_MANIFEST", error);
   }

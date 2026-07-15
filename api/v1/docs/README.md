@@ -1,6 +1,6 @@
 # PlanetaLibro API v1
 
-API read-only y aislada para la app nueva en `/app`, construida sin depender de helpers legacy y sin modificar el sitio existente fuera de `api/v1`.
+API aislada para la app nueva en `/app`. Los endpoints de catálogo son read-only. La única escritura operativa incorporada es la compatibilidad del reader: materializa manifests ausentes y registra regeneraciones pendientes, sin modificar fragmentos ni ejecutar helpers legacy.
 
 ## Endpoints
 
@@ -11,6 +11,37 @@ API read-only y aislada para la app nueva en `/app`, construida sin depender de 
 - `GET /api/v1/public/libros?limit=20&offset=0`
 - `GET /api/v1/public/libros/por-tag?tag=crecimiento-personal&limit=20&offset=0`
 - `GET /api/v1/public/libros/top?limit=10&lang=es`
+- `GET /api/v1/public/reader-manifest/{uri}`
+
+## Endpoint de compatibilidad del reader
+
+`GET /api/v1/public/reader-manifest/{uri}` se usa únicamente cuando la solicitud estática a `/lector/.../manifest.json` devuelve 404.
+
+Flujo:
+
+1. valida la URI y consulta su `ebooks_books_id`;
+2. deriva la carpeta bajo la raíz `/lector` sin aceptar paths del cliente;
+3. si otro proceso ya creó un manifest v2 válido, lo devuelve;
+4. parsea sólo las asignaciones admitidas de `libroinfo.php`, sin `include` ni `eval`;
+5. valida `npaginas`, `paginicio`, índice y la existencia contigua de todos los `pag-N.html`;
+6. hace `UPSERT` en `ebook_regeneration_queue` con razón `legacy_compatibility_manifest` y destino `epub2html2`;
+7. escribe un temporal, lo valida y publica mediante rename atómico;
+8. devuelve `{"data": manifest}` en esa misma respuesta.
+
+No sobrescribe manifests existentes. El lock por libro vive en el directorio temporal del sistema y el único archivo persistente nuevo dentro del libro es `manifest.json`.
+
+Errores relevantes:
+
+- `400 invalid_book_uri`
+- `404 book_not_found`, `legacy_book_not_found` o `legacy_metadata_missing`
+- `422 legacy_metadata_invalid`, `legacy_index_invalid`, `legacy_fragment_missing` o `manifest_invalid`
+- `500 manifest_lock_failed`, `manifest_write_failed`, `manifest_publish_failed` o `manifest_generation_failed`
+
+La respuesta dinámica usa `Cache-Control: no-store`; las aperturas siguientes consumen directamente el manifest estático creado.
+
+Validación de producción 2026-07-14: `homero-odisea-res` materializó correctamente un manifest de 120 páginas, 13 entradas de índice y dos assets. Se registró una única fila `pending` para `ebooks_books_id=75567` y `epub2html2`; la segunda apertura consumió el archivo estático y el libro se leyó correctamente.
+
+Validación adicional 2026-07-15: `joseph-nguyen-no-te-creas-todo-lo-que-piensas` materializó 17 páginas y 10 entradas (`ebooks_books_id=75330`), mientras `homero-la-iliada` materializó 743 páginas y 32 entradas (`ebooks_books_id=68`). Ambos registraron una sola fila `pending`, se leyeron correctamente y en la segunda apertura utilizaron el manifest estático sin volver a invocar la API.
 
 ## Notas de path
 
@@ -206,6 +237,9 @@ Variables soportadas:
 - `PL_DB_NAME`
 - `PL_DB_USER`
 - `PL_DB_PASS`
+- `reader_root` en `config/config.php` (opcional). Si se omite, usa `$_SERVER['DOCUMENT_ROOT'] . '/lector'`.
+
+El usuario de PHP necesita permisos mínimos para crear el temporal y renombrarlo a `manifest.json` dentro de carpetas legacy. La tabla `ebook_regeneration_queue` debe existir con la clave única por `ebooks_books_id` y `target_generator` documentada para este cambio.
 
 ## Logging
 

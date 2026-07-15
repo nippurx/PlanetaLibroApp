@@ -13,6 +13,24 @@ El sistema SHALL cargar un libro compatible desde su `manifest.json` y sus fragm
 - **WHEN** el lector intenta mostrar el libro
 - **THEN** muestra un error recuperable con una salida hacia la ficha o lector legacy y no presenta contenido parcial como lectura completa
 
+### Requirement: Compatibilidad materializada para libros legacy
+Cuando la solicitud directa de `manifest.json` responda 404 y exista una publicación legacy válida, el sistema SHALL solicitar a la API un manifest v2 de compatibilidad. La API MUST derivar la carpeta desde una URI validada, MUST NOT ejecutar entrada arbitraria ni aceptar rutas físicas, SHALL validar `libroinfo.php` y los fragmentos declarados, SHALL crear el manifest ausente de forma atómica sin sobrescribir uno existente y SHALL devolver el contrato en la misma respuesta.
+
+#### Scenario: Primera apertura de libro legacy válido
+- **GIVEN** un libro registrado que carece de `manifest.json`, contiene `libroinfo.php` válido y tiene fragmentos contiguos
+- **WHEN** el reader recibe 404 al solicitar el manifest directo
+- **THEN** la API reconstruye y devuelve un manifest v2, lo materializa para próximas lecturas y el reader continúa sin enviar al usuario al lector clásico
+
+#### Scenario: Registro de regeneración pendiente
+- **GIVEN** que la API materializa un manifest desde datos legacy
+- **WHEN** finaliza la validación del libro
+- **THEN** realiza un `UPSERT` idempotente en `ebook_regeneration_queue` con destino `epub2html2`, sin duplicar trabajos por aperturas concurrentes
+
+#### Scenario: Legacy inválido o no escribible
+- **GIVEN** que falta `libroinfo.php`, sus datos son inválidos, los fragmentos no son contiguos o no puede publicarse atómicamente el manifest
+- **WHEN** la API intenta materializar la compatibilidad
+- **THEN** no deja un manifest parcial, devuelve un error tipado y el reader conserva la salida recuperable a ficha o lector clásico
+
 ### Requirement: Fragmentación técnica invisible
 El sistema MUST tratar los números `pag-N` como unidades internas de transporte y MUST NOT utilizarlos como límites de página visual, identidad persistida, cortes editoriales o numeración visible al lector.
 

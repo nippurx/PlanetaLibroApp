@@ -51,3 +51,40 @@ Registrar dispositivo, sistema, navegador, viewport, conexión y libro. Adjuntar
 - [ ] Ninguna superficie presenta `pag-N` como página visible o como progreso para el lector.
 - [ ] Las cabeceras HTTP reales y cualquier incompatibilidad se anexaron al spike de riesgos.
 - [ ] Los fallos encontrados tienen libro, recurso, navegador y pasos reproducibles.
+
+## Registro 2026-07-14 — retroceso desde salto de índice
+
+- Diagnóstico: al saltar a un capítulo intermedio, la ventana cargada comenzaba en el fragmento anterior al destino. Al alcanzar su primera página visual, el control anterior quedaba deshabilitado y no existía carga retrospectiva.
+- Corrección: el intento de retroceso desde el inicio de una ventana ahora carga el lote anterior, restaura el pasaje anclado tras el reflujo y continúa exactamente una página visual hacia atrás. El control anterior sólo se deshabilita en el inicio real del libro.
+- Validación automática completada: `npm run build`, `git diff --check` y `openspec validate immersive-book-reader --strict` finalizaron correctamente.
+- [ ] Repetir manualmente en PC con Arlt y Balzac: saltar a un capítulo intermedio, retroceder más allá del inicio de al menos dos ventanas y confirmar continuidad, ausencia de duplicación y límite real en el inicio del libro.
+- [ ] Repetir el mismo recorrido en celular portrait y landscape mediante botón, toque lateral y swipe.
+- Limitación de esta ejecución: el navegador automatizado rechazó el acceso a `localhost:4173` por una preferencia de seguridad del usuario; no se atribuye validación visual de PC o celular.
+
+## Registro 2026-07-14 — revelado rápido desde índice
+
+- Implementación: el salto espera sólo el fragmento anterior y el destino. Después de revelar y anclar el capítulo, precarga en segundo plano hasta completar una ventana máxima de ocho fragmentos.
+- La precarga posterior no debe mostrar “Ajustando la página…”. El placeholder queda reservado para cargas que una navegación solicita al cruzar un borde todavía no disponible.
+- [x] En Arlt y Balzac, saltar desde el inicio a un capítulo cercano al final y comparar el tiempo hasta ver el título con la implementación anterior. Confirmado en PC y celular.
+- [x] Confirmar que el capítulo permanece estable mientras llegan los fragmentos posteriores, sin salto de pasaje, duplicación ni overlay bloqueante. Confirmado en celular portrait/landscape y PC.
+- [x] Repetir con red normal en PC y celular.
+- [ ] Repetir con Slow 3G en PC y celular. No probado.
+
+## Registro 2026-07-14 — compatibilidad legacy en producción
+
+- [x] API y app desplegadas con el endpoint de materialización legacy.
+- [x] PHP pudo crear `manifest.json` dentro de la carpeta legacy de `homero-odisea-res`.
+- [x] Esquema real de `ebook_regeneration_queue` compatible con el repositorio: clave única (`ebooks_books_id`, `target_generator`) y columnas de estado, timestamps y error presentes.
+- [x] Primera apertura: generó manifest v2 de 120 páginas, 13 entradas de índice, dos assets y procedencia `legacy_source.compatibility_manifest=true`.
+- [x] Cola: una única fila para `ebooks_books_id=75567`, estado `pending`, destino `epub2html2` y timestamp de manifest generado.
+- [x] Segunda apertura: utilizó el manifest estático; el libro se leyó correctamente y no volvió a materializarlo mediante la API.
+- [ ] Ejecutar dos primeras aperturas concurrentes sobre otro legacy sin manifest y confirmar un solo archivo/fila.
+- [ ] Probar de forma controlada metadata inválida y fallos de permisos/cola, confirmando ausencia de temporales o manifests parciales.
+
+## Registro 2026-07-15 — compatibilidad legacy adicional
+
+- [x] `joseph-nguyen-no-te-creas-todo-lo-que-piensas`: primera apertura creó un manifest de 17 páginas, 10 entradas de índice y dos assets; fila única `pending` para `ebooks_books_id=75330`.
+- [x] `homero-la-iliada`: primera apertura creó un manifest de 743 páginas, 32 entradas de índice y dos assets; fila única `pending` para `ebooks_books_id=68`.
+- [x] Segunda apertura de ambos libros utilizó el manifest estático y no volvió a llamar al endpoint de materialización.
+- [x] Ambos libros se pueden leer correctamente en el reader, cubriendo un legacy corto y otro excepcionalmente largo.
+- [ ] Estas aperturas fueron sucesivas; todavía falta una primera apertura realmente simultánea sobre el mismo legacy sin manifest.

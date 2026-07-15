@@ -34,7 +34,11 @@ El reader dependerá de una abstracción de sólo lectura que obtenga y valide:
 
 La implementación deberá centralizar la resolución de URL y nunca aceptar una ruta física o un nombre de fragmento arbitrario desde la entrada del usuario. La URI se valida/codifica y el índice se deriva exclusivamente del manifest validado. Producción sirve la app desde `https://planetalibro.net/app/` y los libros desde `https://planetalibro.net/lector/...`; ambas rutas comparten origen y CORS no es un bloqueo. No se necesita ni se inventa un endpoint intermediario en `api/v1`. En desarrollo y preview, Vite reenvía `/lector` al host publicado para conservar la misma forma de URL en el navegador.
 
-`manifest.json` es la fuente primaria; `libroinfo.php` queda sólo para el lector legacy y no se ejecutará ni parseará desde React.
+`manifest.json` es la fuente primaria y React nunca descarga ni interpreta código PHP. Si la solicitud directa responde 404, React llama a `GET /api/v1/public/reader-manifest/{uri}`. La API deriva la carpeta sólo desde una URI validada y una raíz configurada, consulta el libro por URI, toma exclusivamente las asignaciones legacy permitidas de `libroinfo.php` mediante un parser limitado sin `eval`, valida rango y existencia contigua de fragmentos, y construye el contrato v2 mínimo.
+
+La generación es idempotente y atómica: se serializa por libro mediante un lock, vuelve a comprobar si otro proceso creó el manifest, escribe un temporal en la misma carpeta, valida el JSON y lo renombra a `manifest.json`. Nunca sobrescribe un manifest existente. El endpoint devuelve el JSON en la misma respuesta para evitar una tercera solicitud. Los 404 de manifests ausentes no deben recibir caché negativa prolongada.
+
+Al detectar el legacy, la API registra mediante `UPSERT` el `ebooks_books_id` en `ebook_regeneration_queue` con razón `legacy_compatibility_manifest`, estado inicial `pending` y destino `epub2html2`. La cola no bloquea futuras lecturas estáticas y conserva la necesidad de regenerar aunque ya exista el manifest temporal. `libroinfo.php`, `pag-N.html` y el publicador permanecen intactos.
 
 ### 2. Paginación visual predeterminada y scroll continuo alternativo
 
@@ -44,7 +48,7 @@ El motor de layout medirá el flujo ya estilizado y construirá límites visuale
 
 El scroll vertical continuo se ofrece como modo alternativo desde preferencias. Ambos modos consumen el mismo contenido ordenado y comparten anclas, progreso, índice y sanitización. Cambiar de modo conserva el pasaje actual y recalcula su representación.
 
-Para rapidez, no es obligatorio descargar el libro completo al abrir, pero el motor debe disponer de suficiente contenido anterior y posterior para calcular de forma estable la pantalla actual y la siguiente. Se carga primero la zona que contiene el ancla restaurada y una ventana vecina, se precarga antes de navegar y se mantienen placeholders estables. La portada (`pag-1`) es contenido; puede ocupar una página visual propia sin revelar su identificador técnico.
+Para rapidez, no es obligatorio descargar el libro completo al abrir, pero el motor debe disponer de suficiente contenido anterior y posterior para calcular de forma estable la pantalla actual y la siguiente. Se carga primero la zona crítica que contiene el ancla restaurada. En un salto de índice, esa zona crítica comprende el fragmento anterior y el fragmento de destino; se revela apenas sus recursos críticos estabilizan el layout y los fragmentos posteriores de la ventana se precargan en segundo plano, sin volver a cubrir la lectura con el placeholder. Las cargas solicitadas al alcanzar un límite sí conservan el placeholder mientras restauran el ancla y completan la navegación. La portada (`pag-1`) es contenido; puede ocupar una página visual propia sin revelar su identificador técnico.
 
 ### 3. Contenido aislado y normalizado
 
@@ -105,6 +109,9 @@ Los cambios de capítulo/ubicación solicitados se anuncian de forma no intrusiv
 
 - **[El entorno local no comparte origen con los libros publicados]** → usar el proxy Vite para `/lector`; producción es same-origin y no requiere cambios CORS ni un endpoint API intermedio.
 - **[HTML histórico difiere de la whitelist del publicador v2]** → probar una muestra diversa, sanitizar en cliente y ofrecer error recuperable por fragmento/libro.
+- **[Dos lectores intentan materializar el mismo legacy]** → lock por carpeta, comprobación doble y rename atómico; la cola usa una clave única idempotente.
+- **[El proceso PHP no puede escribir en `/lector`]** → devolver error recuperable y lector clásico, registrar el fallo y documentar el permiso mínimo sólo para crear manifest y lock.
+- **[Manifest temporal oculta que el libro sigue siendo legacy]** → incluir procedencia/warning en el JSON y mantener la regeneración pendiente en `ebook_regeneration_queue` hasta completar `epub2html2`.
 - **[Carga completa consume memoria en libros largos]** → ventana de fragmentos, precarga acotada, caché y medición de memoria/rendimiento.
 - **[Paginación cambia tras cargar fuentes o imágenes]** → esperar recursos críticos, reservar dimensiones, repaginar desde el ancla y no prometer un número visual estable antes de completar el layout.
 - **[Columnas CSS redistribuyen verticalmente el pasaje tras el reflujo]** → aceptar el movimiento natural si el ancla permanece visible inmediatamente; priorizar la mitad superior cuando sea posible sin rangos DOM ni saltos artificiales.

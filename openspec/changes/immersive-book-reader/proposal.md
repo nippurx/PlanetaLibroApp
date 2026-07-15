@@ -11,6 +11,7 @@ El objetivo es incorporar un lector inmersivo en la app que consuma ese formato 
 - Servir el reader en `https://planetalibro.net/app/` y consumir `/lector/...` en el mismo origen; durante desarrollo y preview, reproducir esa topología mediante proxy Vite sin cambiar Apache.
 - Reemplazar la maqueta del reader React por una experiencia de lectura funcional, de controles discretos y contenido adaptable a móvil, tablet y escritorio, con paginación visual tipo Kindle como modo predeterminado.
 - Cargar la estructura del libro desde `manifest.json` y el contenido desde `pag-N.html`, tratándolos como recursos internos y no como páginas visibles para el usuario.
+- Cuando un libro legacy carezca de `manifest.json` pero tenga `libroinfo.php` y fragmentos válidos, solicitar a la API un manifest v2 de compatibilidad: la API lo reconstruye sin ejecutar contenido arbitrario, lo publica atómicamente para lecturas posteriores y registra el libro en `ebook_regeneration_queue` para su futura regeneración con `epub2html2`.
 - Avanzar o retroceder una pantalla visual completa mediante toque/clic lateral, swipe horizontal, controles visibles y teclado; ofrecer scroll continuo como modo alternativo.
 - Ofrecer navegación por índice y una representación de progreso basada en porcentaje y capítulo.
 - Permitir ajustar tema, familia y tamaño tipográfico, interlineado y ancho/márgenes de lectura, conservando las preferencias disponibles entre sesiones.
@@ -21,11 +22,11 @@ El objetivo es incorporar un lector inmersivo en la app que consuma ese formato 
 
 ### Fuera de alcance
 
-- Modificar el conversor/publicador EPUB, `libroinfo.php`, `manifest.json` o la generación de `pag-N.html`.
+- Modificar el conversor/publicador EPUB, `libroinfo.php`, los fragmentos `pag-N.html` o sobrescribir manifests v2 existentes. La única escritura publicada admitida es crear un `manifest.json` ausente para compatibilidad legacy.
 - Búsqueda dentro del libro, marcadores, resaltados, notas, diccionario, lectura en voz alta y modo offline/PWA.
 - Animación de hoja, gamificación, funciones sociales o asistencia de IA.
 - Paginación mediante rangos DOM o saltos artificiales destinados a fijar una línea en la parte superior después del reflujo.
-- Crear tablas, campos o endpoints de persistencia sin acordar antes un contrato compatible con autenticación y datos legacy.
+- Crear tablas o campos adicionales fuera de `ebook_regeneration_queue`, ya provisionada para esta compatibilidad, ni endpoints de progreso remoto sin acordar antes su contrato.
 
 ## Capabilities
 
@@ -44,7 +45,8 @@ No existen capacidades base en `openspec/specs/`; todas las capacidades de este 
 ## Impact
 
 - **App React:** ruta existente `/read/:libro_uri/:page`, `ImmersiveReaderPage`, modo inmersivo de `AppShell` y enlaces desde ficha, dashboard y audiolibro.
-- **Carga de contenido:** se necesitará resolver de forma segura la carpeta pública del libro, obtener `manifest.json` y fragmentos `pag-N.html`, y normalizar/sanitizar el HTML antes de renderizarlo. El mecanismo exacto (acceso público controlado o API read-only) queda como decisión abierta porque hoy no existe un endpoint de reader en `api/v1`.
+- **Carga de contenido:** el cliente mantiene acceso directo al `manifest.json` y los fragmentos. Sólo ante 404 del manifest usa `GET /api/v1/public/reader-manifest/{uri}`, que materializa un manifest v2 faltante desde `libroinfo.php`, registra la regeneración pendiente y devuelve el mismo contrato JSON.
+- **Persistencia operativa:** la API realiza un `UPSERT` idempotente en `ebook_regeneration_queue`; esta escritura no representa progreso del usuario y no modifica `ebooks_books`.
 - **Persistencia:** la API v1 actual es read-only y devuelve progreso simulado (`currentPage: 1`, `progressPercent: 0`). El legacy actualiza `user_books.current_page` al visitar una página; cualquier sincronización nueva deberá conservar compatibilidad y definir autenticación, resolución de conflictos y granularidad antes de implementarse.
 - **Compatibilidad:** no hay cambio breaking para el publicador ni para `/leerlibro/...`; `manifest.json` versión 2 y los fragmentos existentes siguen siendo la fuente publicada.
 - **Calidad:** el proyecto aún no tiene framework de tests; las tareas deberán incorporar la infraestructura automatizada mínima y pruebas manuales representativas.

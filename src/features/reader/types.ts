@@ -49,6 +49,7 @@ export class ReaderError extends Error {
     message: string,
     readonly code: "INVALID_URI" | "INVALID_MANIFEST" | "OUT_OF_RANGE" | "HTTP_ERROR",
     readonly cause?: unknown,
+    readonly status?: number,
   ) {
     super(message);
     this.name = "ReaderError";
