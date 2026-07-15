@@ -1,22 +1,41 @@
 ﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { type Book, getHomeBooks } from "../api/books";
+import type { ReactNode } from "react";
+import { type Book, getUserLibrary } from "../api/books";
 import { ApiError } from "../api/client";
 import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
 import { AppShell } from "../layout/AppShell";
+import { useAuth } from "../auth/AuthContext";
+import { getLegacyLoginUrl } from "../api/session";
+import { getBookDetailUrl, getLibraryActions, type LibraryAction } from "../features/library/navigation";
+import { loadAudiobookProgress } from "../features/listen/storage";
 
 const accentClasses = {
   audio: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
   read: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
 };
 
+function LibraryActionLink({ action, className, children }: {
+  action: LibraryAction;
+  className: string;
+  children: ReactNode;
+}) {
+  return <Link aria-label={action.ariaLabel} className={className} to={action.href}>{children}</Link>;
+}
+
 export function PersonalLibraryPage() {
+  const { session } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!session?.authenticated) {
+      window.location.replace(getLegacyLoginUrl("/app/library"));
+      return;
+    }
+
     let cancelled = false;
 
     async function loadBooks() {
@@ -24,7 +43,7 @@ export function PersonalLibraryPage() {
       setError(null);
 
       try {
-        const nextBooks = await getHomeBooks(8);
+        const nextBooks = await getUserLibrary();
         if (!cancelled) {
           setBooks(nextBooks);
         }
@@ -44,7 +63,7 @@ export function PersonalLibraryPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [session?.authenticated]);
 
   const featuredBooks = books.slice(0, 3);
   const recentBooks = books.slice(3, 7);
@@ -85,45 +104,70 @@ export function PersonalLibraryPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {featuredBooks.map((book, index) => {
-                const accent = book.hasAudio ? accentClasses.audio : accentClasses.read;
-                const progress = Math.min(25 + index * 20, 80);
+              {featuredBooks.map((book) => {
+                const audioProgress = loadAudiobookProgress(book.uri);
+                const actions = getLibraryActions(book, audioProgress);
+                const accent = actions.read && actions.listen ? accentClasses.audio : actions.listen ? accentClasses.audio : accentClasses.read;
+                const progress = book.progressPercent;
                 const author = resolveAuthor(book);
+                const detailUrl = getBookDetailUrl(book);
 
                 return (
                   <div key={book.uri} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-[#1c2027]">
                     <div className="flex gap-4">
-                      <Link className="group relative h-36 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-slate-200 shadow-sm dark:bg-slate-700" to={`/book/${book.uri}`}>
-                        <div className="absolute inset-0 z-10 bg-black/0 transition-colors group-hover:bg-black/10" />
-                        <BookCover book={book} className="h-full w-full object-cover" />
-                      </Link>
+                      {actions.cover ? (
+                        <LibraryActionLink action={actions.cover} className="group relative h-36 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-slate-200 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-slate-700">
+                          <div className="absolute inset-0 z-10 bg-black/0 transition-colors group-hover:bg-black/10" />
+                          <BookCover book={book} className="h-full w-full object-cover" />
+                        </LibraryActionLink>
+                      ) : (
+                        <div className="relative h-36 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-200 shadow-sm dark:bg-slate-700">
+                          <BookCover book={book} className="h-full w-full object-cover" />
+                        </div>
+                      )}
                       <div className="flex flex-1 flex-col justify-between py-1">
                         <div>
                           <div className="flex items-start justify-between">
                             <span className={`mb-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${accent}`}>
-                              {book.hasAudio ? "Audiolibro" : "Ebook"}
+                              {actions.read && actions.listen ? "Lectura y audio" : actions.listen ? "Audiolibro" : "Ebook"}
                             </span>
-                            <button className="text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-white">
-                              <span className="material-symbols-outlined text-[20px]">more_vert</span>
-                            </button>
+                            <details className="group/menu relative">
+                              <summary aria-label={`Más acciones para ${book.titulo}`} className="flex cursor-pointer list-none rounded-md text-slate-400 transition-colors hover:text-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:hover:text-white">
+                                <span aria-hidden="true" className="material-symbols-outlined text-[20px]">more_vert</span>
+                              </summary>
+                              <div className="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-[#1c2027]">
+                                <Link className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-700 dark:focus:bg-slate-700" to={detailUrl}>
+                                  <span aria-hidden="true" className="material-symbols-outlined text-[18px]">info</span>
+                                  Información del libro
+                                </Link>
+                              </div>
+                            </details>
                           </div>
-                          <Link to={`/book/${book.uri}`}>
+                          <Link to={detailUrl}>
                             <h3 className="line-clamp-1 text-lg font-bold leading-tight text-slate-900 hover:text-primary dark:text-white">{book.titulo}</h3>
                           </Link>
                           <AuthorLink className="mt-1 block text-sm text-slate-500 dark:text-slate-400" name={author.name} uri={author.uri} />
                         </div>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                            <span>{progress}% completado</span>
-                            <span>{book.readOnline ? "Lectura lista" : "Ficha guardada"}</span>
+                            <span>{actions.read ? `Página ${book.currentPage}` : "Sin lectura"}</span>
+                            <span>{audioProgress > 0 ? `Audio: ${Math.floor(audioProgress / 60)} min` : actions.listen ? "Audio disponible" : "Ficha guardada"}</span>
                           </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                             <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
                           </div>
-                          <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-200 dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47]">
-                            <span className="material-symbols-outlined text-[18px]">{book.hasAudio ? "play_arrow" : "menu_book"}</span>
-                            Continuar
-                          </button>
+                          {actions.read || actions.listen ? (
+                            <div className="flex w-full gap-2">
+                              {[actions.read, actions.listen].filter((action): action is LibraryAction => action !== null).map((action) => (
+                                <LibraryActionLink key={action.kind} action={action} className="flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg bg-slate-100 px-2 py-2 text-center text-xs font-medium text-slate-900 transition-colors hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47] sm:text-sm">
+                                  <span aria-hidden="true" className="material-symbols-outlined shrink-0 text-[18px]">{action.icon}</span>
+                                  <span>{action.label}</span>
+                                </LibraryActionLink>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="py-2 text-center text-xs text-slate-500 dark:text-slate-400">No disponible actualmente</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -151,8 +195,10 @@ export function PersonalLibraryPage() {
                 </a>
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                {recentBooks.map((book) => (
-                  <Link key={book.uri} className="group cursor-pointer space-y-2" to={`/book/${book.uri}`}>
+                {recentBooks.map((book) => {
+                  const coverAction = getLibraryActions(book, loadAudiobookProgress(book.uri)).cover;
+                  return coverAction ? (
+                  <LibraryActionLink key={book.uri} action={coverAction} className="group cursor-pointer space-y-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                     <div className="relative aspect-[2/3] overflow-hidden rounded-lg shadow-md">
                       <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">
                         <span className="material-symbols-outlined text-3xl text-white drop-shadow-lg">visibility</span>
@@ -160,8 +206,14 @@ export function PersonalLibraryPage() {
                       <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     </div>
                     <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{book.titulo}</p>
-                  </Link>
-                ))}
+                  </LibraryActionLink>
+                  ) : (
+                    <div key={book.uri} className="space-y-2">
+                      <div className="relative aspect-[2/3] overflow-hidden rounded-lg shadow-md"><BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover" /></div>
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{book.titulo}</p>
+                    </div>
+                  );
+                })}
                 <div className="flex aspect-[2/3] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 transition-colors hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-slate-800/30">
                   <span className="material-symbols-outlined mb-1 text-3xl">add</span>
                   <span className="text-xs font-medium">AÃ±adir</span>

@@ -6,6 +6,13 @@ namespace PlanetaLibro\Api\V1;
 
 final class Response
 {
+    public static function preventPrivateCaching(): void
+    {
+        header('Cache-Control: private, no-store, max-age=0');
+        header('Pragma: no-cache');
+        header('Vary: Cookie, Origin');
+    }
+
     public static function json(array $payload, int $status = 200): void
     {
         http_response_code($status);

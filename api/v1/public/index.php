@@ -8,6 +8,9 @@ use PlanetaLibro\Api\V1\Controllers\BooksController;
 use PlanetaLibro\Api\V1\Controllers\HealthController;
 use PlanetaLibro\Api\V1\Controllers\ReaderManifestController;
 use PlanetaLibro\Api\V1\Controllers\SearchController;
+use PlanetaLibro\Api\V1\Controllers\SessionController;
+use PlanetaLibro\Api\V1\Controllers\LibraryController;
+use PlanetaLibro\Api\V1\Controllers\ReaderProgressController;
 use PlanetaLibro\Api\V1\Request;
 use PlanetaLibro\Api\V1\Response;
 use PlanetaLibro\Api\V1\Router;
@@ -30,6 +33,9 @@ $booksController = new BooksController($services['booksRepo']);
 $authorsController = new AuthorsController($services['authorsRepo']);
 $searchController = new SearchController($services['searchRepo']);
 $readerManifestController = new ReaderManifestController($services['readerManifestService']);
+$sessionController = new SessionController($services['sessionService']);
+$libraryController = new LibraryController($services['sessionService'], $services['libraryRepo']);
+$readerProgressController = new ReaderProgressController($services['sessionService'], $services['libraryRepo']);
 
 $router->get('/health', [$healthController, 'show']);
 $router->get('/libro/{uri}', [$booksController, 'show']);
@@ -40,6 +46,11 @@ $router->get('/libros/top-leidos', [$booksController, 'topRead']);
 $router->get('/autor/{uri}', [$authorsController, 'show']);
 $router->get('/buscar', [$searchController, 'index']);
 $router->get('/reader-manifest/{uri}', [$readerManifestController, 'show']);
+$router->get('/session', [$sessionController, 'show']);
+$router->get('/login-redirect', [$sessionController, 'redirectToLegacyLogin']);
+$router->get('/library', [$libraryController, 'index']);
+$router->get('/reader-progress/{uri}', [$readerProgressController, 'show']);
+$router->post('/reader-progress/{uri}', [$readerProgressController, 'update']);
 
 try {
     $router->dispatch($request);

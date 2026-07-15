@@ -18,6 +18,15 @@ final class Router
         ];
     }
 
+    public function post(string $pattern, callable $handler): void
+    {
+        $this->routes[] = [
+            'method' => 'POST',
+            'pattern' => $pattern,
+            'handler' => $handler,
+        ];
+    }
+
     public function dispatch(Request $request): void
     {
         foreach ($this->routes as $route) {

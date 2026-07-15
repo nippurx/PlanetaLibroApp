@@ -11,15 +11,19 @@ final class Request
 
     /** @var array<string, mixed> */
     private array $query;
+    /** @var array<string, mixed> */
+    private array $body;
 
     private function __construct(
         string $method,
         string $path,
-        array $query
+        array $query,
+        array $body
     ) {
         $this->method = $method;
         $this->path = $path;
         $this->query = $query;
+        $this->body = $body;
     }
 
     public static function fromGlobals(string $basePath = ''): self
@@ -33,7 +37,16 @@ final class Request
             $path = rtrim($path, '/');
         }
 
-        return new self($method, $path, $_GET);
+        $body = [];
+        $rawBody = file_get_contents('php://input');
+        if (is_string($rawBody) && $rawBody !== '') {
+            $decoded = json_decode($rawBody, true);
+            if (is_array($decoded)) {
+                $body = $decoded;
+            }
+        }
+
+        return new self($method, $path, $_GET, $body);
     }
 
     public function method(): string
@@ -64,6 +77,15 @@ final class Request
         }
 
         return $value;
+    }
+
+    public function bodyInt(string $key, int $min, int $max): ?int
+    {
+        if (!array_key_exists($key, $this->body)) {
+            return null;
+        }
+        $value = filter_var($this->body[$key], FILTER_VALIDATE_INT);
+        return $value !== false && $value >= $min && $value <= $max ? $value : null;
     }
 
     /**

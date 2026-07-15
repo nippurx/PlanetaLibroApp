@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
 type ShellMode = "standard" | "immersive";
 type ShellTheme = "dark" | "light";
@@ -46,6 +47,15 @@ export function AppShell({
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState("");
+  const { session } = useAuth();
+  const user = session?.user;
+  const premium = session?.entitlements.premium ?? false;
+  const initials = user?.username
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "PL";
 
   useEffect(() => {
     const nextQuery = new URLSearchParams(search).get("q") ?? "";
@@ -101,12 +111,12 @@ export function AppShell({
                 PlanetaLibro
               </h1>
               <p className={`text-sm ${dark ? "text-slate-400" : "text-slate-500 dark:text-slate-400"}`}>
-                Premium Member
+                {premium ? "Usuario Premium" : "Usuario registrado"}
               </p>
             </div>
           </div>
           <nav className="flex flex-col gap-2">
-            {navItems.map((item) => {
+            {navItems.filter((item) => item.href !== "/library" || session?.authenticated).map((item) => {
               const active = isActive(pathname, item.href);
               return (
                 <Link
@@ -130,10 +140,14 @@ export function AppShell({
         </div>
         <div className={`border-t p-4 ${dark ? "border-slate-800" : "border-slate-200 dark:border-slate-800"}`}>
           <div className="flex items-center gap-3 rounded-xl px-2 py-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">AR</div>
+            {user?.avatar_url ? (
+              <img alt="" className="h-9 w-9 rounded-full object-cover" src={user.avatar_url} />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">{initials}</div>
+            )}
             <div className="min-w-0">
-              <p className={`truncate text-sm font-medium ${dark ? "text-white" : "text-slate-900 dark:text-white"}`}>Alex Reader</p>
-              <p className={`truncate text-xs ${dark ? "text-slate-400" : "text-slate-500 dark:text-slate-400"}`}>Lector sustentable</p>
+              <p className={`truncate text-sm font-medium ${dark ? "text-white" : "text-slate-900 dark:text-white"}`}>{user?.username ?? "Usuario"}</p>
+              <p className={`truncate text-xs ${dark ? "text-slate-400" : "text-slate-500 dark:text-slate-400"}`}>{premium ? "Premium" : "Plan gratuito"}</p>
             </div>
           </div>
         </div>
@@ -198,7 +212,7 @@ export function AppShell({
               : "border-slate-200 bg-white/95 dark:border-slate-800 dark:bg-[#111418]/95"
           } backdrop-blur-md`}
         >
-          {mobileNavItems.map((item) => {
+          {mobileNavItems.filter((item) => item.href !== "/library" || session?.authenticated).map((item) => {
             const active = isActive(pathname, item.href);
             return (
               <Link

@@ -44,6 +44,11 @@ export function sanitizeFragment(html: string, readerRoot: string, blockStart = 
       element.decoding = "async";
     }
   });
+  main.querySelectorAll("p,h1,h2,h3,h4,h5,h6").forEach((element) => {
+    if (!element.textContent?.trim() && !element.querySelector("img")) {
+      element.remove();
+    }
+  });
   let index = blockStart;
   main.querySelectorAll(BLOCK_SELECTOR).forEach((block) => block.setAttribute("data-reader-block", String(index++)));
   return { html: main.innerHTML, blockCount: index - blockStart };

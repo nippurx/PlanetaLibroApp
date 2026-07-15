@@ -230,7 +230,12 @@ export function AudiobookPlayerPage() {
                         ref={playerRef}
                         videoId={videoId}
                         title={book.titulo}
-                        onReady={() => setIsReady(true)}
+                        onReady={() => {
+                          if (savedProgressSeconds > 0) {
+                            playerRef.current?.seekTo(savedProgressSeconds);
+                          }
+                          setIsReady(true);
+                        }}
                         onPlayStateChange={setIsPlaying}
                       />
                     </div>

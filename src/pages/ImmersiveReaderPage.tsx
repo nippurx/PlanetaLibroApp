@@ -7,6 +7,8 @@ import { loadPreferences, loadProgress, savePreferences, saveProgress } from "..
 import { ReaderAnchor, ReaderManifest, ReaderPreferences } from "../features/reader/types";
 import { AppShell } from "../layout/AppShell";
 import { ReaderBrandBar } from "../components/ReaderBrandBar";
+import { useAuth } from "../auth/AuthContext";
+import { getReaderProgress, saveReaderProgress } from "../api/readerProgress";
 
 const LOAD_BATCH = 8;
 
@@ -21,6 +23,7 @@ function themeColors(theme: ReaderPreferences["theme"]): { background: string; f
 }
 
 export function ImmersiveReaderPage() {
+  const { session } = useAuth();
   const { libro_uri = "", page } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,6 +44,7 @@ export function ImmersiveReaderPage() {
   const [announcement, setAnnouncement] = useState("");
   const [scrollProgress, setScrollProgress] = useState(0);
   const [visibleFragmentPage, setVisibleFragmentPage] = useState(1);
+  const [serverPageReady, setServerPageReady] = useState(false);
   const [restoredAnchor, setRestoredAnchor] = useState<ReaderAnchor | null>(null);
   const [layoutReady, setLayoutReady] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -53,6 +57,7 @@ export function ImmersiveReaderPage() {
   const pendingFragmentPage = useRef<number | null>(null);
   const pendingIndexPrefetch = useRef<{ start: number; end: number } | null>(null);
   const navigateAfterLayout = useRef(0);
+  const lastServerPage = useRef<{ uri: string; page: number } | null>(null);
   const colors = themeColors(preferences.theme);
   const loadedPages = useMemo(() => [...fragments.keys()].sort((a, b) => a - b), [fragments]);
   const firstLoadedPage = loadedPages[0];
@@ -109,14 +114,18 @@ export function ImmersiveReaderPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true); setError(null); setManifest(null); setFragments(new Map()); setLayoutReady(false); setVisualPage(0); setVisibleFragmentPage(1);
+    setLoading(true); setError(null); setManifest(null); setFragments(new Map()); setLayoutReady(false); setVisualPage(0); setVisibleFragmentPage(1); setServerPageReady(false);
     loadManifest(libro_uri, controller.signal)
       .then(async (nextManifest) => {
         setManifest(nextManifest);
         const local = loadProgress(libro_uri);
         setRestoredAnchor(page === undefined ? local?.anchor ?? null : null);
-        const start = Math.min(nextManifest.pages, requestedPage || nextManifest.paginicio);
-        pendingFragmentPage.current = page === undefined ? null : start;
+        const savedPage = page === undefined && session?.authenticated
+          ? await getReaderProgress(libro_uri).catch(() => null)
+          : null;
+        const preferredPage = savedPage ?? (page === undefined ? nextManifest.paginicio : requestedPage);
+        const start = Math.min(nextManifest.pages, preferredPage);
+        pendingFragmentPage.current = savedPage !== null || page !== undefined ? start : null;
         const from = page === undefined ? Math.max(1, start - 1) : start;
         const to = Math.min(nextManifest.pages, start + LOAD_BATCH - 1);
         const values = await Promise.all(Array.from({ length: to - from + 1 }, (_, offset) => from + offset).map(async (number) => [number, await loadFragment(libro_uri, number, nextManifest.pages, controller.signal)] as const));
@@ -130,7 +139,7 @@ export function ImmersiveReaderPage() {
       })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [libro_uri, page, requestedPage]);
+  }, [libro_uri, page, requestedPage, session?.authenticated]);
 
   const sanitizedHtml = useMemo(() => {
     let blockIndex = 0;
@@ -347,6 +356,32 @@ export function ImmersiveReaderPage() {
     const nextPage = firstVisibleFragment();
     setVisibleFragmentPage((current) => current === nextPage ? current : nextPage);
   }, [firstLoadedPage, layoutReady, preferences.mode, sanitizedHtml, scrollProgress, visualPage]);
+
+  useEffect(() => {
+    if (!layoutReady || !manifest) return;
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        const nextPage = firstVisibleFragment();
+        setVisibleFragmentPage(nextPage);
+        setServerPageReady(true);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      if (secondFrame) cancelAnimationFrame(secondFrame);
+    };
+  }, [layoutReady, manifest, sanitizedHtml, visualPage]);
+
+  useEffect(() => {
+    if (!session?.authenticated || !serverPageReady || !manifest) return;
+    const previous = lastServerPage.current;
+    if (previous?.uri === libro_uri && previous.page === visibleFragmentPage) return;
+    lastServerPage.current = { uri: libro_uri, page: visibleFragmentPage };
+    void saveReaderProgress(libro_uri, visibleFragmentPage).catch(() => {
+      lastServerPage.current = previous;
+    });
+  }, [libro_uri, manifest, serverPageReady, session?.authenticated, visibleFragmentPage]);
 
   const fragmentProgress = manifest
     ? Math.min(100, Math.max(0, Math.round((visibleFragmentPage / manifest.pages) * 100)))

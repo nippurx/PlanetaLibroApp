@@ -135,6 +135,7 @@ export type AudiobookPlayerHandle = {
   pause: () => void;
   stop: () => void;
   seekBy: (seconds: number) => void;
+  seekTo: (seconds: number) => void;
   getCurrentTime: () => number;
 };
 
@@ -182,6 +183,9 @@ export const AudiobookPlayer = forwardRef<AudiobookPlayerHandle, AudiobookPlayer
         const current = playerRef.current?.getCurrentTime() || 0;
         const target = Math.max(0, current + seconds);
         playerRef.current?.seekTo(target, true);
+      },
+      seekTo: (seconds: number) => {
+        playerRef.current?.seekTo(Math.max(0, seconds), true);
       },
       getCurrentTime: () => playerRef.current?.getCurrentTime() || 0,
     }),

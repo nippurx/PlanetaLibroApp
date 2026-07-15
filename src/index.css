@@ -76,9 +76,18 @@
 .reader-viewport.is-paged .reader-content { min-width: 0; height: 100%; column-width: var(--reader-column-width, calc(100vw - 2 * max(1.5rem, calc((100vw - var(--reader-measure)) / 2)))); column-gap: var(--reader-column-gap, calc(2 * max(1.5rem, calc((100vw - var(--reader-measure)) / 2)))); column-fill: auto; overflow-wrap: anywhere; transform: translate3d(calc(-1 * var(--reader-page-offset)), 0, 0); transition: transform .16s ease-out; will-change: transform; }
 .reader-viewport.is-scroll .reader-content { max-width: var(--reader-measure); margin: 0 auto; padding-bottom: 2.75rem; }
 .reader-content p { margin: 0 0 1em; orphans: 3; widows: 3; }
-.reader-content h1, .reader-content h2, .reader-content h3, .reader-content h4 { break-after: avoid; line-height: 1.2; margin: 1.2em 0 .65em; }
+.reader-content h1, .reader-content h2, .reader-content h3, .reader-content h4, .reader-content h5, .reader-content h6 { break-after: avoid; line-height: 1.2; margin: 1.2em 0 .65em; font-weight: 700; }
+.reader-content h1 { font-size: 2em; }
+.reader-content h2 { font-size: 1.65em; }
+.reader-content h3 { font-size: 1.4em; }
+.reader-content h4 { font-size: 1.2em; }
+.reader-content h5 { font-size: 1.05em; }
+.reader-content h6 { font-size: 1em; font-weight: 600; }
 .reader-content blockquote { margin: 1.2em 0; padding-left: 1.2em; border-left: 3px solid color-mix(in srgb, var(--reader-fg) 35%, transparent); font-style: italic; }
 .reader-content img { display: block; max-width: 100%; max-height: calc(100dvh - var(--reader-brand-bar-total) - 8rem); width: auto; height: auto; margin: .5rem auto 1.25rem; break-inside: avoid; }
+.reader-viewport.is-paged .reader-content p:has(> img:only-child) { margin: 0; break-inside: avoid; }
+.reader-viewport.is-paged .reader-content p:has(> img:only-child) > img { margin: 0 auto; }
+.reader-viewport.is-paged .reader-fragment + .reader-fragment:has(> :first-child:is(h1, h2, h3, h4, h5, h6)) { break-before: column; }
 .reader-content a { color: #1268a8; text-decoration: underline; }
 .reader-brand-bar { position: fixed; z-index: 70; top: 0; left: 0; width: 100%; height: var(--reader-brand-bar-total); padding-top: env(safe-area-inset-top); background: #000; color: #fff; pointer-events: none; user-select: none; }
 .reader-brand-bar-content { position: relative; height: var(--reader-brand-bar-height); }

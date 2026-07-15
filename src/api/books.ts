@@ -31,6 +31,11 @@ type BookListApiItem = {
     epub: boolean;
     mobi: boolean;
   };
+  reading?: {
+    current_page: number;
+    first_read: string | null;
+    last_read: string | null;
+  };
 };
 
 type BookDetailApiItem = Omit<BookListApiItem, "autor"> & {
@@ -106,6 +111,7 @@ export type Book = {
   updatedAt: string | null;
   tags: BookTag[];
   currentPage: number;
+  readingStarted: boolean;
   progressPercent: number;
   currentChapter: string;
 };
@@ -261,10 +267,16 @@ function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
     idioma: "idioma" in apiBook ? apiBook.idioma : null,
     updatedAt: "updated_at" in apiBook ? apiBook.updated_at : null,
     tags: "tags" in apiBook ? normalizeTags(apiBook.tags) : [],
-    currentPage: 1,
+    currentPage: apiBook.reading?.current_page ?? 1,
+    readingStarted: Boolean(apiBook.reading?.first_read) || (apiBook.reading?.current_page ?? 1) > 1,
     progressPercent: 0,
     currentChapter: "Capitulo inicial",
   };
+}
+
+export async function getUserLibrary(): Promise<Book[]> {
+  const response = await apiClient.get<ApiEnvelope<{ items: BookListApiItem[] }>>("/public/library");
+  return response.data.items.map(mapBook);
 }
 
 export async function getBookByUri(uri: string): Promise<Book> {

@@ -43,6 +43,10 @@ function buildUrl(path: string): string {
   return `${getRuntimeBase()}${normalizedPath}`;
 }
 
+export function buildApiUrl(path: string): string {
+  return buildUrl(path);
+}
+
 async function parseResponseBody(response: Response): Promise<unknown> {
   const contentType = response.headers.get("content-type") ?? "";
 
