@@ -1,7 +1,7 @@
 import { ReaderPreferences, ReaderProgress } from "./types";
 
 const PREFERENCES_KEY = "reader-preferences:v1";
-const DEFAULTS: ReaderPreferences = { version: 1, mode: "paged", theme: "sepia", font: "serif", fontSize: 20, lineHeight: 1.7, measure: 720 };
+const DEFAULTS: ReaderPreferences = { version: 1, mode: "paged", theme: "sepia", font: "serif", fontSize: 20, lineHeight: 1.5, measure: 720 };
 
 export function loadPreferences(): ReaderPreferences {
   try {

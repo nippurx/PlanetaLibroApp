@@ -125,7 +125,7 @@ export function PersonalLibraryPage() {
                           <BookCover book={book} className="h-full w-full object-cover" />
                         </div>
                       )}
-                      <div className="flex flex-1 flex-col justify-between py-1">
+                      <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
                         <div>
                           <div className="flex items-start justify-between">
                             <span className={`mb-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${accent}`}>
@@ -149,15 +149,15 @@ export function PersonalLibraryPage() {
                           <AuthorLink className="mt-1 block text-sm text-slate-500 dark:text-slate-400" name={author.name} uri={author.uri} />
                         </div>
                         <div className="space-y-3">
-                          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                             <span>{actions.read ? `Página ${book.currentPage}` : "Sin lectura"}</span>
-                            <span>{audioProgress > 0 ? `Audio: ${Math.floor(audioProgress / 60)} min` : actions.listen ? "Audio disponible" : "Ficha guardada"}</span>
+                            {actions.listen ? <span>{audioProgress > 0 ? `Audio: ${Math.floor(audioProgress / 60)} min` : "Audio disponible"}</span> : null}
                           </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                             <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
                           </div>
                           {actions.read || actions.listen ? (
-                            <div className="flex w-full gap-2">
+                            <div className="flex w-full flex-col gap-2 sm:flex-row">
                               {[actions.read, actions.listen].filter((action): action is LibraryAction => action !== null).map((action) => (
                                 <LibraryActionLink key={action.kind} action={action} className="flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg bg-slate-100 px-2 py-2 text-center text-xs font-medium text-slate-900 transition-colors hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47] sm:text-sm">
                                   <span aria-hidden="true" className="material-symbols-outlined shrink-0 text-[18px]">{action.icon}</span>
