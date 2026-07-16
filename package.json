@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:reader": "vite --host 0.0.0.0",
+    "lint": "tsc -p tsconfig.app.json --noEmit",
+    "test": "node --test tests/reader-gestures.test.ts",
     "build": "tsc -b && vite build",
     "build:preview": "tsc -b && vite build --mode preview",
     "preview": "vite preview --mode preview --host 0.0.0.0",

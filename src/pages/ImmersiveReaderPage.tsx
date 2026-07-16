@@ -1,5 +1,5 @@
-import { CSSProperties, PointerEvent as ReactPointerEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { createAnchor, resolveAnchor } from "../features/reader/anchors";
 import { sanitizeFragment } from "../features/reader/sanitize";
 import { getLegacyReaderUrl, getReaderRoot, loadFragment, loadManifest } from "../features/reader/source";
@@ -9,11 +9,14 @@ import { AppShell } from "../layout/AppShell";
 import { ReaderBrandBar } from "../components/ReaderBrandBar";
 import { useAuth } from "../auth/AuthContext";
 import { getReaderProgress, saveReaderProgress } from "../api/readerProgress";
+import { useReaderGestures } from "../features/reader/useReaderGestures";
 
 const LOAD_BATCH = 8;
 
 function readableTitle(uri: string): string {
-  return uri.split("-").slice(2).join(" ").replace(/\b\w/g, (letter) => letter.toUpperCase()) || uri;
+  const words = uri.split("-");
+  const titleStart = ["y", "e", "o", "u"].includes(words[2]?.toLowerCase()) ? 1 : 2;
+  return words.slice(titleStart).join(" ").replace(/\b\w/g, (letter) => letter.toUpperCase()) || uri;
 }
 
 function themeColors(theme: ReaderPreferences["theme"]): { background: string; foreground: string; muted: string; panel: string } {
@@ -25,8 +28,6 @@ function themeColors(theme: ReaderPreferences["theme"]): { background: string; f
 export function ImmersiveReaderPage() {
   const { session } = useAuth();
   const { libro_uri = "", page } = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
   const requestedPage = Math.max(1, Number.parseInt(page ?? "1", 10) || 1);
   const [manifest, setManifest] = useState<ReaderManifest | null>(null);
   const [fragments, setFragments] = useState<Map<number, string>>(new Map());
@@ -35,7 +36,7 @@ export function ImmersiveReaderPage() {
   const [visualPages, setVisualPages] = useState(1);
   const [visualPageWidth, setVisualPageWidth] = useState(1);
   const [columnGeometry, setColumnGeometry] = useState<{ width: number; gap: number } | null>(null);
-  const [controlsVisible, setControlsVisible] = useState(true);
+  const [controlsVisible, setControlsVisible] = useState(false);
   const [panel, setPanel] = useState<"index" | "preferences" | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -51,7 +52,7 @@ export function ImmersiveReaderPage() {
   const contentRef = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const panelButtonRef = useRef<HTMLButtonElement>(null);
-  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const gestureLock = useRef<number | null>(null);
   const hideTimer = useRef<number | null>(null);
   const pendingAnchor = useRef<ReaderAnchor | null>(null);
   const pendingFragmentPage = useRef<number | null>(null);
@@ -329,8 +330,9 @@ export function ImmersiveReaderPage() {
 
   function leaveReader() {
     persistProgress();
-    if (location.key !== "default") navigate(-1);
-    else navigate(`/book/${libro_uri}`);
+    // TEMPORAL: para restaurar el retorno original, volver a usar navigate(-1)
+    // cuando location.key !== "default" y navigate(`/book/${libro_uri}`) en caso contrario.
+    window.location.assign(`https://planetalibro.net/libro/${encodeURIComponent(libro_uri)}`);
   }
 
   function firstVisibleFragment(): number {
@@ -449,20 +451,34 @@ export function ImmersiveReaderPage() {
     }
   }
 
-  function onPointerDown(event: ReactPointerEvent) { pointerStart.current = { x: event.clientX, y: event.clientY }; }
-  function onPointerUp(event: ReactPointerEvent) {
-    const start = pointerStart.current; pointerStart.current = null;
-    if (!start || preferences.mode !== "paged") return;
-    const dx = event.clientX - start.x; const dy = event.clientY - start.y;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { void goToVisualPage(visualPage + (dx < 0 ? 1 : -1)); return; }
-    const target = event.target as HTMLElement;
-    if (target.closest("a,button,input,select")) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const relativeX = event.clientX - rect.left;
-    if (relativeX < rect.width * 0.28) void goToVisualPage(visualPage - 1);
-    else if (relativeX > rect.width * 0.72) void goToVisualPage(visualPage + 1);
-    else { setControlsVisible((value) => !value); scheduleHide(); }
-  }
+  const navigateByGesture = useCallback((delta: -1 | 1) => {
+    if (gestureLock.current !== null) return;
+    gestureLock.current = window.setTimeout(() => { gestureLock.current = null; }, 180);
+    void goToVisualPage(visualPage + delta);
+  }, [goToVisualPage, visualPage]);
+
+  useEffect(() => () => {
+    if (gestureLock.current !== null) window.clearTimeout(gestureLock.current);
+  }, []);
+
+  const toggleControls = useCallback(() => {
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    if (controlsVisible) setControlsVisible(false);
+    else {
+      setControlsVisible(true);
+      scheduleHide();
+    }
+  }, [controlsVisible, scheduleHide]);
+
+  const readerGestures = useReaderGestures({
+    containerRef: viewportRef,
+    enabled: preferences.mode === "paged" && panel === null && !repaginating && !loadingMore,
+    canGoPrevious: visualPage > 0 || firstLoadedPage > 1,
+    canGoNext: visualPage < visualPages - 1 || Boolean(manifest && lastLoadedPage < manifest.pages),
+    onPreviousPage: () => navigateByGesture(-1),
+    onNextPage: () => navigateByGesture(1),
+    onToggleControls: toggleControls,
+  });
 
   const readerStyle = {
     "--reader-bg": colors.background, "--reader-fg": colors.foreground, "--reader-muted": colors.muted, "--reader-panel": colors.panel,
@@ -479,17 +495,17 @@ export function ImmersiveReaderPage() {
 
   return (
     <AppShell mode="immersive">
-      <div className={`reader-shell reader-theme-${preferences.theme} reader-font-${preferences.font} ${repaginating ? "is-repaginating" : ""}`} style={readerStyle} onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerMove={() => { setControlsVisible(true); scheduleHide(); }}>
+      <div className={`reader-shell reader-theme-${preferences.theme} reader-font-${preferences.font} ${repaginating ? "is-repaginating" : ""}`} style={readerStyle}>
         <ReaderBrandBar />
         <header className={`reader-toolbar reader-toolbar-top ${controlsVisible ? "is-visible" : ""}`}>
-          <button aria-label="Volver a la pantalla anterior" onClick={leaveReader}><span className="material-symbols-outlined">arrow_back</span></button>
+          <button aria-label="Volver a la ficha del libro" onClick={leaveReader}><span className="material-symbols-outlined">arrow_back</span></button>
           <div className="reader-title"><strong>{readableTitle(libro_uri)}</strong><span>{chapter}</span></div>
           <button aria-label="Compartir ubicación de lectura" onClick={() => { void shareLocation(); }}><span className="material-symbols-outlined">share</span></button>
           <button ref={panelButtonRef} aria-expanded={panel === "index"} aria-label="Abrir índice" onClick={() => setPanel(panel === "index" ? null : "index")}><span className="material-symbols-outlined">toc</span></button>
           <button aria-expanded={panel === "preferences"} aria-label="Abrir preferencias" onClick={() => setPanel(panel === "preferences" ? null : "preferences")}><span className="material-symbols-outlined">text_fields</span></button>
         </header>
 
-        <main ref={viewportRef} className={`reader-viewport is-${preferences.mode}`} aria-label="Contenido del libro" onScroll={(event) => { if (preferences.mode === "scroll") { const element = event.currentTarget; setScrollProgress(element.scrollTop / Math.max(1, element.scrollHeight - element.clientHeight)); } }}>
+        <main ref={viewportRef} className={`reader-viewport is-${preferences.mode}`} aria-label="Contenido del libro" {...readerGestures} onScroll={(event) => { if (preferences.mode === "scroll") { const element = event.currentTarget; setScrollProgress(element.scrollTop / Math.max(1, element.scrollHeight - element.clientHeight)); } }}>
           <article ref={contentRef} className="reader-content" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
         </main>
 

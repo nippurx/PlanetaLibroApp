@@ -13,6 +13,21 @@ En el modo predeterminado, el sistema SHALL avanzar o retroceder exactamente una
 - **WHEN** el usuario toca o hace clic en el lateral de avance
 - **THEN** el lector muestra exactamente la página visual siguiente
 
+#### Scenario: Zonas relativas al área de lectura
+- **GIVEN** un viewport de lectura con márgenes o superficies externas
+- **WHEN** el usuario toca el 20 % izquierdo, el 60 % central o el 20 % derecho del viewport
+- **THEN** el lector retrocede, alterna controles o avanza respectivamente usando coordenadas relativas al viewport
+
+#### Scenario: Apertura inmersiva y controles superpuestos
+- **GIVEN** que el lector termina de preparar el contenido
+- **WHEN** se presenta la primera página visual
+- **THEN** las herramientas están ocultas y el contenido aprovecha el alto disponible sin reservar espacio para las barras revelables
+
+#### Scenario: Conflicto con scroll, selección o controles
+- **GIVEN** una interacción vertical, prolongada, multitáctil, cancelada, con selección activa o iniciada sobre un elemento interactivo
+- **WHEN** finaliza el Pointer Event
+- **THEN** el lector no cambia de página ni alterna controles y conserva el comportamiento nativo correspondiente
+
 #### Scenario: Retroceso mediante swipe
 - **GIVEN** que existe contenido anterior
 - **WHEN** el usuario realiza el swipe horizontal de retroceso

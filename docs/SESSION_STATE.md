@@ -25,6 +25,9 @@ Estas verificaciones son resultados parciales y no completan todavía la checkli
 
 ## Decisiones tomadas
 
+- **Superficie de lectura inmersiva:** las herramientas comienzan ocultas y se superponen al contenido cuando se revelan. El viewport ya no reserva sus alturas: sólo compensa la barra de marca persistente, safe areas y un margen mínimo de 16–20 px, maximizando el alto útil en paginado y continuo.
+- **Gestos robustecidos:** la navegación paginada usa `useReaderGestures` sobre el viewport real con zonas 20/60/20, swipe de 45 px, predominio de eje 1,25, pulsación larga desde 500 ms y bloqueo de repetición de 180 ms. Descarta selección, interactivos, `pointercancel`, multitouch y desplazamiento vertical; el modo continuo y los paneles no activan gestos. La clasificación pura tiene 17 pruebas Node y reutiliza `goToVisualPage` para límites, carga y progreso.
+
 - **Formato publicado sin cambios:** el reader consume `manifest.json` v2, `pag-N.html` y assets existentes. `pag-N` no es identidad del progreso ni página visual; la barra inferior puede mostrar el primer fragmento visible como `Pág. N de total` junto a porcentaje, igual que Compartir.
 - **Compatibilidad legacy bajo demanda:** ante 404 del manifest directo, la API valida `libroinfo.php`, materializa atómicamente un manifest ausente, devuelve el JSON sin tercera solicitud y registra el libro en `ebook_regeneration_queue` para regeneración posterior con `epub2html2`. No sobrescribe manifests v2.
 - **Mismo origen en producción:** la app vive en `https://planetalibro.net/app/` y los libros en `https://planetalibro.net/lector/...`; CORS no bloquea producción. Desarrollo y preview usan proxy Vite para `/lector`.

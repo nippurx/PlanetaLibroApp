@@ -68,13 +68,13 @@
 .reader-font-serif { font-family: "Newsreader", Georgia, serif; }
 .reader-font-sans { font-family: "Noto Sans", Arial, sans-serif; }
 .reader-font-accessible { font-family: Verdana, "Noto Sans", sans-serif; }
-.reader-viewport { position: absolute; inset: 0; padding: calc(var(--reader-brand-bar-total) + 5rem) max(1.5rem, calc((100vw - var(--reader-measure)) / 2)) calc(2.75rem + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+.reader-viewport { position: absolute; inset: 0; padding: calc(var(--reader-brand-bar-total) + 1.25rem) max(1.5rem, calc((100vw - var(--reader-measure)) / 2)) max(1.25rem, env(safe-area-inset-bottom)); overscroll-behavior: contain; }
 .reader-viewport.is-paged { overflow: hidden; scroll-behavior: smooth; }
 .reader-viewport.is-scroll { overflow-x: hidden; overflow-y: auto; }
 .reader-content { font-size: var(--reader-font-size); line-height: var(--reader-line-height); text-align: left; color: var(--reader-fg); }
 .reader-shell.is-repaginating .reader-content { visibility: hidden; }
 .reader-viewport.is-paged .reader-content { min-width: 0; height: 100%; column-width: var(--reader-column-width, calc(100vw - 2 * max(1.5rem, calc((100vw - var(--reader-measure)) / 2)))); column-gap: var(--reader-column-gap, calc(2 * max(1.5rem, calc((100vw - var(--reader-measure)) / 2)))); column-fill: auto; overflow-wrap: anywhere; transform: translate3d(calc(-1 * var(--reader-page-offset)), 0, 0); transition: transform .16s ease-out; will-change: transform; }
-.reader-viewport.is-scroll .reader-content { max-width: var(--reader-measure); margin: 0 auto; padding-bottom: 2.75rem; }
+.reader-viewport.is-scroll .reader-content { max-width: var(--reader-measure); margin: 0 auto; padding-bottom: 1rem; }
 .reader-content p { margin: 0 0 1em; orphans: 3; widows: 3; }
 .reader-content h1, .reader-content h2, .reader-content h3, .reader-content h4, .reader-content h5, .reader-content h6 { break-after: avoid; line-height: 1.2; margin: 1.2em 0 .65em; font-weight: 700; }
 .reader-content h1 { font-size: 2em; }
@@ -136,8 +136,13 @@
 .reader-state a { color: #0d5f9a; font-weight: 700; }
 
 @media (max-width: 640px) {
-  .reader-viewport { padding-left: 1.2rem; padding-right: 1.2rem; }
+  .reader-viewport { padding-top: calc(var(--reader-brand-bar-total) + 1rem); padding-right: 1.2rem; padding-bottom: max(1rem, env(safe-area-inset-bottom)); padding-left: 1.2rem; }
   .reader-viewport.is-paged .reader-content { column-width: var(--reader-column-width, calc(100vw - 2.4rem)); column-gap: var(--reader-column-gap, 2.4rem); }
+  .reader-toolbar-top { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 2rem 1rem; row-gap: 4px; height: 60px; min-height: 60px; padding: 4px max(10px, env(safe-area-inset-right)) 4px max(10px, env(safe-area-inset-left)); }
+  .reader-toolbar-top > button { grid-row: 1; justify-self: center; width: 2rem; height: 2rem; }
+  .reader-toolbar-top .reader-title { grid-column: 1 / -1; grid-row: 2; width: 100%; display: block; text-align: center; font-size: .8rem; line-height: 1rem; pointer-events: none; }
+  .reader-toolbar-top .reader-title strong { display: block; white-space: nowrap; overflow: visible; text-overflow: clip; }
+  .reader-toolbar-top .reader-title span { display: none; }
   .reader-page-button { width: 2rem; background: transparent; }
 }
 

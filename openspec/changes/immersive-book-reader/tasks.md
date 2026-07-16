@@ -45,12 +45,14 @@
 - [x] 5.1 Diseñar y probar un ancla versionada que combine ruta estructural, offset y contexto textual, sin persistir `pag-N`, página visual, columna ni píxeles como identidad principal.
 - [x] 5.2 Implementar captura y resolución del ancla con coincidencia exacta, contextual/estructural y fallback cercano para contenido regenerado.
 - [x] 5.3 Implementar avance y retroceso de exactamente una página visual mediante toque/clic lateral, swipe horizontal, controles, Page Up/Down, Space y flechas sin interferir con elementos interactivos.
+- [x] 5.3.1 Robustecer Pointer Events con zonas 20/60/20 relativas al viewport, bloqueo de eje, pulsación larga, selección, `pointercancel`, multitouch, interactivos y bloqueo breve de repetición.
 - [x] 5.4 Implementar navegación vertical natural y por teclado cuando el modo scroll esté activo, conservando la misma ancla.
 - [x] 5.5 Implementar índice jerárquico desde `manifest.index`, filtrado de destinos inválidos y salto con foco/anuncio al destino.
 - [x] 5.6 Implementar detección de capítulo actual desde el índice/chapters válido.
 - [x] 5.7 Implementar porcentaje normalizado desde el flujo/ancla, independiente de `pag-N` y sin regresiones bruscas por precarga.
 - [x] 5.8 Implementar regreso a la ficha u origen y conservación del ancla al abrir/cerrar paneles.
 - [ ] 5.9 Añadir pruebas automatizadas de toque lateral, swipe, teclado, límites, cambio de modo, índice multinivel, capítulo y porcentaje.
+- [x] 5.9.1 Añadir pruebas unitarias de clasificación gestual para zonas, swipes, umbral, eje vertical, interactivos, selección, límites, cancelación, multitouch y pulsación larga.
 - [x] 5.10 Implementar URL raíz estable, apertura explícita que comience exactamente en el fragmento solicitado y Compartir basado en el primer fragmento visible, con fallback de copiado cuando Web Share no esté disponible.
 - [x] 5.11 Implementar shell HTML y rewrite desplegables con la app para metadata Open Graph de URLs compartibles, resolviendo la tapa desde assets confinados del manifest sin ejecutar PHP legacy.
 
