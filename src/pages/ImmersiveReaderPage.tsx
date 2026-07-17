@@ -472,9 +472,9 @@ export function ImmersiveReaderPage() {
 
   const readerGestures = useReaderGestures({
     containerRef: viewportRef,
-    enabled: preferences.mode === "paged" && panel === null && !repaginating && !loadingMore,
-    canGoPrevious: visualPage > 0 || firstLoadedPage > 1,
-    canGoNext: visualPage < visualPages - 1 || Boolean(manifest && lastLoadedPage < manifest.pages),
+    enabled: panel === null && !repaginating && !loadingMore,
+    canGoPrevious: preferences.mode === "paged" && (visualPage > 0 || firstLoadedPage > 1),
+    canGoNext: preferences.mode === "paged" && (visualPage < visualPages - 1 || Boolean(manifest && lastLoadedPage < manifest.pages)),
     onPreviousPage: () => navigateByGesture(-1),
     onNextPage: () => navigateByGesture(1),
     onToggleControls: toggleControls,

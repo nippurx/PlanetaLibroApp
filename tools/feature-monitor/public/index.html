@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feature Portfolio Monitor</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div><p class="eyebrow">Portfolio multiproyecto</p><h1>Feature Monitor</h1><p>Ideas, decisiones y progreso OpenSpec en un solo lugar.</p></div>
+      <div class="summary" aria-label="Resumen"><strong id="visible-count">—</strong><span>features visibles</span></div>
+    </header>
+
+    <section class="toolbar" aria-label="Filtros del portfolio">
+      <label class="search"><span>Buscar</span><input id="search" type="search" placeholder="Título, resumen, área o ID…"></label>
+      <label><span>Proyecto</span><select id="project-filter"><option value="">Todos</option></select></label>
+      <label><span>Estado</span><select id="status-filter"><option value="">Todos</option></select></label>
+      <label><span>Prioridad</span><select id="priority-filter"><option value="">Todas</option></select></label>
+      <label><span>Área</span><select id="area-filter"><option value="">Todas</option></select></label>
+      <label><span>Orden</span><select id="sort"><option value="priority">Prioridad</option><option value="updated">Actualización</option><option value="title">Título</option></select></label>
+    </section>
+
+    <p id="feedback" class="feedback" role="status" aria-live="polite">Cargando portfolio…</p>
+    <section id="project-errors" class="project-errors" aria-label="Problemas de proyectos" hidden></section>
+    <section id="features" class="grid" aria-label="Features"></section>
+    <section id="empty" class="empty" hidden><h2>No hay coincidencias</h2><p>Prueba con otros filtros o una búsqueda más amplia.</p></section>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

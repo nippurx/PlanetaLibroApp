@@ -24,6 +24,11 @@ function gesture(overrides: Partial<ReaderGestureEvaluation> = {}) {
 
 test("toque al 10 % retrocede", () => assert.equal(gesture({ startX: 100, endX: 100 }), "previous"));
 test("toque al 50 % alterna controles", () => assert.equal(gesture(), "toggle-controls"));
+test("en modo continuo el toque central alterna controles aunque la navegacion lateral este deshabilitada", () => {
+  assert.equal(gesture({ canGoPrevious: false, canGoNext: false }), "toggle-controls");
+  assert.equal(gesture({ startX: 100, endX: 100, canGoPrevious: false, canGoNext: false }), "none");
+  assert.equal(gesture({ startX: 900, endX: 900, canGoPrevious: false, canGoNext: false }), "none");
+});
 test("toque al 90 % avanza", () => assert.equal(gesture({ startX: 900, endX: 900 }), "next"));
 test("swipe hacia la izquierda avanza", () => assert.equal(gesture({ endX: 430 }), "next"));
 test("swipe hacia la derecha retrocede", () => assert.equal(gesture({ endX: 570 }), "previous"));

@@ -62,7 +62,7 @@
   background: rgba(100, 116, 139, 0.7);
 }
 
-.reader-shell { --reader-brand-bar-height: 44px; --reader-brand-bar-total: calc(var(--reader-brand-bar-height) + env(safe-area-inset-top)); position: relative; width: 100%; height: 100dvh; overflow: hidden; touch-action: pan-y; background: var(--reader-bg); color: var(--reader-fg); transition: background-color .2s, color .2s; }
+.reader-shell { --reader-brand-bar-height: 44px; --reader-brand-bar-total: calc(var(--reader-brand-bar-height) + env(safe-area-inset-top)); --reader-h1-min: 1.625rem; --reader-h1-factor: 1.65; --reader-h1-max: 2.75rem; --reader-h2-min: 1.4375rem; --reader-h2-factor: 1.45; --reader-h2-max: 2.5rem; --reader-h3-min: 1.25rem; --reader-h3-factor: 1.3; --reader-h3-max: 2.25rem; --reader-h4-min: 1.125rem; --reader-h4-factor: 1.15; --reader-h4-max: 2.125rem; --reader-h5-min: 1rem; --reader-h5-factor: 1.05; --reader-h5-max: 2.0625rem; --reader-h6-min: .9375rem; --reader-h6-factor: 1; --reader-h6-max: 2rem; position: relative; width: 100%; height: 100dvh; overflow: hidden; touch-action: pan-y; background: var(--reader-bg); color: var(--reader-fg); transition: background-color .2s, color .2s; }
 .reader-shell button, .reader-shell a, .reader-shell select, .reader-shell input { outline-offset: 3px; }
 .reader-shell :focus-visible { outline: 3px solid #1976d2; }
 .reader-font-serif { font-family: "Newsreader", Georgia, serif; }
@@ -76,13 +76,13 @@
 .reader-viewport.is-paged .reader-content { min-width: 0; height: 100%; column-width: var(--reader-column-width, calc(100vw - 2 * max(1.5rem, calc((100vw - var(--reader-measure)) / 2)))); column-gap: var(--reader-column-gap, calc(2 * max(1.5rem, calc((100vw - var(--reader-measure)) / 2)))); column-fill: auto; overflow-wrap: anywhere; transform: translate3d(calc(-1 * var(--reader-page-offset)), 0, 0); transition: transform .16s ease-out; will-change: transform; }
 .reader-viewport.is-scroll .reader-content { max-width: var(--reader-measure); margin: 0 auto; padding-bottom: 1rem; }
 .reader-content p { margin: 0 0 1em; orphans: 3; widows: 3; }
-.reader-content h1, .reader-content h2, .reader-content h3, .reader-content h4, .reader-content h5, .reader-content h6 { break-after: avoid; line-height: 1.2; margin: 1.2em 0 .65em; font-weight: 700; }
-.reader-content h1 { font-size: 2em; }
-.reader-content h2 { font-size: 1.65em; }
-.reader-content h3 { font-size: 1.4em; }
-.reader-content h4 { font-size: 1.2em; }
-.reader-content h5 { font-size: 1.05em; }
-.reader-content h6 { font-size: 1em; font-weight: 600; }
+.reader-content h1, .reader-content h2, .reader-content h3, .reader-content h4, .reader-content h5, .reader-content h6 { max-width: 100%; break-after: avoid; overflow-wrap: anywhere; line-height: 1.2; margin: 1.2em 0 .65em; font-weight: 700; text-wrap: balance; }
+.reader-content h1 { font-size: clamp(var(--reader-h1-min), calc(var(--reader-font-size) * var(--reader-h1-factor)), var(--reader-h1-max)); }
+.reader-content h2 { font-size: clamp(var(--reader-h2-min), calc(var(--reader-font-size) * var(--reader-h2-factor)), var(--reader-h2-max)); }
+.reader-content h3 { font-size: clamp(var(--reader-h3-min), calc(var(--reader-font-size) * var(--reader-h3-factor)), var(--reader-h3-max)); }
+.reader-content h4 { font-size: clamp(var(--reader-h4-min), calc(var(--reader-font-size) * var(--reader-h4-factor)), var(--reader-h4-max)); }
+.reader-content h5 { font-size: clamp(var(--reader-h5-min), calc(var(--reader-font-size) * var(--reader-h5-factor)), var(--reader-h5-max)); }
+.reader-content h6 { font-size: clamp(var(--reader-h6-min), calc(var(--reader-font-size) * var(--reader-h6-factor)), var(--reader-h6-max)); font-weight: 600; }
 .reader-content blockquote { margin: 1.2em 0; padding-left: 1.2em; border-left: 3px solid color-mix(in srgb, var(--reader-fg) 35%, transparent); font-style: italic; }
 .reader-content img { display: block; max-width: 100%; max-height: calc(100dvh - var(--reader-brand-bar-total) - 8rem); width: auto; height: auto; margin: .5rem auto 1.25rem; break-inside: avoid; }
 .reader-viewport.is-paged .reader-content p:has(> img:only-child) { margin: 0; break-inside: avoid; }

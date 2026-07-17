@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fixture: escala de encabezados del reader</title>
+    <link rel="stylesheet" href="/src/index.css" />
+    <style>
+      .fixture-controls { position: fixed; z-index: 100; right: .5rem; bottom: .5rem; display: flex; gap: .5rem; padding: .5rem; background: #fff; color: #111; border: 1px solid #999; font: 14px/1.2 sans-serif; }
+      .fixture-controls label { display: flex; align-items: center; gap: .25rem; }
+    </style>
+  </head>
+  <body>
+    <main class="reader-shell reader-font-serif" style="--reader-bg: #f4ecd8; --reader-fg: #302a22; --reader-muted: #6f6559; --reader-panel: #fffaf0; --reader-font-size: 20px; --reader-line-height: 1.5; --reader-measure: 720px; --reader-page-offset: 0px;">
+      <section class="reader-viewport is-paged" data-testid="viewport">
+        <article class="reader-content" data-testid="content">
+          <section class="reader-fragment">
+            <h1>Capítulo breve</h1>
+            <p data-anchor="before">Pasaje ancla anterior. Este texto permite comprobar que el encabezado no queda aislado y que la lectura continúa con normalidad.</p>
+            <h1>Un título deliberadamente largo que debe encontrar todas las líneas necesarias incluso dentro de una pantalla móvil muy angosta</h1>
+            <p>Texto posterior al título largo para comprobar el corte editorial.</p>
+            <h2>Encabezado de nivel dos</h2>
+            <p>Contenido representativo sin clases ni estilos editoriales.</p>
+            <h3>Encabezado de nivel tres con una palabraextraordinariamenteextensaparaprobarelcorteseguro</h3>
+            <p>Otro párrafo de lectura.</p>
+            <h4>Encabezado de nivel cuatro</h4>
+            <p>Otro párrafo de lectura.</p>
+            <h5>Encabezado de nivel cinco</h5>
+            <p>Otro párrafo de lectura.</p>
+            <h6>Encabezado de nivel seis</h6>
+            <p data-anchor="after">Pasaje ancla posterior.</p>
+          </section>
+        </article>
+      </section>
+      <form class="fixture-controls" aria-label="Controles del fixture">
+        <label>Tamaño <select name="size"><option value="14">14</option><option value="20" selected>20</option><option value="32">32</option></select></label>
+        <label>Modo <select name="mode"><option value="paged">Paginado</option><option value="scroll">Continuo</option></select></label>
+      </form>
+    </main>
+    <script>
+      const shell = document.querySelector('.reader-shell');
+      const viewport = document.querySelector('[data-testid="viewport"]');
+      document.querySelector('[name="size"]').addEventListener('change', ({ target }) => shell.style.setProperty('--reader-font-size', `${target.value}px`));
+      document.querySelector('[name="mode"]').addEventListener('change', ({ target }) => { viewport.classList.toggle('is-paged', target.value === 'paged'); viewport.classList.toggle('is-scroll', target.value === 'scroll'); });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-07-17",
+  "features": [
+    {
+      "id": "FEAT-001",
+      "title": "Lector inmersivo",
+      "summary": "Construir la experiencia definitiva de lectura paginada, accesible y con continuidad de progreso.",
+      "status": "in-progress",
+      "priority": "critical",
+      "area": "reader",
+      "created_at": "2026-07-15",
+      "updated_at": "2026-07-17",
+      "openspec_change": "immersive-book-reader",
+      "notes": [
+        "Change existente incorporado al portfolio inicial."
+      ]
+    },
+    {
+      "id": "FEAT-002",
+      "title": "Portfolio y monitor de features",
+      "summary": "Registrar ideas, administrar su estado y prioridad, y vincular el trabajo seleccionado con OpenSpec.",
+      "status": "in-progress",
+      "priority": "none",
+      "area": "product-ops",
+      "created_at": "2026-07-17",
+      "updated_at": "2026-07-17",
+      "openspec_change": "feature-portfolio-monitor",
+      "notes": [
+        "El backlog guarda metadata; tasks.md conserva el detalle de implementación."
+      ]
+    },
+    {
+      "id": "FEAT-003",
+      "title": "Anotaciones de lectura: destacados y notas",
+      "summary": "Permitir seleccionar pasajes del libro para destacarlos o adjuntarles notas personales, y recuperarlos luego desde una experiencia unificada.",
+      "status": "idea",
+      "priority": "none",
+      "area": "reader",
+      "created_at": "2026-07-17",
+      "updated_at": "2026-07-17",
+      "notes": [
+        "Origen: conversación y prueba del reader con un profesor de literatura habituado a usar un Kindle antiguo; valoró especialmente guardar notas y marcar textos como acciones diferenciadas.",
+        "Hipótesis de producto: modelar ambas acciones como una sola entidad de anotación anclada a un pasaje; un destacado es una anotación sin comentario y una nota agrega texto del lector.",
+        "La experiencia debería permitir crear, editar, eliminar y volver al pasaje desde una lista unificada, distinguiendo visualmente destacados y notas sin convertirlos en features separadas.",
+        "Debe reutilizar anclas de contenido estables para sobrevivir a cambios de fuente, viewport, modo de lectura y, cuando sea posible, regeneraciones del libro.",
+        "Decisiones pendientes antes de promoverla: persistencia local o sincronizada por usuario, privacidad, exportación, colores/etiquetas y comportamiento sin autenticación.",
+        "Está fuera del alcance del MVP immersive-book-reader actual y requiere un change OpenSpec propio si se selecciona para desarrollo."
+      ]
+    },
+    {
+      "id": "FEAT-004",
+      "title": "Normalizar la jerarquía de encabezados en epub2html2",
+      "summary": "Mejorar la conversión de EPUB para que los encabezados generados representen la estructura real del libro y evitar falsos h1 o jerarquías desproporcionadas.",
+      "status": "idea",
+      "priority": "none",
+      "area": "publishing",
+      "created_at": "2026-07-17",
+      "updated_at": "2026-07-17",
+      "notes": [
+        "Origen: se observaron libros cuyos títulos aparecen excesivamente grandes en el reader debido a la etiqueta h1, h2 o equivalente producida durante la conversión.",
+        "La responsabilidad de epub2html2 sería corregir semántica y jerarquía, no imponer tamaños visuales finales.",
+        "Debe preservar la personalidad editorial de los libros bien estructurados y evitar normalizaciones agresivas.",
+        "Los libros ya publicados sólo recibirían la mejora al ser regenerados."
+      ]
+    },
+    {
+      "id": "FEAT-005",
+      "title": "Ajustar la escala visual de encabezados en el reader",
+      "summary": "Acotar los tamaños de h1 a h6 en el lector para evitar títulos desproporcionados, manteniendo jerarquía, legibilidad y personalidad editorial.",
+      "status": "planned",
+      "priority": "high",
+      "area": "reader",
+      "created_at": "2026-07-17",
+      "updated_at": "2026-07-17",
+      "openspec_change": "reader-heading-scale",
+      "notes": [
+        "Origen: el reader elimina estilos y clases del fragmento, pero aplica una escala propia basada en em; un h1 puede crecer demasiado junto con el tamaño de lectura elegido por el usuario.",
+        "La idea debe afectar inmediatamente tanto libros existentes como nuevos, sin modificar los archivos publicados.",
+        "No se propone igualar todos los encabezados, sino conservar su jerarquía dentro de límites visuales adaptables.",
+        "Debe evaluarse el comportamiento de títulos cortos y largos, pantallas angostas, paginación y preferencias de tamaño de fuente."
+      ]
+    }
+  ]
+}
