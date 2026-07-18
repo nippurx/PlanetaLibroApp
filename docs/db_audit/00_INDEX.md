@@ -35,6 +35,7 @@ Esta fase solo prepara el relevamiento DB+PHP. El codigo y el dump revisados est
 - [30_LOGICAL_MODEL.md](./30_LOGICAL_MODEL.md)
 - [31_RISKS_AND_DEBT.md](./31_RISKS_AND_DEBT.md)
 - [32_API_READINESS_MAP.md](./32_API_READINESS_MAP.md)
+- [40_SCHEMA_ADDITIONS.md](./40_SCHEMA_ADDITIONS.md) - cambios de esquema propuestos o aplicados después del dump auditado
 
 ## Modulos / areas detectadas
 

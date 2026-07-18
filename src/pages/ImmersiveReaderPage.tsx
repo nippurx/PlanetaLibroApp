@@ -10,6 +10,9 @@ import { ReaderBrandBar } from "../components/ReaderBrandBar";
 import { useAuth } from "../auth/AuthContext";
 import { getReaderProgress, saveReaderProgress } from "../api/readerProgress";
 import { useReaderGestures } from "../features/reader/useReaderGestures";
+import { ReadingAnnotation } from "../api/annotations";
+import { resolveAnnotationRange } from "../features/reader/annotations";
+import { useReaderAnnotations } from "../features/reader/ReaderAnnotations";
 
 const LOAD_BATCH = 8;
 
@@ -56,7 +59,7 @@ export function ImmersiveReaderPage() {
   const [visualPageWidth, setVisualPageWidth] = useState(1);
   const [columnGeometry, setColumnGeometry] = useState<{ width: number; gap: number } | null>(null);
   const [controlsVisible, setControlsVisible] = useState(false);
-  const [panel, setPanel] = useState<"index" | "preferences" | null>(null);
+  const [panel, setPanel] = useState<"index" | "preferences" | "annotations" | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [repaginating, setRepaginating] = useState(false);
@@ -81,6 +84,7 @@ export function ImmersiveReaderPage() {
   const navigateAfterLayout = useRef(0);
   const lastServerPage = useRef<{ uri: string; page: number } | null>(null);
   const colors = themeColors(preferences.theme);
+  const annotationsEnabled = import.meta.env.VITE_READING_ANNOTATIONS !== "false";
   const loadedPages = useMemo(() => [...fragments.keys()].sort((a, b) => a - b), [fragments]);
   const firstLoadedPage = loadedPages[0];
   const lastLoadedPage = loadedPages[loadedPages.length - 1];
@@ -535,6 +539,58 @@ export function ImmersiveReaderPage() {
     onToggleControls: toggleControls,
   });
 
+  async function navigateToAnnotation(annotation: ReadingAnnotation) {
+    setPanel(null);
+    setControlsVisible(false);
+    try {
+      await loadRange(
+        Math.max(1, annotation.start_fragment - 1),
+        Math.min(manifest?.pages ?? annotation.end_fragment, annotation.end_fragment + 1),
+      );
+      return await new Promise<boolean>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => {
+        const content = contentRef.current;
+        const viewport = viewportRef.current;
+        if (!content || !viewport) { resolve(false); return; }
+        const range = resolveAnnotationRange(content, annotation);
+        if (!range) {
+          setAnnouncement("La anotación se conserva, pero el pasaje ya no pudo localizarse.");
+          resolve(false);
+          return;
+        }
+        if (preferences.mode === "paged") {
+          const targetRect = range.getClientRects()[0] ?? range.getBoundingClientRect();
+          const contentRect = content.getBoundingClientRect();
+          const next = Math.min(visualPages - 1, Math.max(0, Math.floor((targetRect.left - contentRect.left) / Math.max(1, visualPageWidth))));
+          setVisualPage(next);
+        } else {
+          const element = range.startContainer.parentElement;
+          element?.scrollIntoView({ block: "center" });
+        }
+        // Keep the browser selection empty: its native blue/gray overlay
+        // obscures the annotation color. The CSS Highlight remains visible
+        // and the live region announces the navigation for accessibility.
+        clearShareSelection();
+        setAnnouncement("Anotación localizada en el texto.");
+        resolve(true);
+      })));
+    } catch {
+      setAnnouncement("No se pudo cargar el pasaje anotado.");
+      return false;
+    }
+  }
+
+  const readerAnnotations = useReaderAnnotations({
+    enabled: annotationsEnabled,
+    uri: libro_uri,
+    rootRef: contentRef,
+    session,
+    generatedAt: manifest?.generated_at,
+    pages: manifest?.pages ?? 1,
+    renderKey: sanitizedHtml,
+    onAnnouncement: setAnnouncement,
+    onNavigate: navigateToAnnotation,
+  });
+
   const readerStyle = {
     "--reader-bg": colors.background, "--reader-fg": colors.foreground, "--reader-muted": colors.muted, "--reader-panel": colors.panel,
     "--reader-font-size": `${preferences.fontSize}px`, "--reader-line-height": String(preferences.lineHeight), "--reader-measure": `${preferences.measure}px`,
@@ -560,6 +616,7 @@ export function ImmersiveReaderPage() {
             const selected = getSelectedReaderText(contentRef.current);
             if (selected) shareSelectionRef.current = selected;
           }} onClick={() => { void shareLocation(); }}><span className="material-symbols-outlined">share</span></button>
+          {annotationsEnabled && <button aria-expanded={panel === "annotations"} aria-label="Abrir mis anotaciones" onClick={() => setPanel(panel === "annotations" ? null : "annotations")}><span className="material-symbols-outlined">bookmarks</span></button>}
           <button ref={panelButtonRef} aria-expanded={panel === "index"} aria-label="Abrir índice" onClick={() => setPanel(panel === "index" ? null : "index")}><span className="material-symbols-outlined">toc</span></button>
           <button aria-expanded={panel === "preferences"} aria-label="Abrir preferencias" onClick={() => setPanel(panel === "preferences" ? null : "preferences")}><span className="material-symbols-outlined">text_fields</span></button>
         </header>
@@ -578,11 +635,13 @@ export function ImmersiveReaderPage() {
         </footer>
 
         {panel && <div className="reader-backdrop" onPointerDown={(event) => event.stopPropagation()} onClick={() => setPanel(null)}>
-          <div ref={panelRef} className="reader-panel" role="dialog" aria-modal="true" aria-label={panel === "index" ? "Índice del libro" : "Preferencias de lectura"} tabIndex={-1} onClick={(event) => event.stopPropagation()}>
-            <div className="reader-panel-heading"><h2>{panel === "index" ? "Índice" : "Preferencias"}</h2><button aria-label="Cerrar panel" onClick={() => setPanel(null)}><span className="material-symbols-outlined">close</span></button></div>
-            {panel === "index" ? <nav aria-label="Capítulos" className="reader-index">{manifest.index.map((item, index) => <button key={`${item.pag}-${index}`} style={{ paddingLeft: `${Math.min(3, item.nivel - 1) * 1.1 + .75}rem` }} onClick={() => { void goToIndexItem(item); }}>{item.titulo}</button>)}</nav> : <Preferences value={preferences} onChange={updatePreferences} />}
+          <div ref={panelRef} className="reader-panel" role="dialog" aria-modal="true" aria-label={panel === "index" ? "Índice del libro" : panel === "annotations" ? "Mis anotaciones" : "Preferencias de lectura"} tabIndex={-1} onClick={(event) => event.stopPropagation()}>
+            <div className="reader-panel-heading"><h2>{panel === "index" ? "Índice" : panel === "annotations" ? "Mis anotaciones" : "Preferencias"}</h2><button aria-label="Cerrar panel" onClick={() => setPanel(null)}><span className="material-symbols-outlined">close</span></button></div>
+            {panel === "index" ? <nav aria-label="Capítulos" className="reader-index">{manifest.index.map((item, index) => <button key={`${item.pag}-${index}`} style={{ paddingLeft: `${Math.min(3, item.nivel - 1) * 1.1 + .75}rem` }} onClick={() => { void goToIndexItem(item); }}>{item.titulo}</button>)}</nav> : panel === "annotations" ? readerAnnotations.notebook : <Preferences value={preferences} onChange={updatePreferences} />}
           </div>
         </div>}
+        {readerAnnotations.selectionToolbar}
+        {readerAnnotations.dialogs}
         {loadingMore && repaginating && <div className="reader-loading" role="status">Cargando…</div>}
         {repaginating && <div className="reader-layout-placeholder" role="status" aria-live="polite"><span>Ajustando la página…</span><i /><i /><i /><i /></div>}
         <div className="sr-only" aria-live="polite">{announcement}</div>

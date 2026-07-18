@@ -61,6 +61,44 @@ final class SessionService
         return true;
     }
 
+    public function csrfToken(): string
+    {
+        $this->start();
+        $token = (string) ($_SESSION['api_csrf_token'] ?? '');
+        if (preg_match('/^[a-f0-9]{64}$/', $token) !== 1) {
+            $token = bin2hex(random_bytes(32));
+            $_SESSION['api_csrf_token'] = $token;
+        }
+        return $token;
+    }
+
+    public function validateCsrfToken(string $token): bool
+    {
+        $this->start();
+        $expected = (string) ($_SESSION['api_csrf_token'] ?? '');
+        return preg_match('/^[a-f0-9]{64}$/', $token) === 1
+            && preg_match('/^[a-f0-9]{64}$/', $expected) === 1
+            && hash_equals($expected, $token);
+    }
+
+    public function allowAction(string $bucket, int $limit, int $windowSeconds): bool
+    {
+        $this->start();
+        $key = 'api_rate_' . preg_replace('/[^a-z0-9_-]/i', '', $bucket);
+        $now = time();
+        $timestamps = array_values(array_filter(
+            is_array($_SESSION[$key] ?? null) ? $_SESSION[$key] : [],
+            static fn($timestamp): bool => is_int($timestamp) && $timestamp > $now - $windowSeconds
+        ));
+        if (count($timestamps) >= $limit) {
+            $_SESSION[$key] = $timestamps;
+            return false;
+        }
+        $timestamps[] = $now;
+        $_SESSION[$key] = $timestamps;
+        return true;
+    }
+
     private function start(): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) {

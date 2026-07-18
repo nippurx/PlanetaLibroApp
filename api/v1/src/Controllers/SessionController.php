@@ -30,6 +30,7 @@ final class SessionController
                 'avatar_url' => $user['avatar_url'],
             ],
             'entitlements' => ['premium' => $user !== null && $user['premium']],
+            'csrf_token' => $user === null ? null : $this->sessions->csrfToken(),
         ]);
     }
 

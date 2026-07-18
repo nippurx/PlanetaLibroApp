@@ -16,7 +16,7 @@ function getRuntimeBase(): string {
   return API_BASE;
 }
 
-type HttpMethod = "GET" | "POST";
+type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
 export class ApiError extends Error {
   status: number;
@@ -101,6 +101,12 @@ export const apiClient = {
   },
   post<T>(path: string, body?: unknown, headers?: HeadersInit) {
     return request<T>("POST", path, { body, headers });
+  },
+  patch<T>(path: string, body?: unknown, headers?: HeadersInit) {
+    return request<T>("PATCH", path, { body, headers });
+  },
+  delete<T>(path: string, headers?: HeadersInit) {
+    return request<T>("DELETE", path, { headers });
   },
 };
 

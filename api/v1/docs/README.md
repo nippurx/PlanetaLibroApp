@@ -1,6 +1,6 @@
 # PlanetaLibro API v1
 
-API aislada para la app nueva en `/app`. Los endpoints de catálogo son read-only. La única escritura operativa incorporada es la compatibilidad del reader: materializa manifests ausentes y registra regeneraciones pendientes, sin modificar fragmentos ni ejecutar helpers legacy.
+API aislada para la app nueva en `/app`. Los endpoints de catálogo son read-only. Las escrituras explícitas son progreso de lectura, compatibilidad del reader y anotaciones privadas autenticadas; no ejecutan helpers legacy.
 
 ## Endpoints
 
@@ -12,6 +12,32 @@ API aislada para la app nueva en `/app`. Los endpoints de catálogo son read-onl
 - `GET /api/v1/public/libros/por-tag?tag=crecimiento-personal&limit=20&offset=0`
 - `GET /api/v1/public/libros/top?limit=10&lang=es`
 - `GET /api/v1/public/reader-manifest/{uri}`
+- `GET /api/v1/public/session`
+- `GET /api/v1/public/books/{uri}/annotations`
+- `POST /api/v1/public/books/{uri}/annotations`
+- `PATCH /api/v1/public/annotations/{id}`
+- `DELETE /api/v1/public/annotations/{id}`
+
+## Anotaciones privadas de lectura
+
+Los endpoints de anotaciones requieren una sesión válida. `user_id` se obtiene exclusivamente en servidor y nunca se acepta como identidad desde el cliente.
+
+- `GET /books/{uri}/annotations`: filtros `all`, `highlights` y `notes`, límite `1..100` y cursor opaco.
+- `POST /books/{uri}/annotations`: creación idempotente mediante `client_request_id` UUID.
+- `PATCH /annotations/{id}`: modifica nota/color usando `revision` para concurrencia optimista.
+- `DELETE /annotations/{id}`: eliminación idempotente acotada al propietario.
+
+POST, PATCH y DELETE requieren `X-CSRF-Token`, entregado por `GET /session` al usuario autenticado, mismo origen y límite de frecuencia por sesión. Todas las respuestas usan `Cache-Control: private, no-store`; los logs no deben incluir pasajes, contexto ni notas.
+
+La API resuelve la URI pública a `ebooks_books_id`, valida el rango contra el manifest real y rechaza un `content_version` desactualizado. El contrato y el DDL están documentados en `openspec/changes/reading-annotations` y `docs/db_audit/40_SCHEMA_ADDITIONS.md`.
+
+Errores específicos:
+
+- `401 unauthenticated`
+- `403 forbidden`
+- `404 book_not_found` o `annotation_not_found`
+- `409 stale_annotation_anchor` o `annotation_conflict`
+- `429 rate_limited`
 
 ## Endpoint de compatibilidad del reader
 

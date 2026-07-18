@@ -11,6 +11,7 @@ use PlanetaLibro\Api\V1\Controllers\SearchController;
 use PlanetaLibro\Api\V1\Controllers\SessionController;
 use PlanetaLibro\Api\V1\Controllers\LibraryController;
 use PlanetaLibro\Api\V1\Controllers\ReaderProgressController;
+use PlanetaLibro\Api\V1\Controllers\AnnotationsController;
 use PlanetaLibro\Api\V1\Request;
 use PlanetaLibro\Api\V1\Response;
 use PlanetaLibro\Api\V1\Router;
@@ -36,6 +37,7 @@ $readerManifestController = new ReaderManifestController($services['readerManife
 $sessionController = new SessionController($services['sessionService']);
 $libraryController = new LibraryController($services['sessionService'], $services['libraryRepo']);
 $readerProgressController = new ReaderProgressController($services['sessionService'], $services['libraryRepo']);
+$annotationsController = new AnnotationsController($services['sessionService'], $services['annotationsRepo'], $services['readerManifestService']);
 
 $router->get('/health', [$healthController, 'show']);
 $router->get('/libro/{uri}', [$booksController, 'show']);
@@ -51,6 +53,10 @@ $router->get('/login-redirect', [$sessionController, 'redirectToLegacyLogin']);
 $router->get('/library', [$libraryController, 'index']);
 $router->get('/reader-progress/{uri}', [$readerProgressController, 'show']);
 $router->post('/reader-progress/{uri}', [$readerProgressController, 'update']);
+$router->get('/books/{uri}/annotations', [$annotationsController, 'index']);
+$router->post('/books/{uri}/annotations', [$annotationsController, 'create']);
+$router->patch('/annotations/{id}', [$annotationsController, 'update']);
+$router->delete('/annotations/{id}', [$annotationsController, 'delete']);
 
 try {
     $router->dispatch($request);

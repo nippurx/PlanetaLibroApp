@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-17",
+  "updated_at": "2026-07-18",
   "features": [
     {
       "id": "FEAT-001",
@@ -34,19 +34,21 @@
       "id": "FEAT-003",
       "title": "Anotaciones de lectura: destacados y notas",
       "summary": "Permitir seleccionar pasajes del libro para destacarlos o adjuntarles notas personales, y recuperarlos luego desde una experiencia unificada.",
-      "status": "idea",
+      "status": "planned",
       "priority": "none",
       "area": "reader",
       "created_at": "2026-07-17",
-      "updated_at": "2026-07-17",
+      "updated_at": "2026-07-18",
       "notes": [
         "Origen: conversación y prueba del reader con un profesor de literatura habituado a usar un Kindle antiguo; valoró especialmente guardar notas y marcar textos como acciones diferenciadas.",
         "Hipótesis de producto: modelar ambas acciones como una sola entidad de anotación anclada a un pasaje; un destacado es una anotación sin comentario y una nota agrega texto del lector.",
         "La experiencia debería permitir crear, editar, eliminar y volver al pasaje desde una lista unificada, distinguiendo visualmente destacados y notas sin convertirlos en features separadas.",
         "Debe reutilizar anclas de contenido estables para sobrevivir a cambios de fuente, viewport, modo de lectura y, cuando sea posible, regeneraciones del libro.",
-        "Decisiones pendientes antes de promoverla: persistencia local o sincronizada por usuario, privacidad, exportación, colores/etiquetas y comportamiento sin autenticación.",
-        "Está fuera del alcance del MVP immersive-book-reader actual y requiere un change OpenSpec propio si se selecciona para desarrollo."
-      ]
+        "Decisión de producto: destacados y notas son privados y se persisten en SQL sólo para usuarios autenticados; un visitante puede descubrir e intentar la acción y recibe una invitación contextual a registrarse o iniciar sesión.",
+        "Decisión técnica: usar user_book_annotations y un ancla híbrida con coordenadas normalizadas, texto exacto, contexto y versión del contenido; pag-N es sólo una pista de carga.",
+        "Fuera del alcance inicial: exportación, destacados públicos/populares, colaboración, manuscritura, etiquetas y búsqueda global."
+      ],
+      "openspec_change": "reading-annotations"
     },
     {
       "id": "FEAT-004",

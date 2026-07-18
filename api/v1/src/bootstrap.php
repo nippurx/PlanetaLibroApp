@@ -10,6 +10,7 @@ use PlanetaLibro\Api\V1\Repositories\BooksRepo;
 use PlanetaLibro\Api\V1\Repositories\ReaderManifestRepo;
 use PlanetaLibro\Api\V1\Repositories\SearchRepo;
 use PlanetaLibro\Api\V1\Repositories\LibraryRepo;
+use PlanetaLibro\Api\V1\Repositories\AnnotationsRepo;
 use PlanetaLibro\Api\V1\Auth\SessionService;
 
 function bootstrap(string $root): array
@@ -49,6 +50,7 @@ function bootstrap(string $root): array
         'searchRepo' => new SearchRepo($pdo),
         'sessionService' => new SessionService($pdo),
         'libraryRepo' => new LibraryRepo($pdo),
+        'annotationsRepo' => new AnnotationsRepo($pdo),
         'readerManifestService' => new ReaderManifestService(
             $readerManifestRepo,
             new LegacyBookInfoParser(),
