@@ -55,7 +55,7 @@
 - [x] 5.9.1 Añadir pruebas unitarias de clasificación gestual para zonas, swipes, umbral, eje vertical, interactivos, selección, límites, cancelación, multitouch y pulsación larga.
 - [x] 5.10 Implementar URL raíz estable, apertura explícita que comience exactamente en el fragmento solicitado y Compartir basado en el primer fragmento visible, con fallback de copiado cuando Web Share no esté disponible.
 - [x] 5.11 Implementar shell HTML y rewrite desplegables con la app para metadata Open Graph de URLs compartibles, resolviendo la tapa desde assets confinados del manifest sin ejecutar PHP legacy.
-- [ ] 5.12 Hacer que Compartir use como texto del mensaje la selección activa y no vacía realizada dentro del contenido del libro, mantenga el enlace al fragmento que contiene el inicio de esa selección y conserve el texto estándar y el primer fragmento visible como fallback cuando no haya una selección válida.
+- [x] 5.12 Hacer que Compartir use como texto del mensaje la selección activa y no vacía realizada dentro del contenido del libro, mantenga el enlace al fragmento que contiene el inicio de esa selección y conserve el texto estándar y el primer fragmento visible como fallback cuando no haya una selección válida.
 
 ## 6. MVP — Preferencias
 

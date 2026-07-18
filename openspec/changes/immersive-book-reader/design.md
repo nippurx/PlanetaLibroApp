@@ -91,7 +91,7 @@ El MVP ofrece:
 - tema claro, sepia y oscuro;
 - una serif de lectura, una sans y una alternativa accesible disponibles realmente en el bundle/carga aprobada;
 - tamaño tipográfico, interlineado y ancho/márgenes dentro de rangos seguros;
-- alineación izquierda por defecto; no se ofrece justificado hasta comprobar separación silábica adecuada.
+- párrafos justificados por defecto, con opción de alineación izquierda elegible y persistente; títulos, listas y demás elementos permanecen alineados a la izquierda.
 
 Se conservan como preferencias globales del lector en almacenamiento local con clave versionada y validación de valores. Se aplican antes de revelar contenido cuando sea posible para evitar destellos. La futura sincronización por usuario debe reutilizar el mismo modelo conceptual, pero no forma parte del contrato remoto del MVP.
 

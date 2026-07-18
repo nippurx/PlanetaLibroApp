@@ -13,6 +13,8 @@ import { useReaderGestures } from "../features/reader/useReaderGestures";
 
 const LOAD_BATCH = 8;
 
+type ReaderTextSelection = { text: string; fragmentPage: number };
+
 function readableTitle(uri: string): string {
   const words = uri.split("-");
   const titleStart = ["y", "e", "o", "u"].includes(words[2]?.toLowerCase()) ? 1 : 2;
@@ -23,6 +25,23 @@ function themeColors(theme: ReaderPreferences["theme"]): { background: string; f
   if (theme === "dark") return { background: "#111418", foreground: "#e8e2d5", muted: "#a7a29a", panel: "#191d22" };
   if (theme === "light") return { background: "#fbfaf7", foreground: "#25221e", muted: "#746f67", panel: "#ffffff" };
   return { background: "#f4ecd8", foreground: "#3f3528", muted: "#74634e", panel: "#fff8e8" };
+}
+
+function getSelectedReaderText(root: HTMLElement | null): ReaderTextSelection | null {
+  if (!root) return null;
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return null;
+  const range = selection.getRangeAt(0);
+  if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) return null;
+  const text = selection.toString().trim();
+  if (!text) return null;
+  const startElement = range.startContainer instanceof Element
+    ? range.startContainer
+    : range.startContainer.parentElement;
+  const fragment = startElement?.closest<HTMLElement>("[data-reader-fragment]");
+  if (!fragment || !root.contains(fragment)) return null;
+  const fragmentPage = Number.parseInt(fragment.dataset.readerFragment ?? "", 10);
+  return Number.isInteger(fragmentPage) && fragmentPage > 0 ? { text, fragmentPage } : null;
 }
 
 export function ImmersiveReaderPage() {
@@ -43,6 +62,7 @@ export function ImmersiveReaderPage() {
   const [repaginating, setRepaginating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const [hasShareSelection, setHasShareSelection] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [visibleFragmentPage, setVisibleFragmentPage] = useState(1);
   const [serverPageReady, setServerPageReady] = useState(false);
@@ -54,6 +74,7 @@ export function ImmersiveReaderPage() {
   const panelButtonRef = useRef<HTMLButtonElement>(null);
   const gestureLock = useRef<number | null>(null);
   const hideTimer = useRef<number | null>(null);
+  const shareSelectionRef = useRef<ReaderTextSelection | null>(null);
   const pendingAnchor = useRef<ReaderAnchor | null>(null);
   const pendingFragmentPage = useRef<number | null>(null);
   const pendingIndexPrefetch = useRef<{ start: number; end: number } | null>(null);
@@ -267,6 +288,30 @@ export function ImmersiveReaderPage() {
     savePreferences(preferences);
   }, [preferences]);
 
+  const clearShareSelection = useCallback(() => {
+    shareSelectionRef.current = null;
+    setHasShareSelection(false);
+    window.getSelection()?.removeAllRanges();
+  }, []);
+
+  useEffect(() => clearShareSelection(), [clearShareSelection, libro_uri]);
+
+  useEffect(() => {
+    const rememberSelection = () => {
+      const selected = getSelectedReaderText(contentRef.current);
+      if (!selected) return;
+      shareSelectionRef.current = selected;
+      setHasShareSelection(true);
+      setControlsVisible(true);
+      if (hideTimer.current) {
+        window.clearTimeout(hideTimer.current);
+        hideTimer.current = null;
+      }
+    };
+    document.addEventListener("selectionchange", rememberSelection);
+    return () => document.removeEventListener("selectionchange", rememberSelection);
+  }, []);
+
   useEffect(() => {
     const interval = window.setInterval(persistProgress, 1500);
     const onVisibility = () => { if (document.visibilityState === "hidden") persistProgress(); };
@@ -276,13 +321,14 @@ export function ImmersiveReaderPage() {
 
   const scheduleHide = useCallback(() => {
     if (hideTimer.current) window.clearTimeout(hideTimer.current);
-    if (panel) return;
+    if (panel || hasShareSelection) return;
     hideTimer.current = window.setTimeout(() => setControlsVisible(false), 3500);
-  }, [panel]);
+  }, [hasShareSelection, panel]);
 
   const goToVisualPage = useCallback(async (next: number) => {
     const viewport = viewportRef.current;
     if (!viewport || preferences.mode !== "paged") return;
+    clearShareSelection();
     if (next < 0 && manifest && firstLoadedPage > 1) {
       navigateAfterLayout.current = -1;
       await loadRange(firstLoadedPage - LOAD_BATCH, firstLoadedPage - 1);
@@ -297,7 +343,7 @@ export function ImmersiveReaderPage() {
     setVisualPage(clamped);
     setAnnouncement(`Página visual ${clamped + 1} de ${visualPages}`);
     scheduleHide();
-  }, [firstLoadedPage, lastLoadedPage, loadRange, manifest, preferences.mode, scheduleHide, visualPages]);
+  }, [clearShareSelection, firstLoadedPage, lastLoadedPage, loadRange, manifest, preferences.mode, scheduleHide, visualPages]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -390,23 +436,31 @@ export function ImmersiveReaderPage() {
     : 0;
 
   async function shareLocation() {
-    const fragmentPage = firstVisibleFragment();
+    const selectedText = getSelectedReaderText(contentRef.current) ?? shareSelectionRef.current;
+    const fragmentPage = selectedText?.fragmentPage ?? firstVisibleFragment();
     const appBase = new URL(import.meta.env.BASE_URL, window.location.origin);
     const shareUrl = new URL(`read/${encodeURIComponent(libro_uri)}/${fragmentPage}`, appBase).toString();
     const title = readableTitle(libro_uri);
+    const shareText = selectedText?.text ?? `Continúa leyendo ${title}`;
+    const clipboardText = selectedText ? `${shareText}\n\n${shareUrl}` : shareUrl;
     try {
       if (navigator.share) {
-        await navigator.share({ title, text: `Continúa leyendo ${title}`, url: shareUrl });
-        setAnnouncement("Ubicación compartida.");
+        if (selectedText) window.getSelection()?.removeAllRanges();
+        await navigator.share(selectedText
+          ? { title, text: clipboardText }
+          : { title, text: shareText, url: shareUrl });
+        setAnnouncement(selectedText ? "Texto seleccionado compartido." : "Ubicación compartida.");
+        if (selectedText) clearShareSelection();
         return;
       }
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
-        setAnnouncement("Enlace de lectura copiado.");
+        await navigator.clipboard.writeText(clipboardText);
+        setAnnouncement(selectedText ? "Texto seleccionado y enlace copiados." : "Enlace de lectura copiado.");
+        if (selectedText) clearShareSelection();
         return;
       }
       const textArea = document.createElement("textarea");
-      textArea.value = shareUrl;
+      textArea.value = clipboardText;
       textArea.style.position = "fixed";
       textArea.style.opacity = "0";
       document.body.appendChild(textArea);
@@ -414,7 +468,8 @@ export function ImmersiveReaderPage() {
       const copied = document.execCommand("copy");
       textArea.remove();
       if (!copied) throw new Error("No se pudo copiar el enlace.");
-      setAnnouncement("Enlace de lectura copiado.");
+      setAnnouncement(selectedText ? "Texto seleccionado y enlace copiados." : "Enlace de lectura copiado.");
+      if (selectedText) clearShareSelection();
     } catch (reason) {
       if (reason instanceof DOMException && reason.name === "AbortError") return;
       setAnnouncement("No se pudo compartir. Intenta nuevamente.");
@@ -483,6 +538,7 @@ export function ImmersiveReaderPage() {
   const readerStyle = {
     "--reader-bg": colors.background, "--reader-fg": colors.foreground, "--reader-muted": colors.muted, "--reader-panel": colors.panel,
     "--reader-font-size": `${preferences.fontSize}px`, "--reader-line-height": String(preferences.lineHeight), "--reader-measure": `${preferences.measure}px`,
+    "--reader-text-align": preferences.alignment,
     "--reader-page-offset": `${visualPage * visualPageWidth}px`,
     "--reader-column-width": columnGeometry ? `${columnGeometry.width}px` : undefined,
     "--reader-column-gap": columnGeometry ? `${columnGeometry.gap}px` : undefined,
@@ -500,7 +556,10 @@ export function ImmersiveReaderPage() {
         <header className={`reader-toolbar reader-toolbar-top ${controlsVisible ? "is-visible" : ""}`}>
           <button aria-label="Volver a la ficha del libro" onClick={leaveReader}><span className="material-symbols-outlined">arrow_back</span></button>
           <div className="reader-title"><strong>{readableTitle(libro_uri)}</strong><span>{chapter}</span></div>
-          <button aria-label="Compartir ubicación de lectura" onClick={() => { void shareLocation(); }}><span className="material-symbols-outlined">share</span></button>
+          <button aria-label={hasShareSelection ? "Compartir texto seleccionado" : "Compartir ubicación de lectura"} onPointerDown={() => {
+            const selected = getSelectedReaderText(contentRef.current);
+            if (selected) shareSelectionRef.current = selected;
+          }} onClick={() => { void shareLocation(); }}><span className="material-symbols-outlined">share</span></button>
           <button ref={panelButtonRef} aria-expanded={panel === "index"} aria-label="Abrir índice" onClick={() => setPanel(panel === "index" ? null : "index")}><span className="material-symbols-outlined">toc</span></button>
           <button aria-expanded={panel === "preferences"} aria-label="Abrir preferencias" onClick={() => setPanel(panel === "preferences" ? null : "preferences")}><span className="material-symbols-outlined">text_fields</span></button>
         </header>
@@ -536,7 +595,8 @@ function Preferences({ value, onChange }: { value: ReaderPreferences; onChange: 
   return <div className="reader-settings">
     <fieldset><legend>Modo de lectura</legend><div className="reader-segmented"><button aria-pressed={value.mode === "paged"} onClick={() => onChange({ mode: "paged" })}>Paginado</button><button aria-pressed={value.mode === "scroll"} onClick={() => onChange({ mode: "scroll" })}>Continuo</button></div></fieldset>
     <fieldset><legend>Tema</legend><div className="reader-segmented"><button aria-pressed={value.theme === "light"} onClick={() => onChange({ theme: "light" })}>Claro</button><button aria-pressed={value.theme === "sepia"} onClick={() => onChange({ theme: "sepia" })}>Sepia</button><button aria-pressed={value.theme === "dark"} onClick={() => onChange({ theme: "dark" })}>Oscuro</button></div></fieldset>
-    <label>Fuente<select value={value.font} onChange={(event) => onChange({ font: event.target.value as ReaderPreferences["font"] })}><option value="serif">Serif</option><option value="sans">Sans</option><option value="accessible">Accesible</option></select></label>
+    <label>Fuente<select value={value.font} onChange={(event) => onChange({ font: event.target.value as ReaderPreferences["font"] })}><option value="book">Libro — Newsreader</option><option value="clear">Clara — Noto Sans</option><option value="hyperlegible">Alta legibilidad — Atkinson Hyperlegible</option><option value="opendyslexic">OpenDyslexic</option></select></label>
+    <fieldset><legend>Alineación</legend><div className="reader-segmented"><button aria-pressed={value.alignment === "left"} onClick={() => onChange({ alignment: "left" })}>Izquierda</button><button aria-pressed={value.alignment === "justify"} onClick={() => onChange({ alignment: "justify" })}>Justificado</button></div></fieldset>
     <label>Tamaño <output>{value.fontSize}px</output><input type="range" min="14" max="32" value={value.fontSize} onChange={(event) => onChange({ fontSize: Number(event.target.value) })} /></label>
     <label>Interlineado <output>{value.lineHeight.toFixed(2)}</output><input type="range" min="1.35" max="2.2" step="0.05" value={value.lineHeight} onChange={(event) => onChange({ lineHeight: Number(event.target.value) })} /></label>
     <label>Ancho <output>{value.measure}px</output><input type="range" min="480" max="960" step="40" value={value.measure} onChange={(event) => onChange({ measure: Number(event.target.value) })} /></label>

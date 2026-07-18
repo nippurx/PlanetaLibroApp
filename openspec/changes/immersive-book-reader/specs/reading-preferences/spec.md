@@ -35,9 +35,18 @@ El sistema MUST preservar la ubicación lógica cuando una preferencia o cambio 
 - **THEN** el pasaje anclado permanece visible inmediatamente aunque cambie su posición vertical y no se fuerza la primera línea superior mediante rangos DOM o saltos artificiales
 
 ### Requirement: Alineación legible
-El MVP SHALL usar alineación izquierda y MUST NOT ofrecer texto justificado hasta que exista separación silábica adecuada para el idioma.
+El lector SHALL usar texto justificado por defecto únicamente en los párrafos, alineado a ambos márgenes y ocupando todo el ancho disponible, y SHALL permitir que el usuario elija alineación izquierda. Los títulos, listas y demás elementos no-parágrafo SHALL permanecer alineados a la izquierda.
 
 #### Scenario: Texto normal del libro
 - **GIVEN** un párrafo sin tratamiento editorial especial
 - **WHEN** se renderiza en el MVP
-- **THEN** aparece alineado a la izquierda sin espacios artificiales de justificación
+- **THEN** aparece justificado salvo que el usuario haya guardado explícitamente la alineación izquierda
+
+#### Scenario: Elementos que no son párrafos
+- **GIVEN** un título, una lista u otro elemento no-parágrafo
+- **WHEN** se renderiza el contenido del libro
+- **THEN** permanece alineado a la izquierda independientemente de la preferencia de párrafos
+
+#### Scenario: El usuario elige texto justificado
+- **WHEN** el usuario selecciona `Justificado` en las preferencias de lectura
+- **THEN** el texto aparece alineado a ambos márgenes y la preferencia se conserva para futuras sesiones

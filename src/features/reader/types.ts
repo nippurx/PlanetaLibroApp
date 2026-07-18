@@ -1,6 +1,7 @@
 export type ReaderMode = "paged" | "scroll";
 export type ReaderTheme = "light" | "sepia" | "dark";
-export type ReaderFont = "serif" | "sans" | "accessible";
+export type ReaderFont = "book" | "clear" | "hyperlegible" | "opendyslexic";
+export type ReaderAlignment = "left" | "justify";
 
 export type ReaderIndexItem = { titulo: string; pag: number; nivel: number };
 export type ReaderChapter = { href: string; page: number; title: string };
@@ -27,10 +28,11 @@ export type ReaderAnchor = {
 };
 
 export type ReaderPreferences = {
-  version: 1;
+  version: 2;
   mode: ReaderMode;
   theme: ReaderTheme;
   font: ReaderFont;
+  alignment: ReaderAlignment;
   fontSize: number;
   lineHeight: number;
   measure: number;
