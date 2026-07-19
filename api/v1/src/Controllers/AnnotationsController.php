@@ -46,7 +46,7 @@ final class AnnotationsController
             return;
         }
         $filter = $request->queryString('filter', 'all');
-        if (!in_array($filter, ['all', 'highlights', 'notes'], true)) {
+        if (!in_array($filter, ['all', 'highlights', 'notes', 'bookmarks'], true)) {
             Response::badRequest('Invalid annotation filter.');
             return;
         }
@@ -111,6 +111,41 @@ final class AnnotationsController
     }
 
     /** @param array<string,string> $params */
+    public function toggleBookmark(Request $request, array $params): void
+    {
+        Response::preventPrivateCaching();
+        $userId = $this->authorizeWrite($request);
+        $uri = $request->routeParamUri($params);
+        if ($userId === null || $uri === null) {
+            if ($userId !== null) Response::badRequest('Invalid book uri.');
+            return;
+        }
+        $bookId = $this->annotations->findBookId($uri);
+        if ($bookId === null) {
+            Response::notFound('Book not found.', 'book_not_found');
+            return;
+        }
+        $data = $this->bookmarkData($request);
+        if ($data === null) {
+            Response::badRequest('Invalid bookmark payload.');
+            return;
+        }
+        try {
+            $manifest = $this->manifests->materialize($uri);
+        } catch (ReaderManifestException $exception) {
+            Response::json(['error' => ['code' => $exception->errorCode(), 'message' => $exception->getMessage()]], $exception->httpStatus());
+            return;
+        }
+        $expectedVersion = trim((string) ($manifest['generated_at'] ?? ''));
+        if ($expectedVersion === '') $expectedVersion = 'manifest-v2:' . $uri . ':' . (int) $manifest['pages'];
+        if ($data['start_fragment'] > (int) $manifest['pages'] || !hash_equals($expectedVersion, (string) $data['content_version'])) {
+            Response::json(['error' => ['code' => 'stale_annotation_anchor', 'message' => 'The book content changed; try again.']], 409);
+            return;
+        }
+        Response::ok($this->annotations->toggleBookmark($userId, $bookId, $data));
+    }
+
+    /** @param array<string,string> $params */
     public function update(Request $request, array $params): void
     {
         Response::preventPrivateCaching();
@@ -126,6 +161,10 @@ final class AnnotationsController
         $current = $this->annotations->findOwned($userId, $id);
         if ($current === null) {
             Response::notFound('Annotation not found.', 'annotation_not_found');
+            return;
+        }
+        if (($current['annotation_type'] ?? '') === 'bookmark') {
+            Response::badRequest('Bookmarks cannot be edited as text annotations.');
             return;
         }
         if (!$this->annotations->update($userId, $id, $revision, $noteText, $colorCode)) {
@@ -196,6 +235,7 @@ final class AnnotationsController
             || !$request->bodyIsStringOrNull('note_text', self::MAX_NOTE)
         ) return null;
         return [
+            'annotation_type' => $request->bodyNullableString('note_text', self::MAX_NOTE) === null ? 'highlight' : 'note',
             'start_fragment' => $startFragment,
             'start_offset' => $startOffset,
             'end_fragment' => $endFragment,
@@ -207,6 +247,35 @@ final class AnnotationsController
             'anchor_version' => $anchorVersion,
             'note_text' => $request->bodyNullableString('note_text', self::MAX_NOTE),
             'color_code' => $colorCode,
+            'client_request_id' => strtolower($requestId),
+        ];
+    }
+
+    /** @return array<string,mixed>|null */
+    private function bookmarkData(Request $request): ?array
+    {
+        $fragment = $request->bodyInt('start_fragment', 1, self::MAX_FRAGMENT);
+        $offset = $request->bodyInt('start_offset', 0, self::MAX_OFFSET);
+        $contentVersion = $request->bodyString('content_version', 128);
+        $anchorVersion = $request->bodyInt('anchor_version', 1, 65535);
+        $requestId = $request->bodyString('client_request_id', 36);
+        if ($fragment === null || $offset === null || $contentVersion === null || $anchorVersion === null || $requestId === null
+            || preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $requestId) !== 1
+            || !$request->bodyIsStringOrNull('prefix_text', self::MAX_CONTEXT)
+            || !$request->bodyIsStringOrNull('suffix_text', self::MAX_CONTEXT)) return null;
+        return [
+            'annotation_type' => 'bookmark',
+            'start_fragment' => $fragment,
+            'start_offset' => $offset,
+            'end_fragment' => $fragment,
+            'end_offset' => $offset,
+            'exact_text' => '',
+            'prefix_text' => $request->bodyNullableString('prefix_text', self::MAX_CONTEXT),
+            'suffix_text' => $request->bodyNullableString('suffix_text', self::MAX_CONTEXT),
+            'content_version' => $contentVersion,
+            'anchor_version' => $anchorVersion,
+            'note_text' => null,
+            'color_code' => 1,
             'client_request_id' => strtolower($requestId),
         ];
     }

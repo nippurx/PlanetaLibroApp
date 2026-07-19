@@ -1,5 +1,6 @@
 import { ReaderError, ReaderManifest } from "./types";
 import { ApiError, apiClient } from "../../api/client";
+import { READER_CONTENT_CACHE } from "./cachePolicy";
 
 const SAFE_URI = /^[a-zA-Z0-9._-]+$/;
 
@@ -59,8 +60,8 @@ export function parseManifest(value: unknown, expectedUri?: string): ReaderManif
   };
 }
 
-async function fetchOk(url: string, signal?: AbortSignal): Promise<Response> {
-  const response = await fetch(url, { credentials: "include", signal, headers: { Accept: "application/json,text/html;q=0.9" } });
+async function fetchOk(url: string, signal?: AbortSignal, cache: RequestCache = "default"): Promise<Response> {
+  const response = await fetch(url, { credentials: "include", signal, cache, headers: { Accept: "application/json,text/html;q=0.9" } });
   if (!response.ok) throw new ReaderError(`No se pudo cargar el recurso (${response.status}).`, "HTTP_ERROR", undefined, response.status);
   return response;
 }
@@ -68,7 +69,7 @@ async function fetchOk(url: string, signal?: AbortSignal): Promise<Response> {
 export async function loadManifest(uri: string, signal?: AbortSignal): Promise<ReaderManifest> {
   const safeUri = assertBookUri(uri);
   try {
-    const response = await fetchOk(`${getReaderRoot(safeUri)}/manifest.json`, signal);
+    const response = await fetchOk(`${getReaderRoot(safeUri)}/manifest.json`, signal, READER_CONTENT_CACHE);
     return parseManifest(await response.json(), safeUri);
   } catch (error) {
     if (error instanceof ReaderError && error.code === "HTTP_ERROR" && error.status === 404) {
@@ -93,7 +94,7 @@ export async function loadManifest(uri: string, signal?: AbortSignal): Promise<R
 
 export async function loadFragment(uri: string, page: number, totalPages: number, signal?: AbortSignal): Promise<string> {
   if (!Number.isInteger(page) || page < 1 || page > totalPages) throw new ReaderError("El fragmento está fuera del libro.", "OUT_OF_RANGE");
-  const response = await fetchOk(`${getReaderRoot(uri)}/pag-${page}.html`, signal);
+  const response = await fetchOk(`${getReaderRoot(uri)}/pag-${page}.html`, signal, READER_CONTENT_CACHE);
   return response.text();
 }
 

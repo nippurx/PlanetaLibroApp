@@ -1,4 +1,4 @@
-import type { AnnotationDraft, ReadingAnnotation } from "../../api/annotations.ts";
+import type { AnnotationDraft, BookmarkPoint, ReadingAnnotation } from "../../api/annotations.ts";
 
 export const ANNOTATION_ANCHOR_VERSION = 1;
 export const ANNOTATION_MAX_EXACT = 4000;
@@ -8,7 +8,7 @@ export const ANNOTATION_MAX_NOTE = 10000;
 type DomPoint = { node: Text; offset: number };
 type TextMap = { text: string; starts: DomPoint[]; ends: DomPoint[] };
 
-export type SerializedSelection = Omit<AnnotationDraft, "note_text" | "color_code" | "client_request_id">;
+export type SerializedSelection = Omit<AnnotationDraft, "annotation_type" | "note_text" | "color_code" | "client_request_id">;
 
 function textNodes(root: Node): Text[] {
   const documentRef = root.ownerDocument ?? document;
@@ -110,6 +110,39 @@ export function serializeSelection(root: HTMLElement, selection: Selection, cont
   };
 }
 
+export function serializeBookmarkPoint(root: HTMLElement, viewport: HTMLElement, contentVersion: string): BookmarkPoint | null {
+  const viewportRect = viewport.getBoundingClientRect();
+  let best: { fragment: number; offset: number; text: string; score: number } | null = null;
+  for (const fragment of root.querySelectorAll<HTMLElement>("[data-reader-fragment]")) {
+    const number = fragmentNumber(fragment);
+    if (number === null || ![...fragment.getClientRects()].some((rect) => rect.right > viewportRect.left && rect.left < viewportRect.right && rect.bottom > viewportRect.top && rect.top < viewportRect.bottom)) continue;
+    const map = buildTextMap(fragment);
+    for (let offset = 0; offset < map.starts.length; offset += 1) {
+      const range = fragment.ownerDocument.createRange();
+      range.setStart(map.starts[offset].node, map.starts[offset].offset);
+      range.setEnd(map.ends[offset].node, map.ends[offset].offset);
+      const rect = [...range.getClientRects()].find((item) => item.right > viewportRect.left && item.left < viewportRect.right && item.bottom > viewportRect.top && item.top < viewportRect.bottom);
+      if (!rect) continue;
+      const score = Math.max(0, rect.top - viewportRect.top) * Math.max(1, viewportRect.width) + Math.max(0, rect.left - viewportRect.left);
+      if (best === null || score < best.score) best = { fragment: number, offset, text: map.text, score };
+      break;
+    }
+  }
+  if (!best) return null;
+  return {
+    start_fragment: best.fragment,
+    start_offset: best.offset,
+    end_fragment: best.fragment,
+    end_offset: best.offset,
+    exact_text: "",
+    prefix_text: best.text.slice(Math.max(0, best.offset - ANNOTATION_MAX_CONTEXT), best.offset) || null,
+    suffix_text: best.text.slice(best.offset, best.offset + ANNOTATION_MAX_CONTEXT) || null,
+    content_version: contentVersion,
+    anchor_version: ANNOTATION_ANCHOR_VERSION,
+    client_request_id: crypto.randomUUID(),
+  };
+}
+
 function rangeFromMap(documentRef: Document, map: TextMap, start: number, end: number): Range | null {
   if (start < 0 || end <= start || start >= map.starts.length || end > map.ends.length) return null;
   const range = documentRef.createRange();
@@ -125,6 +158,15 @@ export function resolveAnnotationRange(root: HTMLElement, annotation: ReadingAnn
   const endFragment = root.querySelector<HTMLElement>(`[data-reader-fragment="${annotation.end_fragment}"]`);
   if (startFragment && endFragment) {
     const startMap = buildTextMap(startFragment);
+    if (annotation.exact_text === "" && startFragment === endFragment && annotation.start_offset === annotation.end_offset) {
+      const startPoint = startMap.starts[annotation.start_offset] ?? startMap.ends[annotation.start_offset - 1];
+      const endPoint = startMap.ends[annotation.start_offset] ?? startPoint;
+      if (!startPoint || !endPoint) return null;
+      const pointRange = root.ownerDocument.createRange();
+      pointRange.setStart(startPoint.node, startPoint.offset);
+      pointRange.setEnd(endPoint.node, endPoint.offset);
+      return pointRange;
+    }
     const endMap = startFragment === endFragment ? startMap : buildTextMap(endFragment);
     const startPoint = startMap.starts[annotation.start_offset];
     const endPoint = endMap.ends[annotation.end_offset - 1];

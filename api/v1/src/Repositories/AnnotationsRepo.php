@@ -30,11 +30,11 @@ final class AnnotationsRepo
     {
         $sql = <<<'SQL'
 INSERT INTO user_book_annotations (
-    user_id, ebooks_books_id, start_fragment, start_offset, end_fragment, end_offset,
+    user_id, ebooks_books_id, annotation_type, start_fragment, start_offset, end_fragment, end_offset,
     exact_text, prefix_text, suffix_text, content_version, anchor_version,
     note_text, color_code, client_request_id
 ) VALUES (
-    :user_id, :book_id, :start_fragment, :start_offset, :end_fragment, :end_offset,
+    :user_id, :book_id, :annotation_type, :start_fragment, :start_offset, :end_fragment, :end_offset,
     :exact_text, :prefix_text, :suffix_text, :content_version, :anchor_version,
     :note_text, :color_code, :client_request_id
 )
@@ -44,6 +44,7 @@ SQL;
         $statement->execute([
             'user_id' => $userId,
             'book_id' => $bookId,
+            'annotation_type' => $data['annotation_type'],
             'start_fragment' => $data['start_fragment'],
             'start_offset' => $data['start_offset'],
             'end_fragment' => $data['end_fragment'],
@@ -67,9 +68,11 @@ SQL;
         $conditions = ['user_id = :user_id', 'ebooks_books_id = :book_id'];
         $params = ['user_id' => $userId, 'book_id' => $bookId];
         if ($filter === 'notes') {
-            $conditions[] = 'note_text IS NOT NULL';
+            $conditions[] = "annotation_type = 'note'";
         } elseif ($filter === 'highlights') {
-            $conditions[] = 'note_text IS NULL';
+            $conditions[] = "annotation_type = 'highlight'";
+        } elseif ($filter === 'bookmarks') {
+            $conditions[] = "annotation_type = 'bookmark'";
         }
         if ($cursor !== null) {
             $conditions[] = '(start_fragment > :cursor_fragment OR '
@@ -102,10 +105,11 @@ SQL;
     public function update(int $userId, int $id, int $revision, ?string $noteText, int $colorCode): bool
     {
         $statement = $this->pdo->prepare(
-            'UPDATE user_book_annotations SET note_text = :note_text, color_code = :color_code, '
+            "UPDATE user_book_annotations SET annotation_type = :annotation_type, note_text = :note_text, color_code = :color_code, "
             . 'revision = revision + 1 WHERE id = :id AND user_id = :user_id AND revision = :revision'
         );
         $statement->bindValue(':note_text', $noteText, $noteText === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+        $statement->bindValue(':annotation_type', $noteText === null ? 'highlight' : 'note', PDO::PARAM_STR);
         $statement->bindValue(':color_code', $colorCode, PDO::PARAM_INT);
         $statement->bindValue(':id', $id, PDO::PARAM_INT);
         $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
@@ -122,9 +126,46 @@ SQL;
         $statement->execute(['id' => $id, 'user_id' => $userId]);
     }
 
+    /** @param array<string,mixed> $data @return array{active:bool,bookmark:array<string,mixed>|null} */
+    public function toggleBookmark(int $userId, int $bookId, array $data): array
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $find = $this->pdo->prepare(
+                "SELECT id FROM user_book_annotations WHERE user_id = :user_id AND ebooks_books_id = :book_id "
+                . "AND annotation_type = 'bookmark' AND start_fragment = :fragment AND start_offset = :offset FOR UPDATE"
+            );
+            $find->execute([
+                'user_id' => $userId,
+                'book_id' => $bookId,
+                'fragment' => $data['start_fragment'],
+                'offset' => $data['start_offset'],
+            ]);
+            $ids = array_map('intval', $find->fetchAll(PDO::FETCH_COLUMN));
+            if ($ids) {
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                $delete = $this->pdo->prepare('DELETE FROM user_book_annotations WHERE user_id = ? AND id IN (' . $placeholders . ')');
+                $delete->execute(array_merge([$userId], $ids));
+                $this->pdo->commit();
+                return ['active' => false, 'bookmark' => null];
+            }
+
+            $bookmark = $this->create($userId, $bookId, $data + [
+                'annotation_type' => 'bookmark',
+                'note_text' => null,
+                'color_code' => 1,
+            ]);
+            $this->pdo->commit();
+            return ['active' => true, 'bookmark' => $bookmark];
+        } catch (\Throwable $exception) {
+            if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+            throw $exception;
+        }
+    }
+
     private function columns(): string
     {
-        return 'id, ebooks_books_id, start_fragment, start_offset, end_fragment, end_offset, '
+        return 'id, ebooks_books_id, annotation_type, start_fragment, start_offset, end_fragment, end_offset, '
             . 'exact_text, prefix_text, suffix_text, content_version, anchor_version, note_text, '
             . 'color_code, revision, created_at, updated_at';
     }

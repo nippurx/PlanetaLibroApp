@@ -101,3 +101,30 @@ Registrar dispositivo, sistema, navegador, viewport, conexión y libro. Adjuntar
 - [x] El compartir nativo del celular fue confirmado en producción HTTPS.
 - [x] Tras desplegar el shell Open Graph, compartir una URL numerada nueva y confirmar que WhatsApp muestra la tapa correcta, título y dominio PlanetaLibro.
 - [ ] Abrir la tarjeta desde WhatsApp y confirmar que conserva `/app/read/{libro}/{N}` y carga el reader en el fragmento indicado.
+
+## Registro 2026-07-19 — señaladores
+
+- Implementación: señaladores privados múltiples en `user_book_annotations`, discriminados por `annotation_type='bookmark'`, con ancla puntual, contexto y color inicial fijo.
+- La esquina superior derecha contiene un botón táctil permanente de 52 por 56 píxeles CSS. La cinta solo se ve cuando la ubicación está marcada; la zona siempre queda excluida del avance de página.
+- El panel “Mis anotaciones” lista señaladores junto con notas y destacados, ofrece filtro propio, contexto, navegación y borrado.
+- La API alterna creación/eliminación dentro de una transacción y elimina todos los duplicados equivalentes al quitar. No depende de las columnas generadas ni del índice único condicional que no pudo aplicarse en MySQL 5.7.44.
+- [x] Tests frontend: la zona interactiva del extremo derecho no ejecuta navegación; 21 pruebas aprobadas.
+- [x] Tests PHP: manifest y contrato de señaladores aprobados.
+- [x] Build productivo, validación OpenSpec estricta y `git diff --check` aprobados.
+- [ ] En celular portrait y landscape, tocar la esquina sin cinta: aparece el señalador y no avanza la página.
+- [ ] Volver a tocar la cinta: desaparece y no avanza la página.
+- [ ] Tocar el lateral derecho inmediatamente debajo del target: avanza exactamente una página.
+- [ ] Crear varios señaladores en un mismo libro, recargar y comprobar que persisten.
+- [ ] Abrir “Mis anotaciones”, filtrar “Señaladores” y navegar a cada ubicación.
+- [ ] Repetir en temas claro, sepia y oscuro, modo paginado y continuo, teclado y lector de pantalla.
+- Validación pendiente de entorno: prueba manual contra la base productiva migrada y comprobación visual móvil/escritorio.
+- Corrección posterior: al cambiar de página, el punto visible se calculaba antes de terminar la transición de columnas y al retroceder podía conservar la geometría de la página anterior. Ahora se invalida durante el movimiento y se recalcula en `transitionend`, con fallback temporizado y cancelación de cálculos obsoletos.
+- [ ] Regresión: avanzar desde una página señalada y volver atrás mediante toque, swipe, botón y teclado; la cinta debe reaparecer después de cada transición.
+- Corrección PC: el toolbar superior podía quedar por encima de la zona del señalador e interceptar el clic. El target ahora está por encima del toolbar y el layout desktop reserva su ancho, sin modificar la grilla móvil.
+- [ ] En PC, con controles visibles y ocultos, acercar el mouse y hacer clic en la esquina: debe agregar/quitar el señalador y no abrir preferencias ni avanzar.
+- Segunda corrección PC: la activación ya no depende del `click` sintetizado; mouse y touch ejecutan en `pointerup`, mientras teclado conserva `click`. Un error de API ahora aparece visiblemente debajo de la barra negra.
+- Diagnóstico confirmado en PC: el navegador conservaba un manifest anterior y la API respondió `stale_annotation_anchor`. Manifest y fragmentos ahora usan revalidación `no-cache`; ante un 409 el reader recarga contenido coherente automáticamente antes de permitir un nuevo intento.
+- Corrección de navegación: “Ir al señalador” cierra el cuaderno sin devolver el foco al toolbar, por lo que la barra desaparece. Cerrar el panel normalmente conserva la restauración de foco accesible.
+- Ajuste móvil: el señalador se ubica dentro del extremo derecho de la barra negra de PlanetaLibro, respetando safe-area. En desktop permanece debajo de esa barra.
+- [ ] En celular portrait y landscape, comprobar que el señalador funciona dentro de la barra negra y que el botón `Tt` se puede activar con el menú visible.
+- Corrección de redibujado: tras “Ir al señalador”, la cinta se activa cuando el ancla persistida intersecta la página visual, aunque el nuevo inicio de columna no coincida exactamente con el offset usado al crearla. Al quitarla se usa la ubicación real guardada.

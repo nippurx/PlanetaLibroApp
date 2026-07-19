@@ -55,6 +55,7 @@ $router->get('/reader-progress/{uri}', [$readerProgressController, 'show']);
 $router->post('/reader-progress/{uri}', [$readerProgressController, 'update']);
 $router->get('/books/{uri}/annotations', [$annotationsController, 'index']);
 $router->post('/books/{uri}/annotations', [$annotationsController, 'create']);
+$router->post('/books/{uri}/bookmarks/toggle', [$annotationsController, 'toggleBookmark']);
 $router->patch('/annotations/{id}', [$annotationsController, 'update']);
 $router->delete('/annotations/{id}', [$annotationsController, 'delete']);
 

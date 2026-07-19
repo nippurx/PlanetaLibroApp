@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { evaluateReaderGesture, type ReaderGestureEvaluation } from "../src/features/reader/gestures.ts";
+import { bookmarkRectIsVisible, shouldHandleBookmarkClick } from "../src/features/reader/bookmarkActivation.ts";
 
 function gesture(overrides: Partial<ReaderGestureEvaluation> = {}) {
   return evaluateReaderGesture({
@@ -37,6 +38,18 @@ test("movimiento principalmente vertical no navega", () => assert.equal(gesture(
 test("movimiento diagonal sin intención clara no navega", () => assert.equal(gesture({ endX: 540, endY: 335 }), "none"));
 test("un enlace no activa navegación", () => assert.equal(gesture({ interactive: true, startX: 900, endX: 900 }), "none"));
 test("un botón no activa navegación", () => assert.equal(gesture({ interactive: true }), "none"));
+test("la zona exclusiva del señalador no avanza aunque esté en el lateral derecho", () => {
+  assert.equal(gesture({ interactive: true, startX: 950, endX: 950 }), "none");
+});
+test("el click posterior a pointerup no duplica el toggle y teclado sigue activándolo", () => {
+  assert.equal(shouldHandleBookmarkClick(1), false);
+  assert.equal(shouldHandleBookmarkClick(0), true);
+});
+test("un señalador se considera activo cuando su ancla cae dentro de la página visible", () => {
+  const viewport = { left: 0, right: 800, top: 44, bottom: 600 };
+  assert.equal(bookmarkRectIsVisible({ left: 120, right: 121, top: 200, bottom: 220 }, viewport), true);
+  assert.equal(bookmarkRectIsVisible({ left: 820, right: 821, top: 200, bottom: 220 }, viewport), false);
+});
 test("una selección de texto no activa navegación", () => assert.equal(gesture({ hasSelection: true }), "none"));
 test("la primera página no retrocede", () => assert.equal(gesture({ startX: 100, endX: 100, canGoPrevious: false }), "none"));
 test("la última página no avanza", () => assert.equal(gesture({ startX: 900, endX: 900, canGoNext: false }), "none"));

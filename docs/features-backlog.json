@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-18",
+  "updated_at": "2026-07-19",
   "features": [
     {
       "id": "FEAT-001",
@@ -82,6 +82,42 @@
         "No se propone igualar todos los encabezados, sino conservar su jerarquía dentro de límites visuales adaptables.",
         "Debe evaluarse el comportamiento de títulos cortos y largos, pantallas angostas, paginación y preferencias de tamaño de fuente."
       ]
+    },
+    {
+      "id": "FEAT-006",
+      "title": "Registrar páginas leídas desde el reader nuevo",
+      "summary": "Pendiente: extender la persistencia del reader nuevo para registrar eventos en user_books_log, además de actualizar user_books. Debe conservar la compatibilidad con pages_read_adm.php, diferenciar progreso personal de analítica, definir el tratamiento de lectores anónimos y evitar duplicados causados por renders o repaginaciones.",
+      "status": "idea",
+      "priority": "none",
+      "area": "reader",
+      "created_at": "2026-07-18",
+      "updated_at": "2026-07-18",
+      "openspec_change": null,
+      "notes": []
+    },
+    {
+      "id": "FEAT-007",
+      "title": "Restringir libros 18+ a suscriptores pagos",
+      "summary": "Pendiente: en el reader nuevo, permitir la lectura de libros con el tag 18+ únicamente a usuarios con una suscripción anual paga y vigente. Estar registrado no es suficiente; el pago con tarjeta se utiliza como garantía de mayoría de edad.",
+      "status": "idea",
+      "priority": "none",
+      "area": "reader",
+      "created_at": "2026-07-18",
+      "updated_at": "2026-07-18",
+      "openspec_change": null,
+      "notes": []
+    },
+    {
+      "id": "FEAT-008",
+      "title": "Señaladores con colores y categorías",
+      "summary": "Evolucionar los señaladores del lector para permitir colores y posibles categorías, manteniendo el gesto inmediato del señalador básico y evitando confusión con destacados y notas. Evaluar la necesidad con uso real antes de definir significados, filtros o personalización.",
+      "status": "idea",
+      "priority": "none",
+      "area": "reader",
+      "created_at": "2026-07-19",
+      "updated_at": "2026-07-19",
+      "openspec_change": null,
+      "notes": []
     }
   ]
 }

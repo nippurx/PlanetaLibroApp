@@ -3,10 +3,12 @@ import { apiClient } from "./client";
 type ApiEnvelope<T> = { data: T };
 
 export type AnnotationColor = 1 | 2 | 3 | 4;
+export type AnnotationType = "highlight" | "note" | "bookmark";
 
 export type ReadingAnnotation = {
   id: number;
   ebooks_books_id: number;
+  annotation_type: AnnotationType;
   start_fragment: number;
   start_offset: number;
   end_fragment: number;
@@ -27,9 +29,11 @@ export type AnnotationDraft = Omit<ReadingAnnotation, "id" | "ebooks_books_id" |
   client_request_id: string;
 };
 
+export type BookmarkPoint = Omit<AnnotationDraft, "annotation_type" | "note_text" | "color_code">;
+
 export async function listAnnotations(
   uri: string,
-  filter: "all" | "highlights" | "notes" = "all",
+  filter: "all" | "highlights" | "notes" | "bookmarks" = "all",
   cursor?: string | null,
   signal?: AbortSignal,
 ): Promise<{ items: ReadingAnnotation[]; next_cursor: string | null }> {
@@ -39,6 +43,19 @@ export async function listAnnotations(
     `/public/books/${encodeURIComponent(uri)}/annotations?${query}`,
     undefined,
     signal,
+  );
+  return response.data;
+}
+
+export async function toggleBookmark(
+  uri: string,
+  point: BookmarkPoint,
+  csrfToken: string,
+): Promise<{ active: boolean; bookmark: ReadingAnnotation | null }> {
+  const response = await apiClient.post<ApiEnvelope<{ active: boolean; bookmark: ReadingAnnotation | null }>>(
+    `/public/books/${encodeURIComponent(uri)}/bookmarks/toggle`,
+    point,
+    { "X-CSRF-Token": csrfToken },
   );
   return response.data;
 }

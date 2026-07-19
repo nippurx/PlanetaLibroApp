@@ -327,7 +327,115 @@ DROP TABLE `user_book_annotations`;
 
 Una vez que existan anotaciones reales, cualquier eliminación física requiere exportación o una decisión documentada de retención y privacidad.
 
-### Pendientes antes de aplicación
+---
+
+## DB-ADD-002 — tipos de anotación y preparación para señaladores
+
+| Dato | Valor |
+|---|---|
+| Estado | **REPORTED_APPLIED — VERIFICATION PENDING** |
+| Fecha informada | 2026-07-19 |
+| Tabla | `user_book_annotations` |
+| Feature actual | Señaladores simples del reader |
+| Feature futura relacionada | `planeta-libro-app/FEAT-008` |
+| Entorno aplicado | Base de datos de PlanetaLibro, informado por el propietario |
+| Versión informada | MySQL `5.7.44-log` |
+| Evidencia pendiente | `SHOW CREATE TABLE user_book_annotations` y `SHOW INDEX FROM user_book_annotations` |
+
+### Objetivo
+
+Evolucionar la entidad unificada de anotaciones para distinguir explícitamente subrayados, notas y señaladores. Los tres tipos se consultan desde el mismo cuaderno, pero conservan interacciones diferentes en el reader.
+
+El señalador se representa como un ancla puntual: `start_fragment = end_fragment` y `start_offset = end_offset`. No selecciona texto, por lo que usa `exact_text = ''` y `note_text = NULL`; `prefix_text` y `suffix_text` conservan contexto para mostrar y recuperar la ubicación. `color_code` permanece en la tabla y usa inicialmente un único valor visible.
+
+### ALTER TABLE informado como aplicado
+
+```sql
+ALTER TABLE `user_book_annotations`
+    ADD COLUMN `annotation_type`
+        ENUM('highlight', 'note', 'bookmark')
+        NOT NULL
+        DEFAULT 'highlight'
+        AFTER `ebooks_books_id`;
+```
+
+### Clasificación y normalización informadas como aplicadas
+
+```sql
+UPDATE `user_book_annotations`
+SET `annotation_type` = 'note'
+WHERE `note_text` IS NOT NULL
+  AND CHAR_LENGTH(TRIM(`note_text`)) > 0;
+
+UPDATE `user_book_annotations`
+SET `annotation_type` = 'highlight'
+WHERE `note_text` IS NULL
+   OR CHAR_LENGTH(TRIM(`note_text`)) = 0;
+
+UPDATE `user_book_annotations`
+SET `note_text` = NULL
+WHERE `note_text` IS NOT NULL
+  AND CHAR_LENGTH(TRIM(`note_text`)) = 0;
+```
+
+### Índice informado como aplicado
+
+```sql
+ALTER TABLE `user_book_annotations`
+    ADD KEY `idx_uba_user_book_type_location` (
+        `user_id`,
+        `ebooks_books_id`,
+        `annotation_type`,
+        `start_fragment`,
+        `start_offset`,
+        `id`
+    );
+```
+
+El índice atiende el listado y los filtros por tipo y ubicación. `idx_uba_user_book_location` continúa atendiendo el listado unificado sin filtro.
+
+### Comentario informado como aplicado
+
+```sql
+ALTER TABLE `user_book_annotations`
+    COMMENT = 'Señaladores, subrayados y notas privadas ancladas al contenido de libros';
+```
+
+### Restricción condicional de duplicados no aplicada
+
+Se intentó agregar las columnas generadas `bookmark_user_id`, `bookmark_book_id`, `bookmark_fragment` y `bookmark_offset`, junto con `uq_uba_bookmark_location`. MySQL rechazó el `ALTER TABLE` durante el renombrado de su tabla temporal:
+
+```text
+#1025 - Error en el renombrado de la tabla temporal
+(Error: 150 - Foreign key constraint is incorrectly formed)
+```
+
+La operación se considera **NO APLICADA** hasta comprobar lo contrario. No se debe asumir que existen esas columnas ni el índice único. MySQL `5.7.44-log` admite columnas generadas almacenadas; el error apunta a la recreación de una foreign key existente durante el rebuild.
+
+La primera versión controlará duplicados mediante la API, `client_request_id`, bloqueo transitorio de la interacción y eliminación por ubicación. La restricción física queda diferida hasta revisar `SHOW CREATE TABLE user_book_annotations`, `SHOW CREATE TABLE user_table` y `LATEST FOREIGN KEY ERROR` de InnoDB.
+
+### Verificación pendiente
+
+```sql
+SHOW CREATE TABLE `user_book_annotations`;
+SHOW INDEX FROM `user_book_annotations`;
+
+SHOW COLUMNS
+FROM `user_book_annotations`
+LIKE 'bookmark_%';
+
+SELECT
+    `annotation_type`,
+    COUNT(*) AS `total`
+FROM `user_book_annotations`
+GROUP BY `annotation_type`;
+```
+
+Para elevar el estado a `APPLIED`, se debe confirmar la presencia de `annotation_type` e `idx_uba_user_book_type_location`, la ausencia de las columnas `bookmark_*` y de `uq_uba_bookmark_location`, y la conservación de la PK, índices anteriores y `fk_uba_user`.
+
+---
+
+### Pendientes originales de DB-ADD-001
 
 1. Confirmar versión productiva mediante `SELECT VERSION()` y compatibilidad con `DATETIME(6)`.
 2. Confirmar límites y paleta como decisiones de producto definitivas.

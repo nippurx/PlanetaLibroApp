@@ -3,10 +3,12 @@ import { ApiError } from "../../api/client";
 import {
   AnnotationColor,
   AnnotationDraft,
+  BookmarkPoint,
   createAnnotation,
   deleteAnnotation,
   listAnnotations,
   ReadingAnnotation,
+  toggleBookmark,
   updateAnnotation,
 } from "../../api/annotations";
 import { AppSession, getLegacyLoginUrl } from "../../api/session";
@@ -17,6 +19,7 @@ import {
   serializeSelection,
   SerializedSelection,
 } from "./annotations";
+import { bookmarkRectIsVisible } from "./bookmarkActivation";
 
 const DRAFT_KEY = "planetalibro:reader-annotation-draft:v1";
 const DRAFT_TTL_MS = 20 * 60 * 1000;
@@ -39,12 +42,14 @@ type UseReaderAnnotationsOptions = {
   enabled: boolean;
   uri: string;
   rootRef: RefObject<HTMLElement>;
+  viewportRef: RefObject<HTMLElement>;
   session: AppSession | null;
   generatedAt?: string;
   pages: number;
   renderKey: string;
   onAnnouncement: (message: string) => void;
   onNavigate: (annotation: ReadingAnnotation) => Promise<boolean>;
+  onContentStale: () => void;
 };
 
 function createRequestId(): string {
@@ -52,7 +57,8 @@ function createRequestId(): string {
 }
 
 function completeDraft(selection: SerializedSelection, note: string | null, color: AnnotationColor): AnnotationDraft {
-  return { ...selection, note_text: note?.trim() || null, color_code: color, client_request_id: createRequestId() };
+  const noteText = note?.trim() || null;
+  return { ...selection, annotation_type: noteText ? "note" : "highlight", note_text: noteText, color_code: color, client_request_id: createRequestId() };
 }
 
 function storeDraft(uri: string, draft: AnnotationDraft): void {
@@ -80,7 +86,7 @@ function applyHighlights(root: HTMLElement, annotations: ReadingAnnotation[]): v
   if (!registry || !HighlightConstructor) return;
   for (const color of COLORS) {
     const ranges = annotations
-      .filter((annotation) => annotation.color_code === color.value)
+      .filter((annotation) => annotation.annotation_type !== "bookmark" && annotation.color_code === color.value)
       .map((annotation) => resolveAnnotationRange(root, annotation))
       .filter((range): range is Range => range !== null);
     const name = `reader-annotation-${color.value}`;
@@ -92,7 +98,8 @@ function applyHighlights(root: HTMLElement, annotations: ReadingAnnotation[]): v
 export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
   const [items, setItems] = useState<ReadingAnnotation[]>([]);
   const [highlightItems, setHighlightItems] = useState<ReadingAnnotation[]>([]);
-  const [filter, setFilter] = useState<"all" | "highlights" | "notes">("all");
+  const [bookmarkItems, setBookmarkItems] = useState<ReadingAnnotation[]>([]);
+  const [filter, setFilter] = useState<"all" | "highlights" | "notes" | "bookmarks">("all");
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selection, setSelection] = useState<SerializedSelection | null>(null);
@@ -117,7 +124,7 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
       setItems((current) => append ? [...current, ...page.items] : page.items);
       setHighlightItems((current) => {
         const merged = new Map(current.map((item) => [item.id, item]));
-        page.items.forEach((item) => merged.set(item.id, item));
+        page.items.filter((item) => item.annotation_type !== "bookmark").forEach((item) => merged.set(item.id, item));
         return [...merged.values()];
       });
       setNextCursor(page.next_cursor);
@@ -129,6 +136,18 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
   }, [filter, nextCursor, options.enabled, options.session?.authenticated, options.uri]);
 
   useEffect(() => { void load(false); }, [filter, options.session?.authenticated, options.uri]);
+
+  const loadBookmarks = useCallback(async () => {
+    if (!options.enabled || !options.session?.authenticated) { setBookmarkItems([]); return; }
+    try {
+      const page = await listAnnotations(options.uri, "bookmarks");
+      setBookmarkItems(page.items);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "No se pudieron cargar los señaladores.");
+    }
+  }, [options.enabled, options.session?.authenticated, options.uri]);
+
+  useEffect(() => { void loadBookmarks(); }, [loadBookmarks]);
 
   useEffect(() => {
     if (!options.enabled) return;
@@ -189,13 +208,13 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
       if (event.button !== 0) return;
       const nativeSelection = window.getSelection();
       if (nativeSelection && !nativeSelection.isCollapsed) return;
-      const annotation = [...highlightItems].reverse().find((item) => {
+      const annotation = [...highlightItems].reverse().find((item) => item.annotation_type !== "bookmark" && (() => {
         const range = resolveAnnotationRange(root, item);
         return range !== null && [...range.getClientRects()].some((rect) => (
           event.clientX >= rect.left && event.clientX <= rect.right
           && event.clientY >= rect.top && event.clientY <= rect.bottom
         ));
-      });
+      })());
       if (!annotation) return;
       setSelection(null);
       setActiveAnnotation(annotation);
@@ -213,7 +232,7 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
     const pending = readDraft(options.uri);
     if (!pending) return;
     sessionStorage.removeItem(DRAFT_KEY);
-    const { note_text, color_code, client_request_id: _requestId, ...serialized } = pending;
+    const { annotation_type: _annotationType, note_text, color_code, client_request_id: _requestId, ...serialized } = pending;
     setEditor({ annotation: null, selection: serialized, note: note_text ?? "", color: color_code });
   }, [options.session?.authenticated, options.uri]);
 
@@ -304,6 +323,7 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
       await deleteAnnotation(annotation.id, options.session.csrf_token);
       setItems((current) => current.filter((item) => item.id !== annotation.id));
       setHighlightItems((current) => current.filter((item) => item.id !== annotation.id));
+      setBookmarkItems((current) => current.filter((item) => item.id !== annotation.id));
       setEditor(null);
       setActiveAnnotation(null);
       setSelectionPosition(null);
@@ -312,6 +332,46 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
       setError(reason instanceof Error ? reason.message : "No se pudo eliminar la anotación.");
     } finally { setLoading(false); }
   }, [options]);
+
+  const toggleCurrentBookmark = useCallback(async (point: BookmarkPoint | null, currentBookmark: ReadingAnnotation | null) => {
+    if (!point || loading) return;
+    if (!options.session?.authenticated || !options.session.csrf_token) { setAuthPrompt(true); return; }
+    setLoading(true);
+    setError(null);
+    try {
+      const togglePoint: BookmarkPoint = currentBookmark ? {
+        start_fragment: currentBookmark.start_fragment,
+        start_offset: currentBookmark.start_offset,
+        end_fragment: currentBookmark.start_fragment,
+        end_offset: currentBookmark.start_offset,
+        exact_text: "",
+        prefix_text: currentBookmark.prefix_text,
+        suffix_text: currentBookmark.suffix_text,
+        content_version: currentBookmark.content_version,
+        anchor_version: currentBookmark.anchor_version,
+        client_request_id: createRequestId(),
+      } : point;
+      const result = await toggleBookmark(options.uri, togglePoint, options.session.csrf_token);
+      if (result.active && result.bookmark) {
+        const bookmark = result.bookmark;
+        setBookmarkItems((current) => [...current.filter((item) => item.id !== bookmark.id), bookmark]);
+        setItems((current) => filter === "all" || filter === "bookmarks" ? [...current, bookmark].sort((a, b) => a.start_fragment - b.start_fragment || a.start_offset - b.start_offset || a.id - b.id) : current);
+        options.onAnnouncement("Señalador agregado.");
+      } else {
+        setBookmarkItems((current) => current.filter((item) => item.start_fragment !== togglePoint.start_fragment || item.start_offset !== togglePoint.start_offset));
+        setItems((current) => current.filter((item) => item.annotation_type !== "bookmark" || item.start_fragment !== togglePoint.start_fragment || item.start_offset !== togglePoint.start_offset));
+        options.onAnnouncement("Señalador eliminado.");
+      }
+    } catch (reason) {
+      if (reason instanceof ApiError && reason.status === 409) {
+        options.onAnnouncement("El libro se actualizó. Recargando el contenido.");
+        options.onContentStale();
+        return;
+      }
+      setError(reason instanceof Error ? reason.message : "No se pudo cambiar el señalador.");
+      options.onAnnouncement("No se pudo cambiar el señalador.");
+    } finally { setLoading(false); }
+  }, [filter, loading, options]);
 
   const selectionToolbar = options.enabled && selectionPosition && (selection || activeAnnotation) ? (
     <div className={`reader-selection-actions ${activeAnnotation ? "is-existing" : ""}`} data-reader-interactive style={selectionPosition} role="toolbar" aria-label={activeAnnotation ? "Acciones para el subrayado" : "Acciones para el texto seleccionado"}>
@@ -357,7 +417,7 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
       </div>}
       {authPrompt && <div className="reader-annotation-modal" data-reader-interactive role="presentation">
         <div role="dialog" aria-modal="true" aria-labelledby="annotation-auth-title">
-          <h2 id="annotation-auth-title">Guardá tus destacados y notas</h2>
+          <h2 id="annotation-auth-title">Guardá tus señaladores y anotaciones</h2>
           <p>Creá una cuenta gratuita o iniciá sesión para conservarlos y recuperarlos desde cualquier dispositivo.</p>
           <div className="reader-annotation-modal-actions">
             <button onClick={() => { sessionStorage.removeItem(DRAFT_KEY); setAuthPrompt(false); }}>Ahora no</button>
@@ -371,7 +431,7 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
   const notebook = useMemo(() => (
     <div className="reader-annotations-notebook">
       <div className="reader-segmented" role="group" aria-label="Filtrar anotaciones">
-        {([['all', 'Todas'], ['highlights', 'Destacados'], ['notes', 'Notas']] as const).map(([value, label]) => (
+        {([['all', 'Todas'], ['bookmarks', 'Señaladores'], ['highlights', 'Destacados'], ['notes', 'Notas']] as const).map(([value, label]) => (
           <button key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>
         ))}
       </div>
@@ -379,15 +439,31 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
       {options.session?.authenticated && loading && items.length === 0 && <p role="status">Cargando anotaciones…</p>}
       {options.session?.authenticated && error && <p role="alert">{error}</p>}
       {options.session?.authenticated && !loading && !error && items.length === 0 && <p className="reader-annotations-empty">Todavía no hay anotaciones con este filtro.</p>}
-      <ol>{items.map((annotation) => <li key={annotation.id} className={`is-color-${annotation.color_code}`}>
-        <blockquote>{annotation.exact_text}</blockquote>
+      <ol>{items.map((annotation) => <li key={annotation.id} className={`is-color-${annotation.color_code} ${annotation.annotation_type === "bookmark" ? "is-bookmark" : ""}`}>
+        {annotation.annotation_type === "bookmark" ? <p className="reader-bookmark-context"><span className="material-symbols-outlined" aria-hidden="true">bookmark</span>{annotation.suffix_text || annotation.prefix_text || `Ubicación ${annotation.start_fragment}`}</p> : <blockquote>{annotation.exact_text}</blockquote>}
         {annotation.note_text && <p>{annotation.note_text}</p>}
         {unlocatedIds.has(annotation.id) && <p role="status">El pasaje ya no pudo localizarse; la anotación se conserva.</p>}
-        <div><button onClick={() => { void options.onNavigate(annotation).then((located) => setUnlocatedIds((current) => { const next = new Set(current); if (located) next.delete(annotation.id); else next.add(annotation.id); return next; })); }}>Ir al texto</button><button onClick={() => setEditor({ annotation, selection: null, note: annotation.note_text ?? "", color: annotation.color_code })}>Editar</button></div>
+        <div><button onClick={() => { void options.onNavigate(annotation).then((located) => setUnlocatedIds((current) => { const next = new Set(current); if (located) next.delete(annotation.id); else next.add(annotation.id); return next; })); }}>{annotation.annotation_type === "bookmark" ? "Ir al señalador" : "Ir al texto"}</button>{annotation.annotation_type === "bookmark" ? <button onClick={() => { void remove(annotation); }}>Borrar</button> : <button onClick={() => setEditor({ annotation, selection: null, note: annotation.note_text ?? "", color: annotation.color_code })}>Editar</button>}</div>
       </li>)}</ol>
       {nextCursor && <button disabled={loading} onClick={() => { void load(true); }}>Cargar más</button>}
     </div>
-  ), [error, filter, items, load, loading, nextCursor, options, unlocatedIds]);
+  ), [error, filter, items, load, loading, nextCursor, options, remove, unlocatedIds]);
 
-  return { items, selectionToolbar, dialogs, notebook, refresh: () => load(false) };
+  const findCurrentBookmark = useCallback((point: BookmarkPoint | null): ReadingAnnotation | null => {
+    if (!point) return null;
+    const root = options.rootRef.current;
+    const viewport = options.viewportRef.current;
+    if (root && viewport) {
+      const viewportRect = viewport.getBoundingClientRect();
+      const visible = bookmarkItems
+        .filter((bookmark) => {
+          const range = resolveAnnotationRange(root, bookmark);
+          return range !== null && [...range.getClientRects()].some((rect) => bookmarkRectIsVisible(rect, viewportRect));
+        })
+        .sort((a, b) => a.start_fragment - b.start_fragment || a.start_offset - b.start_offset || a.id - b.id);
+      if (visible.length) return visible[0];
+    }
+    return bookmarkItems.find((item) => item.start_fragment === point.start_fragment && item.start_offset === point.start_offset) ?? null;
+  }, [bookmarkItems, options.rootRef, options.viewportRef]);
+  return { items, selectionToolbar, dialogs, notebook, loading, error, toggleCurrentBookmark, findCurrentBookmark, refresh: () => Promise.all([load(false), loadBookmarks()]) };
 }

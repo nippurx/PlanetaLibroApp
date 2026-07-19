@@ -10,9 +10,10 @@ import { ReaderBrandBar } from "../components/ReaderBrandBar";
 import { useAuth } from "../auth/AuthContext";
 import { getReaderProgress, saveReaderProgress } from "../api/readerProgress";
 import { useReaderGestures } from "../features/reader/useReaderGestures";
-import { ReadingAnnotation } from "../api/annotations";
-import { resolveAnnotationRange } from "../features/reader/annotations";
+import { BookmarkPoint, ReadingAnnotation } from "../api/annotations";
+import { annotationContentVersion, resolveAnnotationRange, serializeBookmarkPoint } from "../features/reader/annotations";
 import { useReaderAnnotations } from "../features/reader/ReaderAnnotations";
+import { shouldHandleBookmarkClick } from "../features/reader/bookmarkActivation";
 
 const LOAD_BATCH = 8;
 
@@ -76,6 +77,7 @@ export function ImmersiveReaderPage() {
   const panelRef = useRef<HTMLDivElement>(null);
   const panelButtonRef = useRef<HTMLButtonElement>(null);
   const gestureLock = useRef<number | null>(null);
+  const suppressPanelFocusRestore = useRef(false);
   const hideTimer = useRef<number | null>(null);
   const shareSelectionRef = useRef<ReaderTextSelection | null>(null);
   const pendingAnchor = useRef<ReaderAnchor | null>(null);
@@ -85,6 +87,7 @@ export function ImmersiveReaderPage() {
   const lastServerPage = useRef<{ uri: string; page: number } | null>(null);
   const colors = themeColors(preferences.theme);
   const annotationsEnabled = import.meta.env.VITE_READING_ANNOTATIONS !== "false";
+  const [bookmarkPoint, setBookmarkPoint] = useState<BookmarkPoint | null>(null);
   const loadedPages = useMemo(() => [...fragments.keys()].sort((a, b) => a - b), [fragments]);
   const firstLoadedPage = loadedPages[0];
   const lastLoadedPage = loadedPages[loadedPages.length - 1];
@@ -363,7 +366,10 @@ export function ImmersiveReaderPage() {
 
   useEffect(() => {
     if (panel) { panelRef.current?.focus(); setControlsVisible(true); }
-    else panelButtonRef.current?.focus();
+    else if (suppressPanelFocusRestore.current) {
+      suppressPanelFocusRestore.current = false;
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    } else panelButtonRef.current?.focus();
   }, [panel]);
 
   const chapter = useMemo(() => {
@@ -540,6 +546,7 @@ export function ImmersiveReaderPage() {
   });
 
   async function navigateToAnnotation(annotation: ReadingAnnotation) {
+    suppressPanelFocusRestore.current = true;
     setPanel(null);
     setControlsVisible(false);
     try {
@@ -558,7 +565,7 @@ export function ImmersiveReaderPage() {
           return;
         }
         if (preferences.mode === "paged") {
-          const targetRect = range.getClientRects()[0] ?? range.getBoundingClientRect();
+          const targetRect = range.getClientRects()[0] ?? range.startContainer.parentElement?.getBoundingClientRect() ?? range.getBoundingClientRect();
           const contentRect = content.getBoundingClientRect();
           const next = Math.min(visualPages - 1, Math.max(0, Math.floor((targetRect.left - contentRect.left) / Math.max(1, visualPageWidth))));
           setVisualPage(next);
@@ -579,17 +586,47 @@ export function ImmersiveReaderPage() {
     }
   }
 
+  useEffect(() => {
+    if (!annotationsEnabled || !layoutReady || !manifest) { setBookmarkPoint(null); return; }
+    const root = contentRef.current;
+    const viewport = viewportRef.current;
+    if (!root || !viewport) { setBookmarkPoint(null); return; }
+    const updateBookmarkPoint = () => setBookmarkPoint(serializeBookmarkPoint(
+      root,
+      viewport,
+      annotationContentVersion(manifest.generated_at, libro_uri, manifest.pages),
+    ));
+    setBookmarkPoint(null);
+    if (preferences.mode === "scroll") {
+      const frame = requestAnimationFrame(updateBookmarkPoint);
+      return () => cancelAnimationFrame(frame);
+    }
+    const onTransitionEnd = (event: TransitionEvent) => {
+      if (event.target === root && event.propertyName === "transform") updateBookmarkPoint();
+    };
+    root.addEventListener("transitionend", onTransitionEnd);
+    const fallback = window.setTimeout(updateBookmarkPoint, 220);
+    return () => {
+      root.removeEventListener("transitionend", onTransitionEnd);
+      window.clearTimeout(fallback);
+    };
+  }, [annotationsEnabled, layoutReady, libro_uri, manifest, preferences.mode, sanitizedHtml, scrollProgress, visualPage]);
+
   const readerAnnotations = useReaderAnnotations({
     enabled: annotationsEnabled,
     uri: libro_uri,
     rootRef: contentRef,
+    viewportRef,
     session,
     generatedAt: manifest?.generated_at,
     pages: manifest?.pages ?? 1,
     renderKey: sanitizedHtml,
     onAnnouncement: setAnnouncement,
     onNavigate: navigateToAnnotation,
+    onContentStale: () => window.location.reload(),
   });
+
+  const currentBookmark = readerAnnotations.findCurrentBookmark(bookmarkPoint);
 
   const readerStyle = {
     "--reader-bg": colors.background, "--reader-fg": colors.foreground, "--reader-muted": colors.muted, "--reader-panel": colors.panel,
@@ -624,6 +661,19 @@ export function ImmersiveReaderPage() {
         <main ref={viewportRef} className={`reader-viewport is-${preferences.mode}`} aria-label="Contenido del libro" {...readerGestures} onScroll={(event) => { if (preferences.mode === "scroll") { const element = event.currentTarget; setScrollProgress(element.scrollTop / Math.max(1, element.scrollHeight - element.clientHeight)); } }}>
           <article ref={contentRef} className="reader-content" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
         </main>
+
+        {annotationsEnabled && <button
+          type="button"
+          className={`reader-bookmark-target ${currentBookmark ? "is-active" : ""}`}
+          data-reader-interactive
+          aria-pressed={Boolean(currentBookmark)}
+          aria-label={currentBookmark ? "Quitar señalador" : "Agregar señalador"}
+          disabled={!bookmarkPoint || readerAnnotations.loading || repaginating}
+          onPointerDown={(event) => event.stopPropagation()}
+          onPointerUp={(event) => { event.stopPropagation(); void readerAnnotations.toggleCurrentBookmark(bookmarkPoint, currentBookmark); }}
+          onClick={(event) => { event.stopPropagation(); if (shouldHandleBookmarkClick(event.detail)) void readerAnnotations.toggleCurrentBookmark(bookmarkPoint, currentBookmark); }}
+        ><span className="material-symbols-outlined" aria-hidden="true">bookmark</span></button>}
+        {readerAnnotations.error && <div className="reader-bookmark-error" role="alert">{readerAnnotations.error}</div>}
 
         {preferences.mode === "paged" && <>
           <button className="reader-page-button reader-page-previous" disabled={visualPage === 0 && firstLoadedPage === 1} aria-label="Página visual anterior" onClick={(event) => { event.stopPropagation(); void goToVisualPage(visualPage - 1); }}><span className="material-symbols-outlined">chevron_left</span></button>
