@@ -11,14 +11,9 @@ import { useAuth } from "../auth/AuthContext";
 import { getReaderProgress, saveReaderProgress } from "../api/readerProgress";
 import { useReaderGestures } from "../features/reader/useReaderGestures";
 import { BookmarkPoint, ReadingAnnotation } from "../api/annotations";
-import { annotationContentVersion, resolveAnnotationRange, serializeBookmarkPoint, serializeSelection, SerializedSelection } from "../features/reader/annotations";
+import { annotationContentVersion, resolveAnnotationRange, serializeBookmarkPoint } from "../features/reader/annotations";
 import { useReaderAnnotations } from "../features/reader/ReaderAnnotations";
 import { shouldHandleBookmarkClick } from "../features/reader/bookmarkActivation";
-import {
-  shouldUseTemporaryContinuousSelection,
-  TEMPORARY_SELECTION_END_GRACE_MS,
-  TEMPORARY_SELECTION_SETTLE_MS,
-} from "../features/reader/selectionMode";
 
 const LOAD_BATCH = 8;
 
@@ -93,10 +88,6 @@ export function ImmersiveReaderPage() {
   const colors = themeColors(preferences.theme);
   const annotationsEnabled = import.meta.env.VITE_READING_ANNOTATIONS !== "false";
   const [bookmarkPoint, setBookmarkPoint] = useState<BookmarkPoint | null>(null);
-  const [temporarySelection, setTemporarySelection] = useState<SerializedSelection | null>(null);
-  const temporarySelectionStartTimer = useRef<number | null>(null);
-  const temporarySelectionEndTimer = useRef<number | null>(null);
-  const effectiveMode = temporarySelection ? "scroll" : preferences.mode;
   const loadedPages = useMemo(() => [...fragments.keys()].sort((a, b) => a - b), [fragments]);
   const firstLoadedPage = loadedPages[0];
   const lastLoadedPage = loadedPages[loadedPages.length - 1];
@@ -200,7 +191,7 @@ export function ImmersiveReaderPage() {
     setColumnGeometry((current) => current && Math.abs(current.width - columnWidth) < 0.1 && Math.abs(current.gap - columnGap) < 0.1
       ? current
       : { width: columnWidth, gap: columnGap });
-    const pages = effectiveMode === "paged" ? Math.max(1, Math.ceil(content.scrollWidth / width)) : 1;
+    const pages = preferences.mode === "paged" ? Math.max(1, Math.ceil(content.scrollWidth / width)) : 1;
     setVisualPageWidth(width);
     setLayoutReady(true);
     setVisualPages(pages);
@@ -210,7 +201,7 @@ export function ImmersiveReaderPage() {
         : null;
       const target = fragmentTarget ?? (anchor ? resolveAnchor(content, anchor) : null);
       if (target) {
-        if (effectiveMode === "paged") {
+        if (preferences.mode === "paged") {
           const targetRect = (target as HTMLElement).getClientRects()[0] ?? target.getBoundingClientRect();
           const contentRect = content.getBoundingClientRect();
           const targetOffset = Math.max(0, targetRect.left - contentRect.left);
@@ -219,7 +210,7 @@ export function ImmersiveReaderPage() {
         } else target.scrollIntoView({ block: "start" });
       }
     }
-  }, [effectiveMode]);
+  }, [preferences.mode]);
 
   useLayoutEffect(() => {
     if (!sanitizedHtml || !contentRef.current) return;
@@ -263,15 +254,15 @@ export function ImmersiveReaderPage() {
       || lastLoadedPage >= manifest.pages
     ) return;
 
-    const nearPagedEnd = effectiveMode === "paged" && visualPage >= Math.max(0, visualPages - 2);
-    const nearScrollEnd = effectiveMode === "scroll" && scrollProgress >= 0.8;
+    const nearPagedEnd = preferences.mode === "paged" && visualPage >= Math.max(0, visualPages - 2);
+    const nearScrollEnd = preferences.mode === "scroll" && scrollProgress >= 0.8;
     if (!nearPagedEnd && !nearScrollEnd) return;
 
     if (nearScrollEnd) setScrollProgress(0);
 
     void loadRange(lastLoadedPage + 1, lastLoadedPage + LOAD_BATCH, undefined, false)
       .catch(() => setAnnouncement("No se pudo precargar el siguiente tramo. Intenta avanzar nuevamente."));
-  }, [effectiveMode, lastLoadedPage, layoutReady, loadRange, loadingMore, manifest, repaginating, scrollProgress, visualPage, visualPages]);
+  }, [lastLoadedPage, layoutReady, loadRange, loadingMore, manifest, preferences.mode, repaginating, scrollProgress, visualPage, visualPages]);
 
   useEffect(() => {
     const range = pendingIndexPrefetch.current;
@@ -310,82 +301,6 @@ export function ImmersiveReaderPage() {
     window.getSelection()?.removeAllRanges();
   }, []);
 
-  useEffect(() => {
-    if (!annotationsEnabled || !manifest || !shouldUseTemporaryContinuousSelection(navigator.userAgent, preferences.mode)) return;
-    const onSelectionChange = () => {
-      const root = contentRef.current;
-      const nativeSelection = window.getSelection();
-      const serialized = root && nativeSelection
-        ? serializeSelection(root, nativeSelection, annotationContentVersion(manifest.generated_at, libro_uri, manifest.pages))
-        : null;
-
-      if (temporarySelection) {
-        if (serialized) {
-          if (temporarySelectionEndTimer.current !== null) window.clearTimeout(temporarySelectionEndTimer.current);
-          temporarySelectionEndTimer.current = null;
-          return;
-        }
-        if (temporarySelectionEndTimer.current === null) {
-          temporarySelectionEndTimer.current = window.setTimeout(() => {
-            temporarySelectionEndTimer.current = null;
-            setTemporarySelection(null);
-          }, TEMPORARY_SELECTION_END_GRACE_MS);
-        }
-        return;
-      }
-
-      if (temporarySelectionStartTimer.current !== null) window.clearTimeout(temporarySelectionStartTimer.current);
-      temporarySelectionStartTimer.current = null;
-      if (!serialized) return;
-      temporarySelectionStartTimer.current = window.setTimeout(() => {
-        temporarySelectionStartTimer.current = null;
-        const currentRoot = contentRef.current;
-        const currentSelection = window.getSelection();
-        const stable = currentRoot && currentSelection
-          ? serializeSelection(currentRoot, currentSelection, annotationContentVersion(manifest.generated_at, libro_uri, manifest.pages))
-          : null;
-        if (stable) setTemporarySelection(stable);
-      }, TEMPORARY_SELECTION_SETTLE_MS);
-    };
-    document.addEventListener("selectionchange", onSelectionChange);
-    return () => {
-      document.removeEventListener("selectionchange", onSelectionChange);
-      if (temporarySelectionStartTimer.current !== null) window.clearTimeout(temporarySelectionStartTimer.current);
-      if (temporarySelectionEndTimer.current !== null) window.clearTimeout(temporarySelectionEndTimer.current);
-      temporarySelectionStartTimer.current = null;
-      temporarySelectionEndTimer.current = null;
-    };
-  }, [annotationsEnabled, libro_uri, manifest, preferences.mode, temporarySelection]);
-
-  useEffect(() => {
-    if (!temporarySelection || effectiveMode !== "scroll") return;
-    let secondFrame = 0;
-    const firstFrame = requestAnimationFrame(() => {
-      secondFrame = requestAnimationFrame(() => {
-        const root = contentRef.current;
-        const range = root ? resolveAnnotationRange(root, temporarySelection) : null;
-        if (!range) {
-          setTemporarySelection(null);
-          setAnnouncement("No se pudo preparar la selección. Intenta seleccionar nuevamente.");
-          return;
-        }
-        range.startContainer.parentElement?.scrollIntoView({ block: "center" });
-        const nativeSelection = window.getSelection();
-        nativeSelection?.removeAllRanges();
-        nativeSelection?.addRange(range);
-        setAnnouncement("Vista continua temporal para ajustar la selección.");
-      });
-    });
-    return () => {
-      cancelAnimationFrame(firstFrame);
-      if (secondFrame) cancelAnimationFrame(secondFrame);
-    };
-  }, [effectiveMode, temporarySelection]);
-
-  useEffect(() => {
-    if (preferences.mode !== "paged" && temporarySelection) setTemporarySelection(null);
-  }, [preferences.mode, temporarySelection]);
-
   useEffect(() => clearShareSelection(), [clearShareSelection, libro_uri]);
 
   useEffect(() => {
@@ -419,7 +334,7 @@ export function ImmersiveReaderPage() {
 
   const goToVisualPage = useCallback(async (next: number) => {
     const viewport = viewportRef.current;
-    if (!viewport || effectiveMode !== "paged") return;
+    if (!viewport || preferences.mode !== "paged") return;
     clearShareSelection();
     if (next < 0 && manifest && firstLoadedPage > 1) {
       navigateAfterLayout.current = -1;
@@ -435,19 +350,19 @@ export function ImmersiveReaderPage() {
     setVisualPage(clamped);
     setAnnouncement(`Página visual ${clamped + 1} de ${visualPages}`);
     scheduleHide();
-  }, [clearShareSelection, effectiveMode, firstLoadedPage, lastLoadedPage, loadRange, manifest, scheduleHide, visualPages]);
+  }, [clearShareSelection, firstLoadedPage, lastLoadedPage, loadRange, manifest, preferences.mode, scheduleHide, visualPages]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") { if (panel) setPanel(null); else setControlsVisible(true); return; }
       const target = event.target as HTMLElement | null;
       if (target?.matches("input,select,button,a,textarea")) return;
-      if (effectiveMode === "paged" && ["ArrowRight", "PageDown", " "].includes(event.key)) { event.preventDefault(); void goToVisualPage(visualPage + 1); }
-      if (effectiveMode === "paged" && ["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); void goToVisualPage(visualPage - 1); }
+      if (preferences.mode === "paged" && ["ArrowRight", "PageDown", " "].includes(event.key)) { event.preventDefault(); void goToVisualPage(visualPage + 1); }
+      if (preferences.mode === "paged" && ["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); void goToVisualPage(visualPage - 1); }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [effectiveMode, goToVisualPage, panel, visualPage]);
+  }, [goToVisualPage, panel, preferences.mode, visualPage]);
 
   useEffect(() => {
     if (panel) { panelRef.current?.focus(); setControlsVisible(true); }
@@ -459,10 +374,10 @@ export function ImmersiveReaderPage() {
 
   const chapter = useMemo(() => {
     if (!manifest || !loadedPages.length) return "Inicio";
-    const ratio = effectiveMode === "paged" ? visualPage / Math.max(1, visualPages - 1) : 0;
+    const ratio = preferences.mode === "paged" ? visualPage / Math.max(1, visualPages - 1) : 0;
     const approximate = loadedPages[0] + Math.round((lastLoadedPage - loadedPages[0]) * ratio);
     return [...manifest.index].reverse().find((item) => item.pag <= approximate)?.titulo || "Inicio";
-  }, [effectiveMode, lastLoadedPage, loadedPages, manifest, visualPage, visualPages]);
+  }, [lastLoadedPage, loadedPages, manifest, preferences.mode, visualPage, visualPages]);
   function updatePreferences(patch: Partial<ReaderPreferences>) {
     const anchor = captureAnchor();
     setRestoredAnchor(anchor);
@@ -498,7 +413,7 @@ export function ImmersiveReaderPage() {
     if (!layoutReady) return;
     const nextPage = firstVisibleFragment();
     setVisibleFragmentPage((current) => current === nextPage ? current : nextPage);
-  }, [effectiveMode, firstLoadedPage, layoutReady, sanitizedHtml, scrollProgress, visualPage]);
+  }, [firstLoadedPage, layoutReady, preferences.mode, sanitizedHtml, scrollProgress, visualPage]);
 
   useEffect(() => {
     if (!layoutReady || !manifest) return;
@@ -517,14 +432,14 @@ export function ImmersiveReaderPage() {
   }, [layoutReady, manifest, sanitizedHtml, visualPage]);
 
   useEffect(() => {
-    if (!session?.authenticated || !serverPageReady || !manifest || temporarySelection) return;
+    if (!session?.authenticated || !serverPageReady || !manifest) return;
     const previous = lastServerPage.current;
     if (previous?.uri === libro_uri && previous.page === visibleFragmentPage) return;
     lastServerPage.current = { uri: libro_uri, page: visibleFragmentPage };
     void saveReaderProgress(libro_uri, visibleFragmentPage).catch(() => {
       lastServerPage.current = previous;
     });
-  }, [libro_uri, manifest, serverPageReady, session?.authenticated, temporarySelection, visibleFragmentPage]);
+  }, [libro_uri, manifest, serverPageReady, session?.authenticated, visibleFragmentPage]);
 
   const fragmentProgress = manifest
     ? Math.min(100, Math.max(0, Math.round((visibleFragmentPage / manifest.pages) * 100)))
@@ -623,8 +538,8 @@ export function ImmersiveReaderPage() {
   const readerGestures = useReaderGestures({
     containerRef: viewportRef,
     enabled: panel === null && !repaginating && !loadingMore,
-    canGoPrevious: effectiveMode === "paged" && (visualPage > 0 || firstLoadedPage > 1),
-    canGoNext: effectiveMode === "paged" && (visualPage < visualPages - 1 || Boolean(manifest && lastLoadedPage < manifest.pages)),
+    canGoPrevious: preferences.mode === "paged" && (visualPage > 0 || firstLoadedPage > 1),
+    canGoNext: preferences.mode === "paged" && (visualPage < visualPages - 1 || Boolean(manifest && lastLoadedPage < manifest.pages)),
     onPreviousPage: () => navigateByGesture(-1),
     onNextPage: () => navigateByGesture(1),
     onToggleControls: toggleControls,
@@ -649,7 +564,7 @@ export function ImmersiveReaderPage() {
           resolve(false);
           return;
         }
-        if (effectiveMode === "paged") {
+        if (preferences.mode === "paged") {
           const targetRect = range.getClientRects()[0] ?? range.startContainer.parentElement?.getBoundingClientRect() ?? range.getBoundingClientRect();
           const contentRect = content.getBoundingClientRect();
           const next = Math.min(visualPages - 1, Math.max(0, Math.floor((targetRect.left - contentRect.left) / Math.max(1, visualPageWidth))));
@@ -682,7 +597,7 @@ export function ImmersiveReaderPage() {
       annotationContentVersion(manifest.generated_at, libro_uri, manifest.pages),
     ));
     setBookmarkPoint(null);
-    if (effectiveMode === "scroll") {
+    if (preferences.mode === "scroll") {
       const frame = requestAnimationFrame(updateBookmarkPoint);
       return () => cancelAnimationFrame(frame);
     }
@@ -695,7 +610,7 @@ export function ImmersiveReaderPage() {
       root.removeEventListener("transitionend", onTransitionEnd);
       window.clearTimeout(fallback);
     };
-  }, [annotationsEnabled, effectiveMode, layoutReady, libro_uri, manifest, sanitizedHtml, scrollProgress, visualPage]);
+  }, [annotationsEnabled, layoutReady, libro_uri, manifest, preferences.mode, sanitizedHtml, scrollProgress, visualPage]);
 
   const readerAnnotations = useReaderAnnotations({
     enabled: annotationsEnabled,
@@ -743,7 +658,7 @@ export function ImmersiveReaderPage() {
           <button aria-expanded={panel === "preferences"} aria-label="Abrir preferencias" onClick={() => setPanel(panel === "preferences" ? null : "preferences")}><span className="material-symbols-outlined">text_fields</span></button>
         </header>
 
-        <main ref={viewportRef} className={`reader-viewport is-${effectiveMode}`} aria-label="Contenido del libro" {...readerGestures} onScroll={(event) => { if (effectiveMode === "scroll") { const element = event.currentTarget; setScrollProgress(element.scrollTop / Math.max(1, element.scrollHeight - element.clientHeight)); } }}>
+        <main ref={viewportRef} className={`reader-viewport is-${preferences.mode}`} aria-label="Contenido del libro" {...readerGestures} onScroll={(event) => { if (preferences.mode === "scroll") { const element = event.currentTarget; setScrollProgress(element.scrollTop / Math.max(1, element.scrollHeight - element.clientHeight)); } }}>
           <article ref={contentRef} className="reader-content" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
         </main>
 
@@ -760,7 +675,7 @@ export function ImmersiveReaderPage() {
         ><span className="material-symbols-outlined" aria-hidden="true">bookmark</span></button>}
         {readerAnnotations.error && <div className="reader-bookmark-error" role="alert">{readerAnnotations.error}</div>}
 
-        {effectiveMode === "paged" && <>
+        {preferences.mode === "paged" && <>
           <button className="reader-page-button reader-page-previous" disabled={visualPage === 0 && firstLoadedPage === 1} aria-label="Página visual anterior" onClick={(event) => { event.stopPropagation(); void goToVisualPage(visualPage - 1); }}><span className="material-symbols-outlined">chevron_left</span></button>
           <button className="reader-page-button reader-page-next" disabled={visualPage >= visualPages - 1 && lastLoadedPage === manifest.pages} aria-label="Página visual siguiente" onClick={(event) => { event.stopPropagation(); void goToVisualPage(visualPage + 1); }}><span className="material-symbols-outlined">chevron_right</span></button>
         </>}
@@ -776,7 +691,6 @@ export function ImmersiveReaderPage() {
           </div>
         </div>}
         {readerAnnotations.selectionToolbar}
-        {temporarySelection && <div className="reader-temporary-selection-notice" role="status">Vista continua temporal para ajustar la selección</div>}
         {readerAnnotations.dialogs}
         {loadingMore && repaginating && <div className="reader-loading" role="status">Cargando…</div>}
         {repaginating && <div className="reader-layout-placeholder" role="status" aria-live="polite"><span>Ajustando la página…</span><i /><i /><i /><i /></div>}

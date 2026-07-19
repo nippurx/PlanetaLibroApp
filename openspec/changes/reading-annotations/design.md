@@ -132,8 +132,6 @@ La corrección definitiva se difiere para una iteración posterior. Se conservar
 
 No se implementarán asas de selección propias: reemplazar la selección nativa sería frágil y perjudicaría copiar texto y accesibilidad. La aceptación futura exige pruebas en Chrome y Brave para Android, con selección de una y varias líneas, cerca de límites de columna y tras cambios de orientación/preferencias.
 
-**Alternativa experimental elegida:** se implementa la opción 2 exclusivamente en Android cuando la preferencia es paginada. Tras estabilizar una selección inicial válida, el reader activa scroll continuo como modo efectivo temporal, reconstruye el rango nativo desde sus coordenadas normalizadas y conserva la preferencia paginada. Al colapsar o finalizar la selección vuelve a la página visual anterior. El experimento queda aislado en Git y la tarea permanece abierta hasta validarlo manualmente en Chrome y Brave para Android.
-
 ## Migration Plan
 
 1. Fijar límites, unidad de offset, formato de `content_version`, paleta y contrato autenticado/CSRF.
