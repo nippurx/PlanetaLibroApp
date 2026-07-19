@@ -47,3 +47,5 @@
 - [ ] 7.4 Probar selección, teclado, lector de pantalla, foco, temas, paginado, scroll y cambios de viewport/preferencias sobre una muestra real de libros.
 - [ ] 7.5 Activar detrás de una bandera, medir errores de anclaje, latencia, almacenamiento y conversión registro→anotación confirmada, y documentar rollback.
 - [ ] 7.6 Resolver la inestabilidad confirmada de las asas nativas en Android paginado: comparar mitigación de eventos, cambio temporal a continuo, columnas con `scrollLeft`/`scroll-snap` (recomendado) y páginas DOM independientes; validar la alternativa elegida en Chrome y Brave sin implementar selección propia.
+  - [x] Implementar como experimento el cambio temporal a continuo sin persistir la preferencia y con restauración automática del paginado.
+  - [ ] Validar en dispositivos Android reales con Chrome y Brave: selección de una y varias líneas, extensión hacia abajo, límites de columna y cambios de orientación/preferencias.

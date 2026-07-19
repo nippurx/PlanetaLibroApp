@@ -186,17 +186,25 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
     const dismissOnPointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (target instanceof Element && target.closest(".reader-selection-actions")) return;
+      const nativeSelection = window.getSelection();
+      const root = options.rootRef.current;
+      if (root && target instanceof Node && root.contains(target) && nativeSelection && !nativeSelection.isCollapsed) return;
       dismissSelection();
+    };
+    const syncSelectionOnScroll = () => {
+      const nativeSelection = window.getSelection();
+      if (nativeSelection && !nativeSelection.isCollapsed) rememberSelection();
+      else dismissSelection();
     };
     document.addEventListener("selectionchange", rememberSelection);
     document.addEventListener("pointerdown", dismissOnPointerDown, true);
     window.addEventListener("resize", dismissSelection);
-    window.addEventListener("scroll", dismissSelection, true);
+    window.addEventListener("scroll", syncSelectionOnScroll, true);
     return () => {
       document.removeEventListener("selectionchange", rememberSelection);
       document.removeEventListener("pointerdown", dismissOnPointerDown, true);
       window.removeEventListener("resize", dismissSelection);
-      window.removeEventListener("scroll", dismissSelection, true);
+      window.removeEventListener("scroll", syncSelectionOnScroll, true);
     };
   }, [contentVersion, options.enabled, options.renderKey, options.rootRef]);
 
