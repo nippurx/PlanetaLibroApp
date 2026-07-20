@@ -3,29 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Feature Portfolio Monitor</title>
+  <title>Tablero OpenSpec · PlanetaLibroApp</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <main>
     <header class="hero">
-      <div><p class="eyebrow">Portfolio multiproyecto</p><h1>Feature Monitor</h1><p>Ideas, decisiones y progreso OpenSpec en un solo lugar.</p></div>
-      <div class="summary" aria-label="Resumen"><strong id="visible-count">—</strong><span>features visibles</span></div>
+      <div><p class="eyebrow">PlanetaLibroApp · ejecución</p><h1>Panel de ejecución</h1><p>Estado real de los changes y tareas leídos desde OpenSpec.</p></div>
+      <p class="readonly">Las tareas son de solo lectura aquí.<br>Su fuente de verdad es <code>tasks.md</code>.</p>
     </header>
 
-    <section class="toolbar" aria-label="Filtros del portfolio">
-      <label class="search"><span>Buscar</span><input id="search" type="search" placeholder="Título, resumen, área o ID…"></label>
-      <label><span>Proyecto</span><select id="project-filter"><option value="">Todos</option></select></label>
-      <label><span>Estado</span><select id="status-filter"><option value="">Todos</option></select></label>
-      <label><span>Prioridad</span><select id="priority-filter"><option value="">Todas</option></select></label>
-      <label><span>Área</span><select id="area-filter"><option value="">Todas</option></select></label>
-      <label><span>Orden</span><select id="sort"><option value="priority">Prioridad</option><option value="updated">Actualización</option><option value="title">Título</option></select></label>
+    <section id="overview" class="overview" aria-label="Resumen operativo"></section>
+    <section id="recommendation" class="recommendation" aria-label="Siguiente trabajo recomendado"></section>
+
+    <section class="toolbar" aria-label="Filtros del tablero">
+      <label class="search"><span>Buscar change</span><input id="search" type="search" placeholder="Nombre del change…"></label>
+      <label><span>Ubicación</span><select id="location-filter"><option value="">Todas</option><option value="active">Activos</option><option value="archived">Archivados</option></select></label>
+      <label><span>Trabajo</span><select id="work-filter"><option value="">Todo</option><option value="pending">Con tareas pendientes</option><option value="blocked">Bloqueado</option><option value="complete">Sin tareas pendientes</option><option value="unavailable">Tareas no disponibles</option></select></label>
+      <label><span>Orden</span><select id="sort"><option value="recommendation">Prioridad operativa</option><option value="pending">Más tareas pendientes</option><option value="progress">Menor avance</option><option value="name">Nombre</option></select></label>
     </section>
 
-    <p id="feedback" class="feedback" role="status" aria-live="polite">Cargando portfolio…</p>
-    <section id="project-errors" class="project-errors" aria-label="Problemas de proyectos" hidden></section>
-    <section id="features" class="grid" aria-label="Features"></section>
-    <section id="empty" class="empty" hidden><h2>No hay coincidencias</h2><p>Prueba con otros filtros o una búsqueda más amplia.</p></section>
+    <p id="feedback" class="feedback" role="status" aria-live="polite">Cargando el estado OpenSpec…</p>
+    <section id="changes" class="changes" aria-label="Changes OpenSpec"></section>
+    <section id="empty" class="empty" hidden><h2>No hay changes que coincidan</h2><p>Probá ajustar los filtros.</p></section>
   </main>
   <script type="module" src="/app.js"></script>
 </body>

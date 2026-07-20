@@ -32,7 +32,9 @@ El monitor nunca crea changes implícitamente. Esto conserva la revisión explí
 - Smoke test HTTP del HTML y la API global: aprobado; cargó 5 features de PlanetaLibroApp, resolvió `planeta-libro-app/FEAT-001` y el lector reportó 53/84 tareas.
 - Revisión visual automatizada móvil/escritorio: pendiente porque la política del navegador disponible bloqueó el acceso a `127.0.0.1`. La interfaz incorpora breakpoints a 850 px y 540 px, semántica, foco visible y reducción de movimiento, pero debe hacerse una comprobación visual manual antes de archivar el change.
 
-## Monitor local
+## Monitor local anterior (histórico)
+
+Esta sección describe el monitor multiproyecto reemplazado por el tablero OpenSpec local. Para el uso actual consultar `docs/OPENSPEC_EXECUTION_DASHBOARD.md`.
 
 ### Registrar proyectos
 

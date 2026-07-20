@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "assessments": {
+    "legacy-session-boundary": {
+      "priority": "critical",
+      "urgency": "immediate",
+      "importance": "critical",
+      "effort": "large",
+      "note": "",
+      "blocked": false
+    }
+  }
+}
