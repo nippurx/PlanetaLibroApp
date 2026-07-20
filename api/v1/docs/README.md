@@ -13,10 +13,19 @@ API aislada para la app nueva en `/app`. Los endpoints de catálogo son read-onl
 - `GET /api/v1/public/libros/top?limit=10&lang=es`
 - `GET /api/v1/public/reader-manifest/{uri}`
 - `GET /api/v1/public/session`
+- `GET /api/v1/public/library`
+- `GET /api/v1/public/reader-progress/{uri}`
+- `POST /api/v1/public/reader-progress/{uri}`
 - `GET /api/v1/public/books/{uri}/annotations`
 - `POST /api/v1/public/books/{uri}/annotations`
 - `PATCH /api/v1/public/annotations/{id}`
 - `DELETE /api/v1/public/annotations/{id}`
+
+## Biblioteca y progreso del reader
+
+`POST /reader-progress/{uri}` requiere sesión, mismo origen y `X-CSRF-Token`. Recibe `{ "page": N }` y registra la lectura de forma transaccional. Si el usuario todavía no tiene el libro, crea su fila en `user_books`; si ya existe, actualiza `current_page`, `last_read` y `leidas`. La respuesta incluye `created`, `updated` y `current_page`. Un URI que no corresponde a `ebooks_books` devuelve `404 book_not_found`.
+
+El usuario se obtiene exclusivamente de la sesión. La operación bloquea la fila del libro mientras comprueba e inserta la pertenencia, evitando altas duplicadas causadas por aperturas concurrentes desde la API. El fallo remoto no bloquea el reader ni reemplaza el progreso local.
 
 ## Anotaciones privadas de lectura
 

@@ -132,6 +132,14 @@ La corrección definitiva se difiere para una iteración posterior. Se conservar
 
 No se implementarán asas de selección propias: reemplazar la selección nativa sería frágil y perjudicaría copiar texto y accesibilidad. La aceptación futura exige pruebas en Chrome y Brave para Android, con selección de una y varias líneas, cerca de límites de columna y tras cambios de orientación/preferencias.
 
+#### Resultado del experimento con modo continuo temporal
+
+La alternativa 2 se implementó de forma aislada en la rama `codex/android-selection-continuous`, commit `ffbef6a`. En Android paginado, el reader esperaba una selección inicial estable, activaba el modo continuo sin persistir esa preferencia, reconstruía el rango nativo y restauraba el paginado al finalizar.
+
+La prueba en dispositivo real resultó no aceptable: durante el cambio a continuo la pantalla saltaba hacia arriba y abajo y la selección quedaba visualmente desfasada. El reflujo de columnas, el reposicionamiento del viewport y la reconstrucción del rango producían una interrupción mayor que el defecto que se intentaba resolver. La implementación se retiró mediante el commit de reversión `2974c79` y el build anterior fue restaurado.
+
+La alternativa 2 queda descartada para la experiencia actual. El defecto de asas nativas permanece pendiente y la próxima alternativa recomendada para evaluar es paginación horizontal real mediante `scrollLeft`/`scroll-snap`, porque evita cambiar de layout durante una selección activa.
+
 ## Migration Plan
 
 1. Fijar límites, unidad de offset, formato de `content_version`, paleta y contrato autenticado/CSRF.

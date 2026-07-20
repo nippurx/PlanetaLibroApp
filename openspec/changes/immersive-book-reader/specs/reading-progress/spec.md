@@ -42,6 +42,21 @@ El sistema SHALL restaurar la mejor ancla válida disponible y SHALL degradar de
 ### Requirement: Sincronización remota no bloqueante
 Cuando exista un contrato remoto autenticado, el sistema SHALL sincronizar progreso en segundo plano y MUST mantener el progreso local y la lectura operativos si la sincronización falla.
 
+#### Scenario: Primera lectura de un libro fuera de la biblioteca
+- **GIVEN** un usuario autenticado y un libro válido sin fila correspondiente en `user_books`
+- **WHEN** el reader presenta la primera ubicación visible y sincroniza el progreso
+- **THEN** la API crea una única fila de biblioteca para el usuario y libro, guarda esa ubicación como `current_page` y comunica que la membresía fue creada
+
+#### Scenario: Libro ya presente en la biblioteca
+- **GIVEN** un usuario autenticado cuyo libro ya existe en `user_books`
+- **WHEN** el reader sincroniza una ubicación posterior
+- **THEN** la API actualiza `current_page`, `last_read` y `leidas` sin crear otra fila
+
+#### Scenario: Aperturas concurrentes
+- **GIVEN** un usuario autenticado que abre simultáneamente el mismo libro fuera de su biblioteca
+- **WHEN** ambas aperturas intentan registrar progreso
+- **THEN** la API serializa la comprobación y el alta y deja una sola pertenencia creada por este flujo
+
 #### Scenario: Servicio remoto no disponible
 - **GIVEN** progreso local actualizado y una sincronización remota configurada
 - **WHEN** el servicio remoto falla

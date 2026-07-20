@@ -118,6 +118,37 @@
       "updated_at": "2026-07-19",
       "openspec_change": null,
       "notes": []
+    },
+    {
+      "id": "FEAT-009",
+      "title": "Señaladores de lectura",
+      "summary": "Permitir múltiples señaladores privados por libro mediante una interacción inmediata en la esquina superior derecha, con persistencia confiable y acceso desde Mis anotaciones.",
+      "status": "completed",
+      "priority": "none",
+      "area": "reader",
+      "created_at": "2026-07-19",
+      "updated_at": "2026-07-19",
+      "openspec_change": "reader-bookmarks",
+      "notes": [
+        "Implementado y validado funcionalmente por el propietario en computadora y celular.",
+        "Admite múltiples señaladores por libro y reutiliza user_book_annotations con annotation_type=bookmark, anclas puntuales y color_code=1.",
+        "La zona superior derecha es exclusiva y ergonómica: en celular está dentro de la barra negra de marca y en computadora inmediatamente debajo de ella.",
+        "Mis anotaciones integra listado, filtro, contexto, navegación y borrado; al navegar se ocultan el panel y la barra de herramientas.",
+        "El estado activo se resuelve por la intersección geométrica del ancla persistida con la página visible para soportar repaginaciones.",
+        "Los colores y categorías permanecen fuera de alcance como mejora futura FEAT-008."
+      ]
+    },
+    {
+      "id": "FEAT-010",
+      "title": "Centro de anotaciones de todos los libros",
+      "summary": "Permitir que cada usuario consulte en una sola página todas las anotaciones realizadas en sus libros, pueda exportarlas y navegue de vuelta al libro de origen. Resuelve la dificultad de recordar en qué libro anotó cada cosa.",
+      "status": "idea",
+      "priority": "none",
+      "area": "reading",
+      "created_at": "2026-07-19",
+      "updated_at": "2026-07-19",
+      "openspec_change": null,
+      "notes": []
     }
   ]
 }

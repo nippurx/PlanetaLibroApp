@@ -72,8 +72,19 @@
 - [x] 7.2 Guardar progreso con debounce durante lectura y flush acotado al ocultar o abandonar la vista.
 - [x] 7.3 Implementar la prioridad de restauración y fallbacks para ancla explícita, local, remota opcional, inicio asociado a `paginicio` e inicio del libro.
 - [x] 7.4 Manejar manifest regenerado, ancla no resoluble, fragmento de carga fuera de rango y almacenamiento indisponible sin bloquear lectura.
-- [ ] 7.5 Si se aprobó contrato remoto para el MVP, implementar un adaptador autenticado no bloqueante y su política de conflicto sin modificar el publicador.
-- [ ] 7.6 Añadir pruebas automatizadas de guardado, retorno, fallos, versiones incompatibles y sincronización sólo si fue aprobada.
+- [x] 7.5 Si se aprobó contrato remoto para el MVP, implementar un adaptador autenticado no bloqueante y su política de conflicto sin modificar el publicador.
+- [x] 7.6 Añadir pruebas automatizadas de guardado, retorno, fallos, versiones incompatibles y sincronización sólo si fue aprobada.
+
+Validación de aceptación confirmada por el propietario el 2026-07-19:
+
+- visitante no autenticado: no crea una fila;
+- usuario autenticado con libro ausente: crea una fila en `user_books`;
+- libro ya presente: no duplica y actualiza progreso;
+- dos pestañas simultáneas: queda una sola fila;
+- URI inexistente: no inserta;
+- fallo de API: el reader continúa y conserva progreso local;
+- entrada `/read/{uri}/17`: inicia `current_page` en 17;
+- reaperturas de la misma página: no crean filas adicionales.
 
 ## 8. MVP — Accesibilidad
 

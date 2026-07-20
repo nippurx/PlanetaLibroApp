@@ -107,7 +107,9 @@ El cliente guarda de forma inmediata y limitada (debounce y eventos de salida/oc
 4. inicio del contenido asociado a `manifest.paginicio` válido;
 5. inicio del libro.
 
-La sincronización remota es una frontera separada: debe ser autenticada, tolerar fallos y definir cómo mapear la ubicación rica al `current_page` legacy. Un fallo remoto no interrumpe lectura ni borra progreso local. El contrato y la resolución “más reciente gana” u otra política quedan abiertos hasta inspeccionar autenticación y requisitos del backend.
+La sincronización remota es una frontera separada: debe ser autenticada, tolerar fallos y definir cómo mapear la ubicación rica al `current_page` legacy. Un fallo remoto no interrumpe lectura ni borra progreso local.
+
+El contrato aprobado usa `GET /api/v1/public/reader-progress/{uri}` para recuperar `current_page` y `POST /api/v1/public/reader-progress/{uri}` con `{ page }` para registrar la primera ubicación visible. El POST obtiene el usuario exclusivamente de la sesión, exige mismo origen y `X-CSRF-Token`, y ejecuta una operación transaccional: si falta `(user_id, ebooks_books_id)` crea la fila en `user_books` con `first_read`, `last_read`, `current_page` y `leidas`; si ya existe actualiza progreso y última lectura. La fila bloqueada de `ebooks_books` serializa aperturas concurrentes por URI y evita duplicados producidos por la API. La respuesta distingue `created` y `updated`; cualquier fallo remoto se ignora en la experiencia de lectura y conserva el ancla local.
 
 ### 8. Accesibilidad como comportamiento base
 

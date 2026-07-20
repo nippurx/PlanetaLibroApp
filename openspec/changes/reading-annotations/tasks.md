@@ -47,3 +47,5 @@
 - [ ] 7.4 Probar selección, teclado, lector de pantalla, foco, temas, paginado, scroll y cambios de viewport/preferencias sobre una muestra real de libros.
 - [ ] 7.5 Activar detrás de una bandera, medir errores de anclaje, latencia, almacenamiento y conversión registro→anotación confirmada, y documentar rollback.
 - [ ] 7.6 Resolver la inestabilidad confirmada de las asas nativas en Android paginado: comparar mitigación de eventos, cambio temporal a continuo, columnas con `scrollLeft`/`scroll-snap` (recomendado) y páginas DOM independientes; validar la alternativa elegida en Chrome y Brave sin implementar selección propia.
+  - [x] Evaluar el cambio temporal a continuo en Android real; descartado por saltos verticales durante el reflujo y selección visualmente desfasada. Experimento `ffbef6a`, revertido por `2974c79`.
+  - [ ] Implementar y validar una solución definitiva; próxima candidata: columnas sin `transform` con `scrollLeft`/`scroll-snap`.

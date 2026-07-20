@@ -56,8 +56,20 @@ final class ReaderProgressController
             Response::json(['error' => ['code' => 'unauthenticated', 'message' => 'Authentication required.']], 401);
             return;
         }
-        $updated = $this->library->updateReadingProgress((int) $user['id'], $uri, $page);
-        Response::ok(['updated' => $updated, 'current_page' => $page]);
+        if (!$this->sessions->validateCsrfToken($request->header('X-CSRF-Token'))) {
+            Response::json(['error' => ['code' => 'forbidden', 'message' => 'Invalid CSRF token.']], 403);
+            return;
+        }
+        $result = $this->library->recordReadingProgress((int) $user['id'], $uri, $page);
+        if ($result === null) {
+            Response::notFound('Book not found.', 'book_not_found');
+            return;
+        }
+        Response::ok([
+            'created' => $result['created'],
+            'updated' => true,
+            'current_page' => $result['current_page'],
+        ]);
     }
 
     private function isSameOrigin(): bool

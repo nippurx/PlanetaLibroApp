@@ -80,14 +80,60 @@ SQL;
         return is_array($row) ? ['current_page' => max(1, (int) $row['current_page'])] : null;
     }
 
-    public function updateReadingProgress(int $userId, string $bookUri, int $page): bool
+    /** @return array{created:bool,current_page:int}|null */
+    public function recordReadingProgress(int $userId, string $bookUri, int $page): ?array
     {
-        $statement = $this->pdo->prepare(
-            'UPDATE user_books ub JOIN ebooks_books b ON b.ebooks_books_id = ub.ebooks_books_id '
-            . 'SET ub.current_page = :page, ub.last_read = NOW(), ub.leidas = ub.leidas + 1 '
-            . 'WHERE ub.user_id = :user_id AND b.uri = :uri'
-        );
-        $statement->execute(['page' => $page, 'user_id' => $userId, 'uri' => $bookUri]);
-        return $statement->rowCount() > 0;
+        $this->pdo->beginTransaction();
+        try {
+            // Serialize openings for this book so membership check + insert is idempotent.
+            $bookStatement = $this->pdo->prepare(
+                'SELECT ebooks_books_id FROM ebooks_books WHERE uri = :uri LIMIT 1 FOR UPDATE'
+            );
+            $bookStatement->execute(['uri' => $bookUri]);
+            $bookId = $bookStatement->fetchColumn();
+            if ($bookId === false) {
+                $this->pdo->rollBack();
+                return null;
+            }
+
+            $membershipStatement = $this->pdo->prepare(
+                'SELECT id FROM user_books '
+                . 'WHERE user_id = :user_id AND ebooks_books_id = :book_id LIMIT 1'
+            );
+            $membershipStatement->execute(['user_id' => $userId, 'book_id' => (int) $bookId]);
+            $created = $membershipStatement->fetchColumn() === false;
+
+            if ($created) {
+                $statement = $this->pdo->prepare(
+                    'INSERT INTO user_books '
+                    . '(user_id, ebooks_books_id, first_read, last_read, current_page, leidas) '
+                    . 'VALUES (:user_id, :book_id, NOW(), NOW(), :page, 1)'
+                );
+                $statement->execute([
+                    'user_id' => $userId,
+                    'book_id' => (int) $bookId,
+                    'page' => $page,
+                ]);
+            } else {
+                $statement = $this->pdo->prepare(
+                    'UPDATE user_books '
+                    . 'SET current_page = :page, last_read = NOW(), leidas = COALESCE(leidas, 0) + 1 '
+                    . 'WHERE user_id = :user_id AND ebooks_books_id = :book_id'
+                );
+                $statement->execute([
+                    'page' => $page,
+                    'user_id' => $userId,
+                    'book_id' => (int) $bookId,
+                ]);
+            }
+
+            $this->pdo->commit();
+            return ['created' => $created, 'current_page' => $page];
+        } catch (\Throwable $exception) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $exception;
+        }
     }
 }

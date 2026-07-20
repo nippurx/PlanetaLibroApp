@@ -9,9 +9,10 @@ export async function getReaderProgress(uri: string): Promise<number | null> {
   return response.data?.current_page ?? null;
 }
 
-export async function saveReaderProgress(uri: string, page: number): Promise<void> {
-  await apiClient.post<ApiEnvelope<{ updated: boolean; current_page: number }>>(
+export async function saveReaderProgress(uri: string, page: number, csrfToken: string): Promise<void> {
+  await apiClient.post<ApiEnvelope<{ created: boolean; updated: boolean; current_page: number }>>(
     `/public/reader-progress/${encodeURIComponent(uri)}`,
     { page },
+    { "X-CSRF-Token": csrfToken },
   );
 }

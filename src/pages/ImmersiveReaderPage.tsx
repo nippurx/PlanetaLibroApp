@@ -175,7 +175,8 @@ export function ImmersiveReaderPage() {
     return loadedPages.map((number) => {
       const result = sanitizeFragment(fragments.get(number) ?? "", getReaderRoot(libro_uri), blockIndex);
       blockIndex += result.blockCount;
-      return `<div class="reader-fragment" data-reader-fragment="${number}">${result.html}</div>`;
+      const frontMatterClass = number < 5 ? " reader-front-matter" : "";
+      return `<div class="reader-fragment${frontMatterClass}" data-reader-fragment="${number}">${result.html}</div>`;
     }).join("");
   }, [fragments, libro_uri, loadedPages]);
 
@@ -432,14 +433,14 @@ export function ImmersiveReaderPage() {
   }, [layoutReady, manifest, sanitizedHtml, visualPage]);
 
   useEffect(() => {
-    if (!session?.authenticated || !serverPageReady || !manifest) return;
+    if (!session?.authenticated || !session.csrf_token || !serverPageReady || !manifest) return;
     const previous = lastServerPage.current;
     if (previous?.uri === libro_uri && previous.page === visibleFragmentPage) return;
     lastServerPage.current = { uri: libro_uri, page: visibleFragmentPage };
-    void saveReaderProgress(libro_uri, visibleFragmentPage).catch(() => {
+    void saveReaderProgress(libro_uri, visibleFragmentPage, session.csrf_token).catch(() => {
       lastServerPage.current = previous;
     });
-  }, [libro_uri, manifest, serverPageReady, session?.authenticated, visibleFragmentPage]);
+  }, [libro_uri, manifest, serverPageReady, session?.authenticated, session?.csrf_token, visibleFragmentPage]);
 
   const fragmentProgress = manifest
     ? Math.min(100, Math.max(0, Math.round((visibleFragmentPage / manifest.pages) * 100)))

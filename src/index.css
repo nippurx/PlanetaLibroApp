@@ -88,6 +88,8 @@
 .reader-content img { display: block; max-width: 100%; max-height: calc(100dvh - var(--reader-brand-bar-total) - 8rem); width: auto; height: auto; margin: .5rem auto 1.25rem; break-inside: avoid; }
 .reader-viewport.is-paged .reader-content p:has(> img:only-child) { margin: 0; break-inside: avoid; }
 .reader-viewport.is-paged .reader-content p:has(> img:only-child) > img { margin: 0 auto; }
+.reader-viewport.is-paged .reader-front-matter { break-after: column; }
+.reader-viewport.is-paged .reader-front-matter + .reader-front-matter { break-before: column; }
 .reader-viewport.is-paged .reader-fragment + .reader-fragment:has(> :first-child:is(h1, h2, h3, h4, h5, h6)) { break-before: column; }
 .reader-content a { color: #1268a8; text-decoration: underline; }
 ::highlight(reader-annotation-1) { background: rgba(250, 204, 21, .48); color: inherit; }

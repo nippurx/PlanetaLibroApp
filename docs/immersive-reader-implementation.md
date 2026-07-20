@@ -1,5 +1,7 @@
 # Implementación del lector inmersivo
 
+La implementación y validación de los señaladores persistentes se documenta en [Señaladores del lector](reader-bookmarks.md). El backlog la registra como `FEAT-009` completada; los colores y categorías continúan separados como mejora futura `FEAT-008`.
+
 ## Contratos del MVP
 
 - La ruta normal es `/read/:libro_uri/`; la variante `/read/:libro_uri/:page` se reserva para enlaces compartidos y compatibilidad.
