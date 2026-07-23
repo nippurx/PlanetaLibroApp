@@ -35,7 +35,20 @@ type BookListApiItem = {
     current_page: number;
     first_read: string | null;
     last_read: string | null;
+    started?: boolean;
+    total_pages?: number | null;
+    progress_percent?: number | null;
   };
+  listening?: {
+    current_minute: number;
+    furthest_minute: number;
+    first_read: string | null;
+    last_read: string | null;
+    started: boolean;
+  };
+  state?: LibraryState;
+  added_at?: string | null;
+  last_activity_at?: string | null;
 };
 
 type BookDetailApiItem = Omit<BookListApiItem, "autor"> & {
@@ -113,7 +126,40 @@ export type Book = {
   currentPage: number;
   readingStarted: boolean;
   progressPercent: number;
+  hasReliableProgress: boolean;
+  totalPages: number | null;
+  listeningMinute: number;
+  listeningStarted: boolean;
+  libraryState: LibraryState | null;
+  addedAt: string | null;
+  lastActivityAt: string | null;
   currentChapter: string;
+};
+
+export type LibraryState = "unread" | "in_progress" | "completed" | "abandoned";
+
+export type LibraryCounts = Record<LibraryState | "all", number>;
+
+export type LibrarySummary = {
+  sections: Record<"in_progress" | "unread" | "completed", { items: Book[]; total: number }>;
+  total: number;
+  counts: LibraryCounts;
+};
+
+export type LibraryListResult = {
+  items: Book[];
+  pagination: {
+    limit: number;
+    offset: number;
+    total: number;
+    hasMore: boolean;
+  };
+  filters: {
+    state: LibraryState | "all";
+    q: string;
+    sort: "recent" | "oldest";
+  };
+  counts: LibraryCounts;
 };
 
 function normalizeAudioId(value: string | null): string | null {
@@ -268,8 +314,15 @@ function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
     updatedAt: "updated_at" in apiBook ? apiBook.updated_at : null,
     tags: "tags" in apiBook ? normalizeTags(apiBook.tags) : [],
     currentPage: apiBook.reading?.current_page ?? 1,
-    readingStarted: Boolean(apiBook.reading?.first_read) || (apiBook.reading?.current_page ?? 1) > 1,
-    progressPercent: 0,
+    readingStarted: apiBook.reading?.started ?? (Boolean(apiBook.reading?.first_read) || (apiBook.reading?.current_page ?? 1) > 1),
+    progressPercent: apiBook.reading?.progress_percent ?? 0,
+    hasReliableProgress: apiBook.reading?.progress_percent !== null && apiBook.reading?.progress_percent !== undefined,
+    totalPages: apiBook.reading?.total_pages ?? null,
+    listeningMinute: apiBook.listening?.current_minute ?? 0,
+    listeningStarted: apiBook.listening?.started ?? false,
+    libraryState: apiBook.state ?? null,
+    addedAt: apiBook.added_at ?? null,
+    lastActivityAt: apiBook.last_activity_at ?? null,
     currentChapter: "Capitulo inicial",
   };
 }
@@ -277,6 +330,77 @@ function mapBook(apiBook: BookListApiItem | BookDetailApiItem): Book {
 export async function getUserLibrary(): Promise<Book[]> {
   const response = await apiClient.get<ApiEnvelope<{ items: BookListApiItem[] }>>("/public/library");
   return response.data.items.map(mapBook);
+}
+
+type LibrarySummaryApiResponse = {
+  sections: Record<"in_progress" | "unread" | "completed", { items: BookListApiItem[]; total: number }>;
+  total: number;
+  counts: LibraryCounts;
+};
+
+type LibraryListApiResponse = {
+  items: BookListApiItem[];
+  pagination: {
+    limit: number;
+    offset: number;
+    total: number;
+    has_more: boolean;
+  };
+  filters: LibraryListResult["filters"];
+  counts: LibraryCounts;
+};
+
+export async function getLibrarySummary(previewLimit = 10): Promise<LibrarySummary> {
+  const response = await apiClient.get<ApiEnvelope<LibrarySummaryApiResponse>>(
+    `/public/library/summary?preview_limit=${previewLimit}`,
+  );
+  return {
+    ...response.data,
+    sections: {
+      in_progress: {
+        total: response.data.sections.in_progress.total,
+        items: response.data.sections.in_progress.items.map(mapBook),
+      },
+      unread: {
+        total: response.data.sections.unread.total,
+        items: response.data.sections.unread.items.map(mapBook),
+      },
+      completed: {
+        total: response.data.sections.completed.total,
+        items: response.data.sections.completed.items.map(mapBook),
+      },
+    },
+  };
+}
+
+export async function getLibraryItems(options: {
+  state: LibraryState | "all";
+  q?: string;
+  sort?: "recent" | "oldest";
+  limit?: number;
+  offset?: number;
+}): Promise<LibraryListResult> {
+  const params = new URLSearchParams({
+    state: options.state,
+    q: options.q?.trim() ?? "",
+    sort: options.sort ?? "recent",
+    limit: String(options.limit ?? 20),
+    offset: String(options.offset ?? 0),
+  });
+  const response = await apiClient.get<ApiEnvelope<LibraryListApiResponse>>(
+    `/public/library/items?${params.toString()}`,
+  );
+  return {
+    items: response.data.items.map(mapBook),
+    pagination: {
+      limit: response.data.pagination.limit,
+      offset: response.data.pagination.offset,
+      total: response.data.pagination.total,
+      hasMore: response.data.pagination.has_more,
+    },
+    filters: response.data.filters,
+    counts: response.data.counts,
+  };
 }
 
 export async function getBookByUri(uri: string): Promise<Book> {

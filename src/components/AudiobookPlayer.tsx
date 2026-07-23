@@ -11,6 +11,7 @@ import {
 type YTPlayer = {
   destroy: () => void;
   getCurrentTime: () => number;
+  getDuration: () => number;
   loadVideoById: (videoId: string) => void;
   pauseVideo: () => void;
   playVideo: () => void;
@@ -134,16 +135,19 @@ export type AudiobookPlayerHandle = {
   play: () => void;
   pause: () => void;
   stop: () => void;
-  seekBy: (seconds: number) => void;
+  seekBy: (seconds: number) => number;
   seekTo: (seconds: number) => void;
   getCurrentTime: () => number;
+  getDuration: () => number;
 };
+
+export type AudiobookPlaybackEvent = "playing" | "paused" | "ended";
 
 type AudiobookPlayerProps = {
   videoId?: string | null;
   title?: string;
   onReady?: () => void;
-  onPlayStateChange?: (isPlaying: boolean) => void;
+  onPlayStateChange?: (isPlaying: boolean, event?: AudiobookPlaybackEvent) => void;
 };
 
 export const AudiobookPlayer = forwardRef<AudiobookPlayerHandle, AudiobookPlayerProps>(function AudiobookPlayer(
@@ -181,13 +185,18 @@ export const AudiobookPlayer = forwardRef<AudiobookPlayerHandle, AudiobookPlayer
       },
       seekBy: (seconds: number) => {
         const current = playerRef.current?.getCurrentTime() || 0;
-        const target = Math.max(0, current + seconds);
+        const duration = playerRef.current?.getDuration() || 0;
+        const target = Math.max(0, duration > 0 ? Math.min(duration, current + seconds) : current + seconds);
         playerRef.current?.seekTo(target, true);
+        return target;
       },
       seekTo: (seconds: number) => {
-        playerRef.current?.seekTo(Math.max(0, seconds), true);
+        const duration = playerRef.current?.getDuration() || 0;
+        const target = Math.max(0, duration > 0 ? Math.min(duration, seconds) : seconds);
+        playerRef.current?.seekTo(target, true);
       },
       getCurrentTime: () => playerRef.current?.getCurrentTime() || 0,
+      getDuration: () => playerRef.current?.getDuration() || 0,
     }),
     [],
   );
@@ -238,12 +247,17 @@ export const AudiobookPlayer = forwardRef<AudiobookPlayerHandle, AudiobookPlayer
                 }
 
                 if (event.data === YT.PlayerState.PLAYING) {
-                  onPlayStateChangeRef.current?.(true);
+                  onPlayStateChangeRef.current?.(true, "playing");
                   return;
                 }
 
-                if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-                  onPlayStateChangeRef.current?.(false);
+                if (event.data === YT.PlayerState.PAUSED) {
+                  onPlayStateChangeRef.current?.(false, "paused");
+                  return;
+                }
+
+                if (event.data === YT.PlayerState.ENDED) {
+                  onPlayStateChangeRef.current?.(false, "ended");
                 }
               },
             },

@@ -23,6 +23,7 @@
 - [x] 3.8 Renombrar la cabecera del tablero como “Panel de ejecución”.
 - [x] 3.9 Aumentar la tipografía de las descripciones a 1rem.
 - [x] 3.10 Aumentar a 1.1rem las descripciones y la propuesta completa.
+- [x] 3.11 Mostrar por change el comando sugerido y las instrucciones locales de OpenSpec apply.
 
 ## 4. Documentación y validación
 

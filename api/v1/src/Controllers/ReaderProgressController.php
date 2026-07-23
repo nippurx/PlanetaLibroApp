@@ -29,12 +29,13 @@ final class ReaderProgressController
             Response::badRequest('Invalid book uri.');
             return;
         }
-        $user = $this->sessions->currentUser();
-        if ($user === null) {
+        $session = $this->sessions->currentContext();
+        $userId = $session->userId();
+        if (!$session->isAuthenticated() || $userId === null) {
             Response::json(['error' => ['code' => 'unauthenticated', 'message' => 'Authentication required.']], 401);
             return;
         }
-        Response::ok($this->library->readingProgress((int) $user['id'], $uri));
+        Response::ok($this->library->readingProgress($userId, $uri));
     }
 
     /** @param array<string, string> $params */
@@ -51,8 +52,9 @@ final class ReaderProgressController
             Response::badRequest('Invalid book uri or page.');
             return;
         }
-        $user = $this->sessions->currentUser();
-        if ($user === null) {
+        $session = $this->sessions->currentContext();
+        $userId = $session->userId();
+        if (!$session->isAuthenticated() || $userId === null) {
             Response::json(['error' => ['code' => 'unauthenticated', 'message' => 'Authentication required.']], 401);
             return;
         }
@@ -60,7 +62,7 @@ final class ReaderProgressController
             Response::json(['error' => ['code' => 'forbidden', 'message' => 'Invalid CSRF token.']], 403);
             return;
         }
-        $result = $this->library->recordReadingProgress((int) $user['id'], $uri, $page);
+        $result = $this->library->recordReadingProgress($userId, $uri, $page);
         if ($result === null) {
             Response::notFound('Book not found.', 'book_not_found');
             return;

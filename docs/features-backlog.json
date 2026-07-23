@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-07-19",
+  "updated_at": "2026-07-20",
   "features": [
     {
       "id": "FEAT-001",
@@ -99,11 +99,11 @@
       "id": "FEAT-007",
       "title": "Restringir libros 18+ a suscriptores pagos",
       "summary": "Pendiente: en el reader nuevo, permitir la lectura de libros con el tag 18+ únicamente a usuarios con una suscripción anual paga y vigente. Estar registrado no es suficiente; el pago con tarjeta se utiliza como garantía de mayoría de edad.",
-      "status": "idea",
-      "priority": "none",
+      "status": "planned",
+      "priority": "high",
       "area": "reader",
       "created_at": "2026-07-18",
-      "updated_at": "2026-07-18",
+      "updated_at": "2026-07-20",
       "openspec_change": null,
       "notes": []
     },

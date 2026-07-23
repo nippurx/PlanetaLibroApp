@@ -18,26 +18,23 @@ function validReadingPage(value: number): number {
   return Number.isFinite(value) && value >= 1 ? Math.trunc(value) : 1;
 }
 
-export function getLibraryActions(book: Book, audioProgressSeconds: number): LibraryActions {
+export function getLibraryActions(book: Book, _audioProgressSeconds: number): LibraryActions {
   const page = validReadingPage(book.currentPage);
   const read = book.readOnline
     ? {
         kind: "read" as const,
         href: `/read/${encodeURIComponent(book.uri)}/${page}`,
-        label: book.readingStarted ? "Continuar leyendo" : "Leer",
-        ariaLabel: book.readingStarted ? `Continuar leyendo ${book.titulo}` : `Leer ${book.titulo}`,
+        label: "Leer",
+        ariaLabel: `Leer ${book.titulo}`,
         icon: "menu_book" as const,
       }
     : null;
-  const hasAudioProgress = Number.isFinite(audioProgressSeconds) && audioProgressSeconds > 0;
   const listen = book.hasAudio
     ? {
         kind: "listen" as const,
         href: `/listen/${encodeURIComponent(book.uri)}`,
-        label: hasAudioProgress ? "Continuar escuchando" : "Escuchar",
-        ariaLabel: hasAudioProgress
-          ? `Continuar escuchando el audiolibro de ${book.titulo}`
-          : `Escuchar el audiolibro de ${book.titulo}`,
+        label: "Escuchar",
+        ariaLabel: `Escuchar el audiolibro de ${book.titulo}`,
         icon: "headphones" as const,
       }
     : null;

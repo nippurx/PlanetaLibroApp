@@ -67,6 +67,103 @@ SQL;
         }, $statement->fetchAll());
     }
 
+    /** @return array<int, array<string, mixed>> */
+    public function membershipsForUser(int $userId): array
+    {
+        $sql = <<<'SQL'
+SELECT
+    b.ebooks_books_id,
+    b.uri,
+    b.ebooks_books_title,
+    b.ebooks_books_subtitle,
+    b.ebooks_books_cover,
+    b.cover_link,
+    b.read_online,
+    b.video_audiolibro,
+    b.ebooks_format_pdf,
+    b.ebooks_format_epub,
+    b.ebooks_format_mobi,
+    a.uri AS author_uri,
+    a.ebooks_authors_name,
+    a.ebooks_authors_surname,
+    ub.current_page,
+    ub.leidas,
+    ub.first_read AS reading_first_read,
+    ub.last_read AS reading_last_read,
+    uva.current_min,
+    uva.max_min,
+    uva.first_read AS listening_first_read,
+    uva.last_read AS listening_last_read
+FROM ebooks_books b
+LEFT JOIN ebooks_authors a ON a.ebooks_authors_id = b.ebooks_books_author
+LEFT JOIN user_books ub
+    ON ub.ebooks_books_id = b.ebooks_books_id
+    AND ub.user_id = :reading_user_id
+LEFT JOIN user_video_audiolibros uva
+    ON uva.ebooks_books_id = b.ebooks_books_id
+    AND uva.user_id = :listening_user_id
+WHERE ub.id IS NOT NULL OR uva.id IS NOT NULL
+SQL;
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindValue(':reading_user_id', $userId, PDO::PARAM_INT);
+        $statement->bindValue(':listening_user_id', $userId, PDO::PARAM_INT);
+        $statement->execute();
+
+        return array_map(function (array $row): array {
+            $authorUri = trim((string) ($row['author_uri'] ?? '')) ?: null;
+            $name = trim((string) ($row['ebooks_authors_name'] ?? '') . ' ' . (string) ($row['ebooks_authors_surname'] ?? ''));
+            $currentPage = max(0, (int) ($row['current_page'] ?? 0));
+            $readCount = max(0, (int) ($row['leidas'] ?? 0));
+            $currentMinute = max(0, (int) ($row['current_min'] ?? 0));
+            $maxMinute = max(0, (int) ($row['max_min'] ?? 0));
+            $readingStarted = $currentPage > 1 || $readCount > 1;
+            $listeningStarted = $currentMinute > 0 || $maxMinute > 0;
+            $addedAt = $this->earliestDate([
+                $row['reading_first_read'] ?? null,
+                $row['listening_first_read'] ?? null,
+            ]);
+            $lastActivityAt = $this->latestDate([
+                $row['reading_last_read'] ?? null,
+                $row['listening_last_read'] ?? null,
+                $addedAt,
+            ]);
+
+            return [
+                'id' => (int) $row['ebooks_books_id'],
+                'uri' => (string) $row['uri'],
+                'author_uri' => $authorUri,
+                'titulo' => $row['ebooks_books_title'],
+                'subtitulo' => $row['ebooks_books_subtitle'],
+                'cover_url' => $this->assets->bookCoverPath($authorUri, (string) $row['uri']),
+                'autor' => ['uri' => $authorUri, 'nombre' => $name !== '' ? $name : null],
+                'recursos' => [
+                    'read_online' => (int) $row['read_online'] === 1,
+                    'video_audiolibro' => $row['video_audiolibro'],
+                ],
+                'formatos' => [
+                    'pdf' => (int) $row['ebooks_format_pdf'] === 1,
+                    'epub' => (int) $row['ebooks_format_epub'] === 1,
+                    'mobi' => (int) $row['ebooks_format_mobi'] === 1,
+                ],
+                'reading' => [
+                    'current_page' => $currentPage,
+                    'first_read' => $row['reading_first_read'],
+                    'last_read' => $row['reading_last_read'],
+                    'started' => $readingStarted,
+                ],
+                'listening' => [
+                    'current_minute' => $currentMinute,
+                    'furthest_minute' => $maxMinute,
+                    'first_read' => $row['listening_first_read'],
+                    'last_read' => $row['listening_last_read'],
+                    'started' => $listeningStarted,
+                ],
+                'added_at' => $addedAt,
+                'last_activity_at' => $lastActivityAt,
+            ];
+        }, $statement->fetchAll());
+    }
+
     /** @return array{current_page:int}|null */
     public function readingProgress(int $userId, string $bookUri): ?array
     {
@@ -135,5 +232,31 @@ SQL;
             }
             throw $exception;
         }
+    }
+
+    /** @param array<int, mixed> $values */
+    private function earliestDate(array $values): ?string
+    {
+        $dates = array_values(array_filter(array_map(static function ($value): string {
+            return is_string($value) ? trim($value) : '';
+        }, $values)));
+        if ($dates === []) {
+            return null;
+        }
+        sort($dates, SORT_STRING);
+        return $dates[0];
+    }
+
+    /** @param array<int, mixed> $values */
+    private function latestDate(array $values): ?string
+    {
+        $dates = array_values(array_filter(array_map(static function ($value): string {
+            return is_string($value) ? trim($value) : '';
+        }, $values)));
+        if ($dates === []) {
+            return null;
+        }
+        rsort($dates, SORT_STRING);
+        return $dates[0];
     }
 }

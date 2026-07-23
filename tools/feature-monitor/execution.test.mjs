@@ -61,7 +61,7 @@ test('valida evaluación y no acepta changes desconocidos', async () => {
 
 test('la API devuelve el tablero y persiste sólo payloads válidos', async (t) => {
   const { root, assessmentFile } = await fixture();
-  const server = createMonitorServer({ repoRoot: root, assessmentFile });
+  const server = createMonitorServer({ repoRoot: root, assessmentFile, applyGuidance: async (slug) => ({ state: 'ready', instruction: `Aplicar ${slug}.` }) });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise((resolve) => server.close(resolve)));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -71,6 +71,8 @@ test('la API devuelve el tablero y persiste sólo payloads válidos', async (t) 
   assert.equal(saved.status, 200);
   const invalid = await fetch(`${base}/api/changes/urgent-fix/assessment`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ priority: 'wrong', urgency: 'high', importance: 'high', effort: 'medium', blocked: false, note: '' }) });
   assert.equal(invalid.status, 422);
+  const guidance = await fetch(`${base}/api/changes/urgent-fix/apply-guidance`);
+  assert.deepEqual(await guidance.json(), { state: 'ready', instruction: 'Aplicar urgent-fix.' });
 });
 
 test('instala el tablero en otro repositorio OpenSpec sin requerir package.json', async () => {

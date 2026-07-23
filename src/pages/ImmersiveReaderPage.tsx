@@ -1,5 +1,5 @@
 import { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { createAnchor, resolveAnchor } from "../features/reader/anchors";
 import { sanitizeFragment } from "../features/reader/sanitize";
 import { getLegacyReaderUrl, getReaderRoot, loadFragment, loadManifest } from "../features/reader/source";
@@ -50,6 +50,7 @@ function getSelectedReaderText(root: HTMLElement | null): ReaderTextSelection | 
 
 export function ImmersiveReaderPage() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   const { libro_uri = "", page } = useParams();
   const requestedPage = Math.max(1, Number.parseInt(page ?? "1", 10) || 1);
   const [manifest, setManifest] = useState<ReaderManifest | null>(null);
@@ -387,9 +388,11 @@ export function ImmersiveReaderPage() {
 
   function leaveReader() {
     persistProgress();
-    // TEMPORAL: para restaurar el retorno original, volver a usar navigate(-1)
-    // cuando location.key !== "default" y navigate(`/book/${libro_uri}`) en caso contrario.
-    window.location.assign(`https://planetalibro.net/libro/${encodeURIComponent(libro_uri)}`);
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    navigate(`/book/${encodeURIComponent(libro_uri)}`);
   }
 
   function firstVisibleFragment(): number {

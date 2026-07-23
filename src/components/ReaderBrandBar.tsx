@@ -1,4 +1,4 @@
-const PLANETA_LIBRO_LOGO_URL = "https://planetalibro.net/img/icono40.png";
+export const PLANETA_LIBRO_LOGO_URL = "https://planetalibro.net/img/icono40.png";
 
 export function ReaderBrandBar() {
   return (

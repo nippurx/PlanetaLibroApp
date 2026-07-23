@@ -190,12 +190,13 @@ final class AnnotationsController
 
     private function authenticatedUserId(): ?int
     {
-        $user = $this->sessions->currentUser();
-        if ($user === null) {
+        $session = $this->sessions->currentContext();
+        $userId = $session->userId();
+        if (!$session->isAuthenticated() || $userId === null) {
             Response::json(['error' => ['code' => 'unauthenticated', 'message' => 'Authentication required.']], 401);
             return null;
         }
-        return (int) $user['id'];
+        return $userId;
     }
 
     private function authorizeWrite(Request $request): ?int

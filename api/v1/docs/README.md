@@ -14,8 +14,16 @@ API aislada para la app nueva en `/app`. Los endpoints de catálogo son read-onl
 - `GET /api/v1/public/reader-manifest/{uri}`
 - `GET /api/v1/public/session`
 - `GET /api/v1/public/library`
+- `GET /api/v1/public/library/summary?preview_limit=10`
+- `GET /api/v1/public/library/items?state=all&q=...&sort=recent&limit=20&offset=0`
 - `GET /api/v1/public/reader-progress/{uri}`
 - `POST /api/v1/public/reader-progress/{uri}`
+- `GET /api/v1/public/audiobook-progress/{uri}`
+- `POST /api/v1/public/audiobook-progress/{uri}`
+- `GET /api/v1/public/books/{uri}/audiobook-bookmarks`
+- `POST /api/v1/public/books/{uri}/audiobook-bookmarks`
+- `PATCH /api/v1/public/audiobook-bookmarks/{id}`
+- `DELETE /api/v1/public/audiobook-bookmarks/{id}`
 - `GET /api/v1/public/books/{uri}/annotations`
 - `POST /api/v1/public/books/{uri}/annotations`
 - `PATCH /api/v1/public/annotations/{id}`
@@ -23,9 +31,43 @@ API aislada para la app nueva en `/app`. Los endpoints de catálogo son read-onl
 
 ## Biblioteca y progreso del reader
 
+Los tres endpoints de biblioteca requieren sesión y responden con `Cache-Control: private, no-store`. `GET /library` conserva el contrato anterior. Los endpoints aditivos son:
+
+- `GET /library/summary`: devuelve Continuar (`in_progress`), Por leer (`unread`) y Terminados (`completed`), cada uno con una muestra de hasta `preview_limit` elementos y su cantidad real. El límite admitido es `1..12`.
+- `GET /library/items`: devuelve la lista completa paginada. `state` admite `all`, `unread`, `in_progress`, `completed` y `abandoned`; `sort` admite `recent` y `oldest`; `q` busca por título o autor; `limit` admite `1..50` y `offset`, `0..100000`.
+
+Los estados se calculan con datos existentes, sin nuevas tablas ni campos. Un libro queda `completed` cuando el progreso alcanza la última página de un manifest ya disponible o de `libroinfo.php`; esta regla prevalece sobre la inactividad. Un elemento incompleto queda `abandoned` si su última actividad es anterior a tres meses, `in_progress` si tiene progreso real reciente y `unread` en los demás casos. Si no existe un total de páginas confiable, la API expone la página actual pero omite el porcentaje y no infiere finalización.
+
 `POST /reader-progress/{uri}` requiere sesión, mismo origen y `X-CSRF-Token`. Recibe `{ "page": N }` y registra la lectura de forma transaccional. Si el usuario todavía no tiene el libro, crea su fila en `user_books`; si ya existe, actualiza `current_page`, `last_read` y `leidas`. La respuesta incluye `created`, `updated` y `current_page`. Un URI que no corresponde a `ebooks_books` devuelve `404 book_not_found`.
 
 El usuario se obtiene exclusivamente de la sesión. La operación bloquea la fila del libro mientras comprueba e inserta la pertenencia, evitando altas duplicadas causadas por aperturas concurrentes desde la API. El fallo remoto no bloquea el reader ni reemplaza el progreso local.
+
+## Progreso de audiolibros
+
+`GET /audiobook-progress/{uri}` requiere sesión y devuelve `has_progress`, `position_seconds`, `furthest_position_seconds`, `media_id` y las fechas disponibles. Los campos legacy `current_min` y `max_min` se interpretan como segundos enteros; el segundo se expone como el mejor máximo conocido, no como evidencia histórica exacta.
+
+`POST /audiobook-progress/{uri}` requiere sesión, mismo origen y `X-CSRF-Token`. Recibe `{ "position_seconds": N, "media_id": "..." }`. El servidor resuelve usuario y libro, comprueba que el audiolibro siga asociado al mismo medio y hace un upsert transaccional en `user_video_audiolibros`. Desde esta API, `max_min` se mantiene monotónico con `GREATEST`, corrigiendo el comportamiento defectuoso del endpoint legacy.
+
+## Señaladores y notas de audiolibro
+
+Los endpoints de señaladores requieren sesión y responden con `Cache-Control: private, no-store`. El listado devuelve únicamente los señaladores del usuario para el video actualmente asociado al libro, ordenados por `position_seconds`; los registros de medios anteriores se conservan pero no se aplican al video nuevo.
+
+`POST /books/{uri}/audiobook-bookmarks` recibe `position_seconds`, `media_id` y un UUID `client_request_id`. La creación valida el medio vigente y es idempotente: si ya existe un señalador del usuario para el mismo libro, medio y segundo, devuelve esa fila sin duplicarla ni eliminarla. Los writes requieren mismo origen, `X-CSRF-Token` y rate limiting.
+
+`PATCH /audiobook-bookmarks/{id}` recibe `note_text` opcional y `revision`. Solo actualiza filas del usuario autenticado y devuelve `409 audiobook_bookmark_conflict` ante una revisión obsoleta. `DELETE` también filtra por propietario y es idempotente. Las notas se limitan a 10.000 unidades UTF-16 y nunca se escriben en logs de aplicación.
+
+Si el video cambia entre la carga y la creación, la API devuelve `409 audiobook_media_changed`. La posición de reanudación permanece en `user_video_audiolibros`; los señaladores deliberados se almacenan separadamente en `user_audiobook_annotations`.
+
+Respuestas relevantes:
+
+- `200`: progreso consultado o actualizado.
+- `201`: primera fila de progreso creada.
+- `400`: URI o payload inválido.
+- `401 unauthenticated`.
+- `403 forbidden`: origen o CSRF inválido.
+- `404 book_not_found` o `audiobook_not_found`.
+- `409 audiobook_media_changed`: el video cambió desde que el cliente cargó el reproductor.
+- `429 rate_limited`.
 
 ## Anotaciones privadas de lectura
 

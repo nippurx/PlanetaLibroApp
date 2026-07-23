@@ -96,6 +96,22 @@ function proposalPanel(change) {
   return panel;
 }
 
+function applyPanel(change) {
+  const panel = node('details', 'apply-panel'); panel.append(node('summary', '', 'Siguiente paso con OpenSpec'));
+  const command = node('code', 'apply-command', `/opsx:apply ${change.slug}`);
+  const instruction = node('pre', 'apply-instruction', 'Abrí esta sección para cargar las instrucciones locales de OpenSpec.');
+  panel.append(command, instruction);
+  panel.addEventListener('toggle', async () => {
+    if (!panel.open || panel.dataset.loaded) return;
+    panel.dataset.loaded = 'true'; instruction.textContent = 'Cargando instrucciones OpenSpec…';
+    try {
+      const response = await fetch(`/api/changes/${change.slug}/apply-guidance`); const result = await response.json();
+      if (!response.ok) throw new Error(result.error); instruction.textContent = result.instruction;
+    } catch (error) { instruction.textContent = `No se pudieron cargar las instrucciones: ${error.message}`; }
+  });
+  return panel;
+}
+
 function changeCard(change) {
   const detail = node('details', `change ${status(change)}`); detail.open = state.dashboard.recommendation?.slug === change.slug;
   const summary = document.createElement('summary');
@@ -104,7 +120,7 @@ function changeCard(change) {
   summary.append(title, badges); detail.append(summary);
   const content = node('div', 'change-content');
   const artifacts = node('p', 'artifacts', `Artifacts: propuesta ${change.artifacts.proposal ? '✓' : '—'} · diseño ${change.artifacts.design ? '✓' : '—'} · specs ${change.artifacts.specs ? '✓' : '—'} · tareas ${change.artifacts.tasks ? '✓' : '—'}`);
-  content.append(artifacts, proposalPanel(change), taskList(change), assessmentForm(change)); detail.append(content); return detail;
+  content.append(artifacts, proposalPanel(change), applyPanel(change), taskList(change), assessmentForm(change)); detail.append(content); return detail;
 }
 
 function filteredChanges() {

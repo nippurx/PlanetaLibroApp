@@ -3,11 +3,19 @@ export function getAudiobookProgressKey(bookUri: string) {
 }
 
 export function saveAudiobookProgress(bookUri: string, seconds: number) {
-  localStorage.setItem(getAudiobookProgressKey(bookUri), String(seconds));
+  try {
+    localStorage.setItem(getAudiobookProgressKey(bookUri), String(seconds));
+  } catch {
+    // El audio sigue disponible aunque el navegador rechace almacenamiento local.
+  }
 }
 
 export function loadAudiobookProgress(bookUri: string): number {
-  const raw = localStorage.getItem(getAudiobookProgressKey(bookUri));
-  const value = Number(raw);
-  return Number.isFinite(value) ? value : 0;
+  try {
+    const raw = localStorage.getItem(getAudiobookProgressKey(bookUri));
+    const value = Number(raw);
+    return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+  } catch {
+    return 0;
+  }
 }

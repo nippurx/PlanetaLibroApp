@@ -26,7 +26,11 @@ El servidor resolverá su propia raíz de repositorio y enumerará exclusivament
 
 ### Parser pequeño y tolerante de `tasks.md`
 
-Una función pura leerá líneas con checkboxes Markdown (`- [ ]`, `- [x]` o `- [X]`) y devolverá texto, estado y ordinal. Los totales se derivan de esa misma salida. Las líneas no marcadas se conservan fuera del contador y una tarea sin archivo se comunica como no disponible, nunca como cero tareas. La alternativa de usar el CLI de OpenSpec en cada request se descarta: no ofrece una lista de tareas con el contexto necesario para la UI y añadiría procesos externos al servidor local.
+Una función pura leerá líneas con checkboxes Markdown (`- [ ]`, `- [x]` o `- [X]`) y devolverá texto, estado y ordinal. Los totales se derivan de esa misma salida. Las líneas no marcadas se conservan fuera del contador y una tarea sin archivo se comunica como no disponible, nunca como cero tareas.
+
+### Instrucciones de aplicación acotadas
+
+Para cada slug ya descubierto, el servidor puede ejecutar únicamente `openspec instructions apply --change <slug> --json`, con argumentos fijos, cwd en la raíz del repositorio y timeout corto. En Windows usa `cmd.exe` porque la instalación local de OpenSpec es un script `.ps1`; el único valor interpolado es el slug validado contra el patrón interno. La respuesta expone el texto `instruction` y el estado; nunca ejecuta `/opsx:apply`, no acepta rutas desde el navegador ni reenvía argumentos arbitrarios. Un fallo o una instalación ausente de OpenSpec se muestra como instrucción no disponible sin impedir el resto del tablero. La alternativa de inferir el siguiente paso desde los archivos se descarta porque perdería las indicaciones dinámicas del esquema OpenSpec.
 
 ### Metadata operativa versionada y separada
 

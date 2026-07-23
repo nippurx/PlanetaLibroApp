@@ -21,16 +21,16 @@ final class SessionController
     public function show(Request $request, array $params): void
     {
         Response::preventPrivateCaching();
-        $user = $this->sessions->currentUser();
+        $session = $this->sessions->currentContext();
         Response::ok([
-            'authenticated' => $user !== null,
-            'user' => $user === null ? null : [
-                'id' => $user['id'],
-                'username' => $user['username'],
-                'avatar_url' => $user['avatar_url'],
+            'authenticated' => $session->isAuthenticated(),
+            'user' => !$session->isAuthenticated() ? null : [
+                'id' => $session->userId(),
+                'username' => $session->username(),
+                'avatar_url' => $session->avatarUrl(),
             ],
-            'entitlements' => ['premium' => $user !== null && $user['premium']],
-            'csrf_token' => $user === null ? null : $this->sessions->csrfToken(),
+            'entitlements' => ['premium' => $session->hasCapability('premium')],
+            'csrf_token' => !$session->isAuthenticated() ? null : $this->sessions->csrfToken(),
         ]);
     }
 

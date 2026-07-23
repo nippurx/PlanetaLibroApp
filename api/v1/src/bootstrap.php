@@ -11,7 +11,11 @@ use PlanetaLibro\Api\V1\Repositories\ReaderManifestRepo;
 use PlanetaLibro\Api\V1\Repositories\SearchRepo;
 use PlanetaLibro\Api\V1\Repositories\LibraryRepo;
 use PlanetaLibro\Api\V1\Repositories\AnnotationsRepo;
+use PlanetaLibro\Api\V1\Repositories\AudiobookProgressRepo;
+use PlanetaLibro\Api\V1\Repositories\AudiobookBookmarksRepo;
+use PlanetaLibro\Api\V1\Auth\LegacyPhpSessionResolver;
 use PlanetaLibro\Api\V1\Auth\SessionService;
+use PlanetaLibro\Api\V1\Library\LibraryService;
 
 function bootstrap(string $root): array
 {
@@ -41,6 +45,13 @@ function bootstrap(string $root): array
         ? $documentRoot . '/lector'
         : dirname($root, 2) . '/lector'));
 
+    $libraryRepo = new LibraryRepo($pdo);
+    $readerManifestService = new ReaderManifestService(
+        $readerManifestRepo,
+        new LegacyBookInfoParser(),
+        $readerRoot
+    );
+
     return [
         'config' => $config,
         'pdo' => $pdo,
@@ -48,14 +59,13 @@ function bootstrap(string $root): array
         'booksRepo' => new BooksRepo($pdo),
         'authorsRepo' => new AuthorsRepo($pdo),
         'searchRepo' => new SearchRepo($pdo),
-        'sessionService' => new SessionService($pdo),
-        'libraryRepo' => new LibraryRepo($pdo),
+        'sessionService' => new SessionService(new LegacyPhpSessionResolver($pdo)),
+        'libraryRepo' => $libraryRepo,
+        'libraryService' => new LibraryService($libraryRepo, $readerManifestService),
         'annotationsRepo' => new AnnotationsRepo($pdo),
-        'readerManifestService' => new ReaderManifestService(
-            $readerManifestRepo,
-            new LegacyBookInfoParser(),
-            $readerRoot
-        ),
+        'audiobookProgressRepo' => new AudiobookProgressRepo($pdo),
+        'audiobookBookmarksRepo' => new AudiobookBookmarksRepo($pdo),
+        'readerManifestService' => $readerManifestService,
     ];
 }
 

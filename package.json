@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:reader": "vite --host 0.0.0.0",
     "lint": "tsc -p tsconfig.app.json --noEmit",
-    "test": "node --test tests/reader-gestures.test.ts tests/reader-annotations.test.ts",
+    "test": "node --test tests/reader-gestures.test.ts tests/reader-annotations.test.ts tests/audiobook-progress.test.ts tests/library-presentation.test.ts",
     "test:features": "node --test tools/feature-monitor/execution.test.mjs",
     "features:monitor": "node tools/feature-monitor/server.mjs",
     "openspec:dashboard": "node tools/feature-monitor/server.mjs",

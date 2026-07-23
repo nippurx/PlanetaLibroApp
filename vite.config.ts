@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
   build: {
     // Local previews stay in this repository. The normal production build
     // retains the existing deployment output.
-    outDir: mode === "preview" ? "dist" : "../MPWebs/www/planetalibro/app",
+    outDir: mode === "preview" ? "dist" : "../MPWebs/www/planetalibro/src/app",
     emptyOutDir: true,
   },
   server: {

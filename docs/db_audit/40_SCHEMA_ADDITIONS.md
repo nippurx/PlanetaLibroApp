@@ -442,3 +442,81 @@ Para elevar el estado a `APPLIED`, se debe confirmar la presencia de `annotation
 3. Fijar la unidad reproducible de offsets y el formato de `content_version`.
 4. Revisar `EXPLAIN` con un volumen representativo antes de considerar completos los índices.
 5. Definir el procedimiento de migración por entorno y quién registra el cambio a `APPLIED`.
+
+---
+
+## DB-ADD-002 — `user_audiobook_annotations`
+
+### Estado
+
+**APPLIED (informado por el propietario el 2026-07-22).**
+
+La tabla fue creada en la base productiva `c2380538_main`, informada como MySQL `5.7.44-log`. Este documento registra el DDL acordado y la confirmación de aplicación del propietario. Queda pendiente adjuntar como evidencia operativa la salida completa de `SHOW CREATE TABLE` y `SHOW INDEX`.
+
+### Objetivo
+
+Persistir múltiples señaladores privados de audiolibro por usuario, libro, medio y segundo, con una nota opcional. Esta entidad se mantiene separada de:
+
+- `user_video_audiolibros`, que conserva una única posición de reproducción para reanudar;
+- `user_book_annotations`, cuyas coordenadas obligatorias representan anclas textuales del ebook.
+
+Un segundo intento de crear un señalador en la misma ubicación no debe borrar el registro existente. La API debe recuperar el señalador ya creado y ofrecer la edición explícita de su nota.
+
+### DDL informado como aplicado
+
+```sql
+CREATE TABLE `user_audiobook_annotations` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` INT NOT NULL,
+    `ebooks_books_id` INT NOT NULL,
+    `media_id` VARCHAR(2048) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    `media_hash` BINARY(32)
+        GENERATED ALWAYS AS (UNHEX(SHA2(`media_id`, 256))) STORED,
+    `position_seconds` INT UNSIGNED NOT NULL,
+    `note_text` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `client_request_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+    `revision` INT UNSIGNED NOT NULL DEFAULT 1,
+    `created_at` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    `updated_at` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+        ON UPDATE CURRENT_TIMESTAMP(6),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_uaba_user_request` (`user_id`, `client_request_id`),
+    UNIQUE KEY `uq_uaba_location` (
+        `user_id`, `ebooks_books_id`, `media_hash`, `position_seconds`
+    ),
+    KEY `idx_uaba_user_book_position` (
+        `user_id`, `ebooks_books_id`, `position_seconds`, `id`
+    ),
+    KEY `idx_uaba_user_updated` (`user_id`, `updated_at`, `id`),
+    KEY `idx_uaba_book` (`ebooks_books_id`, `id`),
+    CONSTRAINT `fk_uaba_user`
+        FOREIGN KEY (`user_id`)
+        REFERENCES `user_table` (`userid`)
+        ON UPDATE RESTRICT
+        ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARACTER SET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='Señaladores y notas privadas de audiolibros';
+```
+
+### Decisiones y restricciones
+
+- `position_seconds` utiliza segundos enteros, igual que el contrato vigente de progreso de audiolibro.
+- `media_id` identifica la versión concreta del video. Un cambio de medio no debe trasladar silenciosamente los señaladores anteriores.
+- `media_hash` permite indexar y deduplicar un identificador de medio de hasta 2.048 caracteres sin usar un índice de prefijo ambiguo.
+- `uq_uaba_location` impide dos filas del mismo usuario, libro, medio y segundo.
+- `uq_uaba_user_request` proporciona idempotencia para reintentos de creación mediante UUID.
+- `revision` queda reservado para concurrencia optimista al editar la nota.
+- `note_text` es privado, opcional y debe limitarse en la API a 10.000 caracteres.
+- La identidad del usuario debe proceder exclusivamente de la sesión server-side. Los writes requieren mismo origen, CSRF, sentencias preparadas y respuestas privadas sin caché.
+- No existe foreign key hacia `ebooks_books`: el esquema auditado confirma que esa tabla usa MyISAM. La API debe validar la existencia del libro y que `media_id` continúe asociado a él.
+
+### Verificación operativa pendiente de adjuntar
+
+```sql
+SHOW CREATE TABLE `user_audiobook_annotations`;
+SHOW INDEX FROM `user_audiobook_annotations`;
+```
+
+La verificación debe confirmar motor InnoDB, charset/collation, columna generada `media_hash`, tres índices de consulta, dos restricciones únicas y `fk_uaba_user`. La ausencia de una FK hacia `ebooks_books` es intencional.

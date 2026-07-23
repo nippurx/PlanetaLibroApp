@@ -64,6 +64,17 @@ The system SHALL summarize total active work and identify a deterministic recomm
 - **WHEN** no active change has pending unblocked tasks with an assigned priority
 - **THEN** the overview states that there is no recommended next change, does not invent a ranking, and continues to show completed, unavailable, and blocked work accurately
 
+### Requirement: OpenSpec apply guidance
+The system SHALL expose, for each discovered change, the local OpenSpec apply instruction generated for that known slug and the suggested Codex command `/opsx:apply <slug>`. It SHALL never execute the Codex command or accept a change path or arbitrary OpenSpec arguments from the browser.
+
+#### Scenario: Apply guidance is available
+- **WHEN** OpenSpec returns a valid apply-instructions response for a discovered change
+- **THEN** the expanded change shows the suggested Codex command and the returned instruction text
+
+#### Scenario: Apply guidance is unavailable
+- **WHEN** the local OpenSpec command fails or is unavailable for a discovered change
+- **THEN** the expanded change reports that apply guidance is unavailable while preserving its task and proposal information
+
 ### Requirement: Accessible local dashboard
 The system SHALL provide a responsive, keyboard-accessible local HTML interface with summary, filtering and sorting controls, change details, task completion visibility, assessment controls, loading feedback, empty states, and recoverable errors.
 

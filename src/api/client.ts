@@ -35,6 +35,7 @@ export class ApiError extends Error {
 type RequestOptions = {
   body?: unknown;
   headers?: HeadersInit;
+  keepalive?: boolean;
   signal?: AbortSignal;
 };
 
@@ -68,6 +69,7 @@ async function request<T>(method: HttpMethod, path: string, options: RequestOpti
       ...options.headers,
     },
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    keepalive: options.keepalive,
     signal: options.signal,
   });
 
@@ -99,8 +101,8 @@ export const apiClient = {
   get<T>(path: string, headers?: HeadersInit, signal?: AbortSignal) {
     return request<T>("GET", path, { headers, signal });
   },
-  post<T>(path: string, body?: unknown, headers?: HeadersInit) {
-    return request<T>("POST", path, { body, headers });
+  post<T>(path: string, body?: unknown, headers?: HeadersInit, keepalive = false) {
+    return request<T>("POST", path, { body, headers, keepalive });
   },
   patch<T>(path: string, body?: unknown, headers?: HeadersInit) {
     return request<T>("PATCH", path, { body, headers });

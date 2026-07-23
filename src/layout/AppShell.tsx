@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { PLANETA_LIBRO_LOGO_URL } from "../components/ReaderBrandBar";
 
 type ShellMode = "standard" | "immersive";
 type ShellTheme = "dark" | "light";
@@ -26,7 +27,7 @@ const navItems = [
 const mobileNavItems = [
   { href: "/home", label: "Inicio", icon: "home" },
   { href: "/search", label: "Buscar", icon: "search" },
-  { href: "/library", label: "Usuario", icon: "person" },
+  { href: "/library", label: "Biblioteca", icon: "bookmark" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -102,10 +103,12 @@ export function AppShell({
         } ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex flex-col gap-6 p-4">
-          <div className="flex items-center gap-3 px-2 py-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary ring-2 ring-primary/20">
-              <span className="material-symbols-outlined fill-1">auto_stories</span>
-            </div>
+          <a
+            aria-label="Ir a PlanetaLibro.net"
+            className="flex items-center gap-3 rounded-lg px-2 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            href="https://planetalibro.net"
+          >
+            <img alt="" aria-hidden="true" className="h-10 w-10 object-contain" src={PLANETA_LIBRO_LOGO_URL} />
             <div className="flex flex-col">
               <h1 className={`text-base font-semibold leading-tight ${dark ? "text-white" : "text-slate-900 dark:text-white"}`}>
                 PlanetaLibro
@@ -114,7 +117,7 @@ export function AppShell({
                 {premium ? "Usuario Premium" : "Usuario registrado"}
               </p>
             </div>
-          </div>
+          </a>
           <nav className="flex flex-col gap-2">
             {navItems.filter((item) => item.href !== "/library" || session?.authenticated).map((item) => {
               const active = isActive(pathname, item.href);
@@ -203,7 +206,7 @@ export function AppShell({
             {headerRight}
           </div>
         </header>
-        <main className={`min-h-0 flex-1 overflow-y-auto pb-[calc(2.25rem+env(safe-area-inset-bottom))] md:pb-0 ${contentClassName}`}>{children}</main>
+        <main className={`min-h-0 flex-1 overflow-y-auto pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 ${contentClassName}`}>{children}</main>
         <nav
           aria-label="Navegacion principal"
           className={`fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t pb-[env(safe-area-inset-bottom)] md:hidden ${
@@ -219,7 +222,7 @@ export function AppShell({
                 key={item.href}
                 aria-current={active ? "page" : undefined}
                 aria-label={item.label}
-                className={`flex h-9 items-center justify-center leading-none transition-colors ${
+                className={`flex h-14 flex-col items-center justify-center gap-0.5 leading-none transition-colors ${
                   active
                     ? dark
                       ? "text-white"
@@ -229,6 +232,7 @@ export function AppShell({
                 to={item.href}
               >
                 <span className={`material-symbols-outlined block text-[22px] leading-none ${active ? "fill-1" : ""}`}>{item.icon}</span>
+                <span className="text-[10px] font-medium">{item.label}</span>
               </Link>
             );
           })}

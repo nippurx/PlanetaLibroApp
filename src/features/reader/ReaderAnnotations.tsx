@@ -420,7 +420,7 @@ export function useReaderAnnotations(options: UseReaderAnnotationsOptions) {
           <h2 id="annotation-auth-title">Guardá tus señaladores y anotaciones</h2>
           <p>Creá una cuenta gratuita o iniciá sesión para conservarlos y recuperarlos desde cualquier dispositivo.</p>
           <div className="reader-annotation-modal-actions">
-            <button onClick={() => { sessionStorage.removeItem(DRAFT_KEY); setAuthPrompt(false); }}>Ahora no</button>
+            <button onClick={() => { sessionStorage.removeItem(DRAFT_KEY); setAuthPrompt(false); }}>Más tarde</button>
             <a href={getLegacyLoginUrl(`${window.location.pathname}${window.location.search}`)}>Crear cuenta o iniciar sesión</a>
           </div>
         </div>

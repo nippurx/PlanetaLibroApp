@@ -1,20 +1,33 @@
-﻿import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import type { ReactNode } from "react";
-import { type Book, getUserLibrary } from "../api/books";
+import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  Book,
+  getLibraryItems,
+  getLibrarySummary,
+  LibraryListResult,
+  LibrarySummary,
+} from "../api/books";
 import { ApiError } from "../api/client";
+import { getLegacyLoginUrl } from "../api/session";
+import { useAuth } from "../auth/AuthContext";
 import { AuthorLink, resolveAuthor } from "../components/AuthorLink";
 import { BookCover } from "../components/BookCover";
-import { AppShell } from "../layout/AppShell";
-import { useAuth } from "../auth/AuthContext";
-import { getLegacyLoginUrl } from "../api/session";
-import { getBookDetailUrl, getLibraryActions, type LibraryAction } from "../features/library/navigation";
+import { getBookDetailUrl, getLibraryActions, LibraryAction } from "../features/library/navigation";
+import {
+  getLibraryProgressLabel,
+  isLibraryView,
+  LIBRARY_FILTERS,
+  LIBRARY_VIEW_LABELS,
+  LibrarySort,
+  LibraryView,
+  normalizeLibraryOffset,
+  normalizeLibrarySort,
+  updateLibrarySearchParams,
+} from "../features/library/presentation";
 import { loadAudiobookProgress } from "../features/listen/storage";
+import { AppShell } from "../layout/AppShell";
 
-const accentClasses = {
-  audio: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  read: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-};
+const LIST_LIMIT = 20;
 
 function LibraryActionLink({ action, className, children }: {
   action: LibraryAction;
@@ -24,203 +37,500 @@ function LibraryActionLink({ action, className, children }: {
   return <Link aria-label={action.ariaLabel} className={className} to={action.href}>{children}</Link>;
 }
 
-export function PersonalLibraryPage() {
-  const { session } = useAuth();
-  const [books, setBooks] = useState<Book[]>([]);
+function MediaActions({ book, compact = false, underCover = false }: {
+  book: Book;
+  compact?: boolean;
+  underCover?: boolean;
+}) {
+  const actions = getLibraryActions(book, loadAudiobookProgress(book.uri));
+  const available = [actions.read, actions.listen].filter((action): action is LibraryAction => action !== null);
+
+  if (available.length === 0) {
+    return <span className="text-xs text-slate-400">No disponible</span>;
+  }
+
+  return (
+    <div className={underCover ? "flex w-full gap-2" : "flex flex-wrap justify-center gap-2 sm:justify-start"}>
+      {available.map((action) => (
+        <LibraryActionLink
+          key={action.kind}
+          action={action}
+          className={`inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 font-medium text-slate-800 transition-colors hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 ${
+            underCover
+              ? "h-11 min-w-0 flex-1 px-0 text-sm"
+              : compact
+              ? "h-11 w-11 px-0 text-xs sm:h-8 sm:w-auto sm:px-2"
+              : "h-11 w-11 px-0 text-sm sm:h-9 sm:w-auto sm:px-3"
+          }`}
+        >
+          <span aria-hidden="true" className="material-symbols-outlined text-[17px]">{action.icon}</span>
+          <span className={underCover ? "hidden" : "hidden sm:inline"}>{action.label}</span>
+        </LibraryActionLink>
+      ))}
+    </div>
+  );
+}
+
+function BookMenu({ book }: { book: Book }) {
+  return (
+    <details className="group/menu relative">
+      <summary
+        aria-label={`Más acciones para ${book.titulo}`}
+        className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+      >
+        <span aria-hidden="true" className="material-symbols-outlined">more_horiz</span>
+      </summary>
+      <div className="absolute right-0 z-20 mt-1 w-52 rounded-xl border border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+        <Link
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800"
+          to={getBookDetailUrl(book)}
+        >
+          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">info</span>
+          Información del libro
+        </Link>
+      </div>
+    </details>
+  );
+}
+
+function SummaryCard({ book }: { book: Book }) {
+  const author = resolveAuthor(book);
+  const actions = getLibraryActions(book, loadAudiobookProgress(book.uri));
+  const coverAction = actions.cover;
+
+  return (
+    <li className="w-[148px] shrink-0 snap-start sm:w-[170px]">
+      <div className="group relative">
+        {coverAction ? (
+          <LibraryActionLink action={coverAction} className="block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+            <div className="aspect-[2/3] overflow-hidden rounded-xl bg-slate-200 shadow-sm dark:bg-slate-800">
+              <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+            </div>
+          </LibraryActionLink>
+        ) : (
+          <div className="aspect-[2/3] overflow-hidden rounded-xl bg-slate-200 shadow-sm dark:bg-slate-800">
+            <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover" />
+          </div>
+        )}
+        <div className="absolute right-1 top-1 rounded-full bg-white/95 shadow-sm dark:bg-slate-900/95">
+          <BookMenu book={book} />
+        </div>
+      </div>
+      <Link className="mt-3 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" to={getBookDetailUrl(book)}>
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 hover:text-primary dark:text-white">{book.titulo}</h3>
+      </Link>
+      <AuthorLink className="mt-1 block truncate text-xs text-slate-500 dark:text-slate-400" name={author.name} uri={author.uri} />
+      <div className="mt-2">
+        {book.hasReliableProgress ? (
+          <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700" aria-label={getLibraryProgressLabel(book)}>
+            <div className="h-full rounded-full bg-primary" style={{ width: `${book.progressPercent}%` }} />
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500 dark:text-slate-400">{getLibraryProgressLabel(book)}</p>
+        )}
+      </div>
+      <div className="mt-3">
+        <MediaActions book={book} compact underCover />
+      </div>
+    </li>
+  );
+}
+
+function SummarySection({ state, items, total }: {
+  state: "in_progress" | "unread" | "completed";
+  items: Book[];
+  total: number;
+}) {
+  const carouselRef = useRef<HTMLUListElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    function updateScrollState() {
+      if (!carousel) return;
+      const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+      setCanScrollLeft(carousel.scrollLeft > 1);
+      setCanScrollRight(carousel.scrollLeft < maxScrollLeft - 1);
+    }
+
+    updateScrollState();
+    carousel.addEventListener("scroll", updateScrollState, { passive: true });
+    const resizeObserver = new ResizeObserver(updateScrollState);
+    resizeObserver.observe(carousel);
+
+    return () => {
+      carousel.removeEventListener("scroll", updateScrollState);
+      resizeObserver.disconnect();
+    };
+  }, [items.length]);
+
+  function scrollCarousel(direction: -1 | 1) {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+    carousel.scrollBy({
+      left: direction * Math.max(320, carousel.clientWidth * 0.8),
+      behavior: "smooth",
+    });
+  }
+
+  if (total === 0) {
+    return null;
+  }
+
+  return (
+    <section aria-labelledby={`library-${state}`} className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <h2 id={`library-${state}`} className="min-w-0 text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
+          {LIBRARY_VIEW_LABELS[state]} <span className="text-slate-400">{total}</span>
+        </h2>
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="hidden items-center gap-1 md:flex" aria-label={`Navegar ${LIBRARY_VIEW_LABELS[state]}`}>
+            <button
+              aria-controls={`library-${state}-carousel`}
+              aria-label={`Ver libros anteriores de ${LIBRARY_VIEW_LABELS[state]}`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-default disabled:opacity-35 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
+              disabled={!canScrollLeft}
+              onClick={() => scrollCarousel(-1)}
+              type="button"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button
+              aria-controls={`library-${state}-carousel`}
+              aria-label={`Ver más libros de ${LIBRARY_VIEW_LABELS[state]}`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-default disabled:opacity-35 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
+              disabled={!canScrollRight}
+              onClick={() => scrollCarousel(1)}
+              type="button"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+          <Link className="rounded-lg px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" to={`/library?view=${state}`}>
+            Ver todo
+          </Link>
+        </div>
+      </div>
+      <ul
+        ref={carouselRef}
+        id={`library-${state}-carousel`}
+        aria-label={`${LIBRARY_VIEW_LABELS[state]}: ${total} libros`}
+        className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0"
+      >
+        {items.map((book) => <SummaryCard key={book.uri} book={book} />)}
+      </ul>
+    </section>
+  );
+}
+
+function LoadingState({ label = "Cargando biblioteca..." }: { label?: string }) {
+  return (
+    <div aria-live="polite" className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+      {label}
+    </div>
+  );
+}
+
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
+      <p className="text-sm">{message}</p>
+      <button className="mt-4 rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" onClick={onRetry} type="button">
+        Reintentar
+      </button>
+    </div>
+  );
+}
+
+function LibrarySummaryView({ onTotalChange }: { onTotalChange: (total: number | null) => void }) {
+  const [summary, setSummary] = useState<LibrarySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    onTotalChange(null);
+    void getLibrarySummary().then((result) => {
+      if (!cancelled) {
+        setSummary(result);
+        onTotalChange(result.total);
+      }
+    }).catch((reason) => {
+      if (!cancelled) {
+        setError(reason instanceof ApiError ? reason.message : "No se pudo cargar tu biblioteca.");
+        onTotalChange(null);
+      }
+    }).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [retryKey]);
+
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState message={error} onRetry={() => setRetryKey((value) => value + 1)} />;
+  if (!summary || summary.total === 0) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <span aria-hidden="true" className="material-symbols-outlined text-5xl text-slate-300">bookmark</span>
+        <h2 className="mt-3 text-xl font-bold text-slate-900 dark:text-white">Tu biblioteca está vacía</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">Explora el catálogo para encontrar tu próxima lectura o audiolibro.</p>
+        <Link className="mt-5 inline-flex rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to="/search">
+          Ir a Buscar
+        </Link>
+      </div>
+    );
+  }
+
+  const hasPrimarySections = Object.values(summary.sections).some((section) => section.total > 0);
+
+  return (
+    <div className="space-y-10">
+      <SummarySection state="in_progress" items={summary.sections.in_progress.items} total={summary.sections.in_progress.total} />
+      <SummarySection state="unread" items={summary.sections.unread.items} total={summary.sections.unread.total} />
+      <SummarySection state="completed" items={summary.sections.completed.items} total={summary.sections.completed.total} />
+      {!hasPrimarySections ? (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-sm text-slate-600 dark:text-slate-300">Tus libros están disponibles en la vista completa.</p>
+          <Link className="mt-3 inline-flex text-sm font-semibold text-primary hover:underline" to="/library?view=all">Ver todos</Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function LibraryListRow({ book }: { book: Book }) {
+  const author = resolveAuthor(book);
+  const detailUrl = getBookDetailUrl(book);
+
+  return (
+    <li className="border-b border-slate-200 py-5 last:border-b-0 dark:border-slate-800">
+      <article className="flex gap-4 sm:gap-5">
+        <Link className="h-28 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-200 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-slate-800 sm:h-36 sm:w-24" to={detailUrl}>
+          <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover" />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <Link className="rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" to={detailUrl}>
+                <h2 className="line-clamp-2 text-base font-semibold leading-snug text-slate-900 hover:text-primary dark:text-white sm:text-xl">{book.titulo}</h2>
+              </Link>
+              <AuthorLink className="mt-1 block truncate text-sm text-slate-500 dark:text-slate-400 sm:text-base" name={author.name} uri={author.uri} />
+            </div>
+            <BookMenu book={book} />
+          </div>
+          <div className="mt-3 max-w-sm">
+            {book.hasReliableProgress ? (
+              <>
+                <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700" aria-label={getLibraryProgressLabel(book)}>
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${book.progressPercent}%` }} />
+                </div>
+                <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{getLibraryProgressLabel(book)}</p>
+              </>
+            ) : (
+              <p className="text-xs text-slate-500 dark:text-slate-400">{getLibraryProgressLabel(book)}</p>
+            )}
+          </div>
+          <div className="mt-3">
+            <MediaActions book={book} compact />
+          </div>
+        </div>
+      </article>
+    </li>
+  );
+}
+
+function LibraryListView({ view, sort, query, offset, setParams }: {
+  view: LibraryView;
+  sort: LibrarySort;
+  query: string;
+  offset: number;
+  setParams: (updates: Record<string, string | null>) => void;
+}) {
+  const [result, setResult] = useState<LibraryListResult | null>(null);
+  const [searchText, setSearchText] = useState(query);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+
+  useEffect(() => setSearchText(query), [query]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void getLibraryItems({ state: view, q: query, sort, limit: LIST_LIMIT, offset }).then((nextResult) => {
+      if (!cancelled) setResult(nextResult);
+    }).catch((reason) => {
+      if (!cancelled) setError(reason instanceof ApiError ? reason.message : "No se pudo cargar esta lista.");
+    }).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [view, sort, query, offset, retryKey]);
+
+  function submitSearch(event: FormEvent) {
+    event.preventDefault();
+    setParams({ q: searchText.trim() || null, offset: null });
+  }
+
+  const total = result?.pagination.total ?? 0;
+
+  return (
+    <div className="mx-auto w-full max-w-4xl">
+      <div className="sticky top-0 z-10 -mx-4 border-b border-slate-200 bg-background-light/95 px-4 py-3 backdrop-blur-sm dark:border-slate-800 dark:bg-background-dark/95 sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:backdrop-blur-none">
+        <div className="flex items-center gap-3">
+          <Link aria-label="Volver a Mi Biblioteca" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:text-white dark:hover:bg-slate-800" to="/library">
+            <span aria-hidden="true" className="material-symbols-outlined">arrow_back</span>
+          </Link>
+          <h1 className="min-w-0 flex-1 truncate text-2xl font-bold text-slate-900 dark:text-white">
+            {LIBRARY_VIEW_LABELS[view]} <span className="text-slate-400">{total}</span>
+          </h1>
+          <button
+            aria-label={sort === "recent" ? "Ordenar por más antiguos" : "Ordenar por más recientes"}
+            className="flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:text-white dark:hover:bg-slate-800"
+            onClick={() => setParams({ sort: sort === "recent" ? "oldest" : "recent", offset: null })}
+            type="button"
+          >
+            <span aria-hidden="true" className="material-symbols-outlined">swap_vert</span>
+            <span className="hidden sm:inline">{sort === "recent" ? "Más recientes" : "Más antiguos"}</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-5 flex gap-2 overflow-x-auto pb-2" aria-label="Filtrar biblioteca">
+        {LIBRARY_FILTERS.map((filter) => (
+          <button
+            key={filter}
+            aria-pressed={filter === view}
+            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
+              filter === view
+                ? "bg-primary text-white"
+                : "bg-white text-slate-600 shadow-sm hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            }`}
+            onClick={() => setParams({ view: filter, q: filter === "all" ? query || null : null, offset: null })}
+            type="button"
+          >
+            {LIBRARY_VIEW_LABELS[filter]} {result ? <span className={filter === view ? "text-white/75" : "text-slate-400"}>{result.counts[filter]}</span> : null}
+          </button>
+        ))}
+      </div>
+
+      {view === "all" ? (
+        <form className="mt-4 flex gap-2" onSubmit={submitSearch}>
+          <label className="relative min-w-0 flex-1">
+            <span className="sr-only">Buscar dentro de Mi Biblioteca</span>
+            <span aria-hidden="true" className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              onChange={(event) => setSearchText(event.target.value)}
+              placeholder="Buscar por título o autor"
+              value={searchText}
+            />
+          </label>
+          <button className="rounded-xl bg-primary px-4 text-sm font-semibold text-white hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="submit">
+            Buscar
+          </button>
+        </form>
+      ) : null}
+
+      <div className="mt-4">
+        {loading ? <LoadingState label={`Cargando ${LIBRARY_VIEW_LABELS[view].toLowerCase()}...`} /> : null}
+        {!loading && error ? <ErrorState message={error} onRetry={() => setRetryKey((value) => value + 1)} /> : null}
+        {!loading && !error && result && result.items.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">No hay resultados en {LIBRARY_VIEW_LABELS[view]}</h2>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {query ? "Prueba con otra búsqueda o cambia el filtro." : "Esta sección todavía no tiene libros."}
+            </p>
+            <Link className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline" to="/search">Explorar en Buscar</Link>
+          </div>
+        ) : null}
+        {!loading && !error && result && result.items.length > 0 ? (
+          <ul aria-label={`${LIBRARY_VIEW_LABELS[view]}: ${result.pagination.total} libros`}>
+            {result.items.map((book) => <LibraryListRow key={book.uri} book={book} />)}
+          </ul>
+        ) : null}
+      </div>
+
+      {!loading && !error && result && result.pagination.total > LIST_LIMIT ? (
+        <nav aria-label="Paginación de la biblioteca" className="mt-6 flex items-center justify-between gap-4">
+          <button
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            disabled={offset === 0}
+            onClick={() => setParams({ offset: String(Math.max(0, offset - LIST_LIMIT)) })}
+            type="button"
+          >
+            Anterior
+          </button>
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            {offset + 1}–{Math.min(offset + LIST_LIMIT, result.pagination.total)} de {result.pagination.total}
+          </span>
+          <button
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            disabled={!result.pagination.hasMore}
+            onClick={() => setParams({ offset: String(offset + LIST_LIMIT) })}
+            type="button"
+          >
+            Siguiente
+          </button>
+        </nav>
+      ) : null}
+    </div>
+  );
+}
+
+export function PersonalLibraryPage() {
+  const { session } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [libraryTotal, setLibraryTotal] = useState<number | null>(null);
+  const rawView = searchParams.get("view");
+  const listMode = isLibraryView(rawView);
+  const view: LibraryView = listMode ? rawView : "all";
+  const sort = normalizeLibrarySort(searchParams.get("sort"));
+  const query = searchParams.get("q")?.trim() ?? "";
+  const offset = useMemo(() => {
+    return normalizeLibraryOffset(searchParams.get("offset"));
+  }, [searchParams]);
 
   useEffect(() => {
     if (!session?.authenticated) {
       window.location.replace(getLegacyLoginUrl("/app/library"));
-      return;
     }
-
-    let cancelled = false;
-
-    async function loadBooks() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const nextBooks = await getUserLibrary();
-        if (!cancelled) {
-          setBooks(nextBooks);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : "No se pudo cargar tu biblioteca.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void loadBooks();
-
-    return () => {
-      cancelled = true;
-    };
   }, [session?.authenticated]);
 
-  const featuredBooks = books.slice(0, 3);
-  const recentBooks = books.slice(3, 7);
+  function updateParams(updates: Record<string, string | null>) {
+    setSearchParams((current) => {
+      return updateLibrarySearchParams(current, updates);
+    });
+  }
+
+  if (!session?.authenticated) {
+    return null;
+  }
+
+  const libraryTitle = listMode ? undefined : (
+    <h2 className="truncate text-lg font-bold tracking-tight text-slate-900 dark:text-white md:text-xl">
+      Mi Biblioteca {libraryTotal !== null ? <span className="text-slate-400">{libraryTotal}</span> : null}
+    </h2>
+  );
 
   return (
-    <AppShell theme="light" title="Mi Biblioteca">
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 p-4 md:p-8">
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">Mi Biblioteca</h1>
-            <p className="mt-1 text-base text-slate-500 dark:text-slate-400">Gestiona tus lecturas y audiolibros actuales.</p>
-          </div>
-          <button className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-primary/25 transition-colors hover:bg-blue-600">
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Nuevo libro
-          </button>
-        </div>
-        <div className="border-b border-slate-200 dark:border-[#3b4554]">
-          <div className="no-scrollbar flex gap-6 overflow-x-auto md:gap-8">
-            <button className="border-b-2 border-primary px-1 pb-3 whitespace-nowrap text-sm font-medium text-primary">
-              Leyendo <span className="ml-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-xs">{featuredBooks.length}</span>
-            </button>
-            {["Por leer", "Finalizado", "DNF"].map((label) => (
-              <button key={label} className="border-b-2 border-transparent px-1 pb-3 whitespace-nowrap text-sm font-medium text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400">
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-        {loading ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-[#111418] dark:text-slate-400">
-            Cargando biblioteca...
-          </div>
-        ) : error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-            {error}
-          </div>
+    <AppShell theme="light" title={libraryTitle}>
+      <div className="mx-auto w-full max-w-[1200px] p-4 pb-8 md:p-8">
+        {listMode ? (
+          <LibraryListView view={view} sort={sort} query={query} offset={offset} setParams={updateParams} />
         ) : (
-          <>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {featuredBooks.map((book) => {
-                const audioProgress = loadAudiobookProgress(book.uri);
-                const actions = getLibraryActions(book, audioProgress);
-                const accent = actions.read && actions.listen ? accentClasses.audio : actions.listen ? accentClasses.audio : accentClasses.read;
-                const progress = book.progressPercent;
-                const author = resolveAuthor(book);
-                const detailUrl = getBookDetailUrl(book);
-
-                return (
-                  <div key={book.uri} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-[#1c2027]">
-                    <div className="flex gap-4">
-                      {actions.cover ? (
-                        <LibraryActionLink action={actions.cover} className="group relative h-36 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-slate-200 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-slate-700">
-                          <div className="absolute inset-0 z-10 bg-black/0 transition-colors group-hover:bg-black/10" />
-                          <BookCover book={book} className="h-full w-full object-cover" />
-                        </LibraryActionLink>
-                      ) : (
-                        <div className="relative h-36 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-200 shadow-sm dark:bg-slate-700">
-                          <BookCover book={book} className="h-full w-full object-cover" />
-                        </div>
-                      )}
-                      <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
-                        <div>
-                          <div className="flex items-start justify-between">
-                            <span className={`mb-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${accent}`}>
-                              {actions.read && actions.listen ? "Lectura y audio" : actions.listen ? "Audiolibro" : "Ebook"}
-                            </span>
-                            <details className="group/menu relative">
-                              <summary aria-label={`Más acciones para ${book.titulo}`} className="flex cursor-pointer list-none rounded-md text-slate-400 transition-colors hover:text-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:hover:text-white">
-                                <span aria-hidden="true" className="material-symbols-outlined text-[20px]">more_vert</span>
-                              </summary>
-                              <div className="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-[#1c2027]">
-                                <Link className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-700 dark:focus:bg-slate-700" to={detailUrl}>
-                                  <span aria-hidden="true" className="material-symbols-outlined text-[18px]">info</span>
-                                  Información del libro
-                                </Link>
-                              </div>
-                            </details>
-                          </div>
-                          <Link to={detailUrl}>
-                            <h3 className="line-clamp-1 text-lg font-bold leading-tight text-slate-900 hover:text-primary dark:text-white">{book.titulo}</h3>
-                          </Link>
-                          <AuthorLink className="mt-1 block text-sm text-slate-500 dark:text-slate-400" name={author.name} uri={author.uri} />
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                            <span>{actions.read ? `Página ${book.currentPage}` : "Sin lectura"}</span>
-                            {actions.listen ? <span>{audioProgress > 0 ? `Audio: ${Math.floor(audioProgress / 60)} min` : "Audio disponible"}</span> : null}
-                          </div>
-                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                            <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
-                          </div>
-                          {actions.read || actions.listen ? (
-                            <div className="flex w-full flex-col gap-2 sm:flex-row">
-                              {[actions.read, actions.listen].filter((action): action is LibraryAction => action !== null).map((action) => (
-                                <LibraryActionLink key={action.kind} action={action} className="flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg bg-slate-100 px-2 py-2 text-center text-xs font-medium text-slate-900 transition-colors hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-[#282f39] dark:text-white dark:hover:bg-[#323b47] sm:text-sm">
-                                  <span aria-hidden="true" className="material-symbols-outlined shrink-0 text-[18px]">{action.icon}</span>
-                                  <span>{action.label}</span>
-                                </LibraryActionLink>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="py-2 text-center text-xs text-slate-500 dark:text-slate-400">No disponible actualmente</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-8">
-              <div className="flex flex-col items-center gap-6 rounded-2xl border border-primary/10 bg-primary/5 p-6 text-center dark:border-slate-700/50 dark:bg-slate-800/50 md:flex-row md:text-left">
-                <div className="rounded-full bg-white p-3 shadow-sm dark:bg-slate-700">
-                  <span className="material-symbols-outlined text-3xl text-primary">sentiment_satisfied</span>
-                </div>
-                <div className="flex-1">
-                  <h4 className="mb-1 text-lg font-bold text-slate-900 dark:text-white">Tu zona DNF (Did Not Finish)</h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">EstÃ¡ bien dejar un libro si no conecta contigo. La vida es demasiado corta para leer sin intenciÃ³n.</p>
-                </div>
-                <button className="shrink-0 text-sm font-medium text-primary hover:underline">Ver mis libros abandonados</button>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">AÃ±adidos recientemente</h2>
-                <a className="text-sm font-medium text-primary hover:underline" href="#">
-                  Ver todo
-                </a>
-              </div>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                {recentBooks.map((book) => {
-                  const coverAction = getLibraryActions(book, loadAudiobookProgress(book.uri)).cover;
-                  return coverAction ? (
-                  <LibraryActionLink key={book.uri} action={coverAction} className="group cursor-pointer space-y-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                    <div className="relative aspect-[2/3] overflow-hidden rounded-lg shadow-md">
-                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">
-                        <span className="material-symbols-outlined text-3xl text-white drop-shadow-lg">visibility</span>
-                      </div>
-                      <BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                    </div>
-                    <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{book.titulo}</p>
-                  </LibraryActionLink>
-                  ) : (
-                    <div key={book.uri} className="space-y-2">
-                      <div className="relative aspect-[2/3] overflow-hidden rounded-lg shadow-md"><BookCover alt={`Portada de ${book.titulo}`} book={book} className="h-full w-full object-cover" /></div>
-                      <p className="truncate text-sm font-medium text-slate-900 dark:text-white">{book.titulo}</p>
-                    </div>
-                  );
-                })}
-                <div className="flex aspect-[2/3] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 transition-colors hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-slate-800/30">
-                  <span className="material-symbols-outlined mb-1 text-3xl">add</span>
-                  <span className="text-xs font-medium">AÃ±adir</span>
-                </div>
-              </div>
-            </div>
-          </>
+          <LibrarySummaryView onTotalChange={setLibraryTotal} />
         )}
       </div>
     </AppShell>

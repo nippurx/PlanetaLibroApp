@@ -14,6 +14,8 @@ final class ReaderManifestService
     private ReaderManifestRepositoryInterface $repository;
     private LegacyBookInfoParser $parser;
     private string $readerRoot;
+    /** @var array<string, int|null> */
+    private array $pageCountCache = [];
 
     public function __construct(
         ReaderManifestRepositoryInterface $repository,
@@ -114,6 +116,33 @@ final class ReaderManifestService
             }
             flock($lock, LOCK_UN);
             fclose($lock);
+        }
+    }
+
+    public function pageCountIfAvailable(string $uri): ?int
+    {
+        if (array_key_exists($uri, $this->pageCountCache)) {
+            return $this->pageCountCache[$uri];
+        }
+
+        try {
+            $this->assertUri($uri);
+            $bookDirectory = $this->resolveBookDirectory($uri);
+            $manifestPath = $bookDirectory . DIRECTORY_SEPARATOR . 'manifest.json';
+            if (is_file($manifestPath)) {
+                $manifest = $this->readExistingManifest($manifestPath, $uri);
+                return $this->pageCountCache[$uri] = (int) $manifest['pages'];
+            }
+
+            $legacyPath = $bookDirectory . DIRECTORY_SEPARATOR . 'libroinfo.php';
+            if (!is_file($legacyPath)) {
+                return $this->pageCountCache[$uri] = null;
+            }
+
+            $legacy = $this->parser->parse($legacyPath);
+            return $this->pageCountCache[$uri] = (int) $legacy['pages'];
+        } catch (Throwable $exception) {
+            return $this->pageCountCache[$uri] = null;
         }
     }
 

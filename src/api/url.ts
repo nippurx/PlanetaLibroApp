@@ -1,5 +1,11 @@
 ﻿const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
+export function getSiteUrl(path: string): string {
+  const configuredOrigin = import.meta.env.VITE_SITE_URL?.trim();
+  const siteOrigin = (configuredOrigin || window.location.origin).replace(/\/+$/, "");
+  return new URL(path.replace(/^\/+/, ""), `${siteOrigin}/`).toString();
+}
+
 export function getApiOrigin(): string {
   if (!API_BASE) {
     return "";

@@ -3,7 +3,7 @@ setlocal
 
 set "PROYECTO=%~dp0"
 set "ORIGEN=%PROYECTO%api\v1"
-set "DESTINO=D:\Desarrollo\MPWebs\www\planetalibro\api\v1"
+set "DESTINO=D:\Desarrollo\MPWebs\www\planetalibro\src\api\v1"
 
 echo.
 echo ========================================

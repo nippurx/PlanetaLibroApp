@@ -7,6 +7,7 @@ PlanetaLibroApp no cuenta con una vista operativa que consolide el estado real d
 - Crear un tablero local de ejecución para este repositorio que descubra los changes OpenSpec activos y archivados, y lea sus artefactos de planificación.
 - Mostrar resumen global y por change: estado, avance, tareas completadas, pendientes y disponibilidad de los artefactos.
 - Permitir expandir cada change para consultar las tareas de `tasks.md` con su estado, y filtrar u ordenar la vista para identificar trabajo pendiente.
+- Mostrar por change el comando sugerido `/opsx:apply <slug>` y las instrucciones de aplicación que devuelve el CLI local de OpenSpec.
 - Registrar una evaluación operativa por change —prioridad, urgencia, importancia, esfuerzo estimado y bloqueo— separada de los datos derivados de OpenSpec.
 - Calcular una recomendación transparente de siguiente trabajo a partir de las evaluaciones guardadas y de las tareas pendientes; no modificar ni marcar tareas OpenSpec desde el tablero.
 - Retirar la necesidad de registro multiproyecto para esta interfaz y mantener los datos de planificación dentro de la raíz del repositorio.
